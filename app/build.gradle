@@ -1,0 +1,29 @@
+apply plugin: 'com.android.application'
+
+android {
+    compileSdkVersion 26
+    buildToolsVersion "26.0.0"
+    defaultConfig {
+        applicationId "com.google.android.gms.samples.wallet"
+        minSdkVersion 26
+        targetSdkVersion 26
+        versionCode 1
+        versionName "1.0"
+    }
+    buildTypes {
+        release {
+            shrinkResources true
+            minifyEnabled true
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+}
+
+dependencies {
+    compile fileTree(dir: 'libs', include: ['*.jar'])
+    compile 'com.android.support:appcompat-v7:26.0.2'
+    compile 'com.google.android.gms:play-services-wallet:11.4.0'
+    compile 'com.google.android.gms:play-services-tasks:11.4.0'
+    compile 'com.google.android.gms:play-services-base:11.4.0'
+    compile 'com.google.android.gms:play-services-basement:11.4.0'
+}
