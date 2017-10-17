@@ -41,7 +41,7 @@ public class Constants {
     // 5.  If you're using direct integration, please consult the documentation to learn about
     //     next steps.
     static {
-        if (true) {
+        if (false) {
             throw new RuntimeException("[REMOVE ME] Please edit the Constants.java file per the"
                     + " instructions inside before trying to run this sample.");
         }
