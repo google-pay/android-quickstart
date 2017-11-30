@@ -16,9 +16,9 @@
 -->
 
 <resources>
-    <string name="app_name">My Online Store App</string>
-    <string name="store_name">My Online Store</string>
-    <string name="pwg_status_unavailable">Unfortunately, Pay with Google is not available on this phone.</string>
-    <string name="pwg_status_checking">Checking if Pay with Google is available...</string>
-    <string name="payments_show_name">Successfully received payment data for %s!</string>
+    <string name="app_name" translatable="false">My Online Store App</string>
+    <string name="store_name" translatable="false">My Online Store</string>
+    <string name="pwg_status_unavailable" translatable="false">Unfortunately, Pay with Google is not available on this phone.</string>
+    <string name="pwg_status_checking" translatable="false">Checking if Pay with Google is available...</string>
+    <string name="payments_show_name" translatable="false">Successfully received payment data for %s!</string>
 </resources>
