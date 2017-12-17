@@ -25,9 +25,9 @@ dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
 
     //noinspection UseOfBundledGooglePlayServices
-    implementation 'com.google.android.gms:play-services-wallet:11.6.2'
+    implementation 'com.google.android.gms:play-services:11.6.2'
 
     // "wallet" is the only module needed for the Google Payment API and this sample app.
     // Apps that selectively compile Google Play service APIs need only this dependency.
-    //compile 'com.google.android.gms:play-services-wallet:11.6.2'
+    //implementation 'com.google.android.gms:play-services-wallet:11.6.2'
 }
