@@ -152,8 +152,12 @@ public class PaymentsUtil {
      */
     public static Task<Boolean> isReadyToPay(PaymentsClient client) {
         IsReadyToPayRequest.Builder request = IsReadyToPayRequest.newBuilder();
-        for (Integer allowedMethod : Constants.SUPPORTED_METHODS) {
-            request.addAllowedPaymentMethod(allowedMethod);
+        try {
+            for (Integer allowedMethod : Constants.SUPPORTED_METHODS) {
+                request.addAllowedPaymentMethod(allowedMethod);
+            }
+        } catch (ExceptionInInitializerError e) {
+            e.printStackTrace();
         }
         return client.isReadyToPay(request.build());
     }

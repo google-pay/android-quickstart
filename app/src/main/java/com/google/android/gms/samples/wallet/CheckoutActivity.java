@@ -19,9 +19,9 @@ package com.google.android.gms.samples.wallet;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.util.Log;
 import android.view.View;
-import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -36,7 +36,6 @@ import com.google.android.gms.wallet.PaymentDataRequest;
 import com.google.android.gms.wallet.PaymentMethodToken;
 import com.google.android.gms.wallet.PaymentsClient;
 import com.google.android.gms.wallet.TransactionInfo;
-import com.google.android.gms.wallet.WalletConstants;
 
 public class CheckoutActivity extends Activity {
     // Arbitrarily-picked result code.
@@ -78,7 +77,7 @@ public class CheckoutActivity extends Activity {
         // OnCompleteListener to be triggered when the result of the call is known.
         PaymentsUtil.isReadyToPay(mPaymentsClient).addOnCompleteListener(
                 new OnCompleteListener<Boolean>() {
-                    public void onComplete(Task<Boolean> task) {
+                    public void onComplete(@NonNull Task<Boolean> task) {
                         try {
                             boolean result = task.getResult(ApiException.class);
                             setPwgAvailable(result);
@@ -118,7 +117,9 @@ public class CheckoutActivity extends Activity {
                         break;
                     case AutoResolveHelper.RESULT_ERROR:
                         Status status = AutoResolveHelper.getStatusFromIntent(data);
-                        handleError(status.getStatusCode());
+                        if (status != null) {
+                            handleError(status.getStatusCode());
+                        }
                         break;
                 }
 
@@ -137,7 +138,7 @@ public class CheckoutActivity extends Activity {
 
         // getPaymentMethodToken will only return null if PaymentMethodTokenizationParameters was
         // not set in the PaymentRequest.
-        if (token != null) {
+        if ((token != null)&&(paymentData.getCardInfo().getBillingAddress() != null)) {
             String billingName = paymentData.getCardInfo().getBillingAddress().getName();
             Toast.makeText(this, getString(R.string.payments_show_name, billingName), Toast.LENGTH_LONG).show();
 
