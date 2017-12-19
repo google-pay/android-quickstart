@@ -14,9 +14,13 @@ android {
     }
     buildTypes {
         release {
-            shrinkResources true
-            minifyEnabled true
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            postprocessing {
+                removeUnusedCode true
+                removeUnusedResources true
+                obfuscate false
+                optimizeCode true
+                proguardFile 'proguard-rules.pro'
+            }
         }
     }
 }
@@ -24,10 +28,7 @@ android {
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
 
-    //noinspection UseOfBundledGooglePlayServices
-    implementation 'com.google.android.gms:play-services:11.6.2'
-
     // "wallet" is the only module needed for the Google Payment API and this sample app.
     // Apps that selectively compile Google Play service APIs need only this dependency.
-    //implementation 'com.google.android.gms:play-services-wallet:11.6.2'
+    implementation 'com.google.android.gms:play-services-wallet:11.8.0'
 }

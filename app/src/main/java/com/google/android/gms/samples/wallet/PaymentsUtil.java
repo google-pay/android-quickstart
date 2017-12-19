@@ -17,6 +17,7 @@
 package com.google.android.gms.samples.wallet;
 
 import android.app.Activity;
+import android.util.Log;
 import android.util.Pair;
 
 import com.google.android.gms.tasks.Task;
@@ -41,6 +42,7 @@ import java.math.RoundingMode;
  * relevant to your implementation.
  */
 public class PaymentsUtil {
+    private static final String TAG = "PaymentsUtil";
     private static final BigDecimal MICROS = new BigDecimal(1000000d);
 
     private PaymentsUtil() {
@@ -157,7 +159,7 @@ public class PaymentsUtil {
                 request.addAllowedPaymentMethod(allowedMethod);
             }
         } catch (ExceptionInInitializerError e) {
-            e.printStackTrace();
+            Log.w(TAG, "In initializer error exception", e);
         }
         return client.isReadyToPay(request.build());
     }

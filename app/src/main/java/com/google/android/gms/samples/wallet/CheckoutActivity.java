@@ -138,7 +138,7 @@ public class CheckoutActivity extends Activity {
 
         // getPaymentMethodToken will only return null if PaymentMethodTokenizationParameters was
         // not set in the PaymentRequest.
-        if ((token != null)&&(paymentData.getCardInfo().getBillingAddress() != null)) {
+        if ((token != null) && (paymentData.getCardInfo().getBillingAddress() != null)) {
             String billingName = paymentData.getCardInfo().getBillingAddress().getName();
             Toast.makeText(this, getString(R.string.payments_show_name, billingName), Toast.LENGTH_LONG).show();
 
