@@ -145,10 +145,7 @@ public class CheckoutActivity extends Activity {
                         .setTitle("Warning")
                         .setMessage("Gateway name set to \"example\" - please modify " +
                                 "Constants.java and replace it with your own gateway.")
-                        .setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                            public void onClick(DialogInterface dialog, int which) {
-                            }
-                        })
+                        .setPositiveButton("OK", null)
                         .create();
                 alertDialog.show();
             }
