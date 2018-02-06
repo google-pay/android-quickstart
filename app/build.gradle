@@ -1,14 +1,14 @@
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 26
+    compileSdkVersion 27
     defaultConfig {
         applicationId "com.google.android.gms.samples.wallet"
 
         // Google Payment API is not supported in SDK versions lower than 19
         minSdkVersion 19
 
-        targetSdkVersion 26
+        targetSdkVersion 27
         versionCode 1
         versionName "1.0"
     }
@@ -24,9 +24,9 @@ android {
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
 
-    compile 'com.google.android.gms:play-services:11.4.2'
+    implementation 'com.google.android.gms:play-services:11.8.0'
 
     // "wallet" is the only module needed for the Google Payment API and this sample app.
     // Apps that selectively compile Google Play service APIs need only this dependency.
-    //compile 'com.google.android.gms:play-services-wallet:11.4.2'
+    //implementation 'com.google.android.gms:play-services-wallet:11.8.0'
 }
