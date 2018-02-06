@@ -67,19 +67,19 @@
             android:layout_marginTop="@dimen/margin_xlarge">
 
             <include
-                android:id="@+id/pwg_button"
-                layout="@layout/pay_with_google_button"
+                android:id="@+id/googlepay_button"
+                layout="@layout/googlepay_button"
                 android:layout_width="@dimen/buy_button_width"
                 android:layout_height="@dimen/buy_button_height"
                 android:visibility="gone" />
 
             <TextView
-                android:id="@+id/pwg_status"
+                android:id="@+id/googlepay_status"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
                 android:gravity="center"
-                android:text="@string/pwg_status_checking" />
+                android:text="@string/googlepay_status_checking" />
         </FrameLayout>
 
     </LinearLayout>
