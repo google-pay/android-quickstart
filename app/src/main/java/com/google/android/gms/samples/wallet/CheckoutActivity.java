@@ -17,6 +17,8 @@
 package com.google.android.gms.samples.wallet;
 
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
@@ -136,6 +138,18 @@ public class CheckoutActivity extends Activity {
         // getPaymentMethodToken will only return null if PaymentMethodTokenizationParameters was
         // not set in the PaymentRequest.
         if (token != null) {
+            // If the gateway is set to example, no payment information is returned - instead, the
+            // token will only consist of "examplePaymentMethodToken".
+            if (token.getToken().equals("examplePaymentMethodToken")) {
+                AlertDialog alertDialog = new AlertDialog.Builder(this)
+                        .setTitle("Warning")
+                        .setMessage("Gateway name set to \"example\" - please modify " +
+                                "Constants.java and replace it with your own gateway.")
+                        .setPositiveButton("OK", null)
+                        .create();
+                alertDialog.show();
+            }
+
             String billingName = paymentData.getCardInfo().getBillingAddress().getName();
             Toast.makeText(this, getString(R.string.payments_show_name, billingName), Toast.LENGTH_LONG).show();
 
