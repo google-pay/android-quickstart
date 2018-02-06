@@ -21,7 +21,6 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
-import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -36,7 +35,6 @@ import com.google.android.gms.wallet.PaymentDataRequest;
 import com.google.android.gms.wallet.PaymentMethodToken;
 import com.google.android.gms.wallet.PaymentsClient;
 import com.google.android.gms.wallet.TransactionInfo;
-import com.google.android.gms.wallet.WalletConstants;
 
 public class CheckoutActivity extends Activity {
     // Arbitrarily-picked result code.
@@ -44,8 +42,8 @@ public class CheckoutActivity extends Activity {
 
     private PaymentsClient mPaymentsClient;
 
-    private View mPwgButton;
-    private TextView mPwgStatusText;
+    private View mGooglePayButton;
+    private TextView mGooglePayStatusText;
 
     private ItemInfo mBikeItem = new ItemInfo("Simple Bike", 300 * 1000000, R.drawable.bike);
     private long mShippingCost = 90 * 1000000;
@@ -58,10 +56,10 @@ public class CheckoutActivity extends Activity {
         // Set up the mock information for our item in the UI.
         initItemUI();
 
-        mPwgButton = findViewById(R.id.pwg_button);
-        mPwgStatusText = findViewById(R.id.pwg_status);
+        mGooglePayButton = findViewById(R.id.googlepay_button);
+        mGooglePayStatusText = findViewById(R.id.googlepay_status);
 
-        mPwgButton.setOnClickListener(new View.OnClickListener() {
+        mGooglePayButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 requestPayment(view);
@@ -81,7 +79,7 @@ public class CheckoutActivity extends Activity {
                     public void onComplete(Task<Boolean> task) {
                         try {
                             boolean result = task.getResult(ApiException.class);
-                            setPwgAvailable(result);
+                            setGooglePayAvailable(result);
                         } catch (ApiException exception) {
                             // Process error
                             Log.w("isReadyToPay failed", exception);
@@ -90,16 +88,16 @@ public class CheckoutActivity extends Activity {
                 });
     }
 
-    private void setPwgAvailable(boolean available) {
+    private void setGooglePayAvailable(boolean available) {
         // If isReadyToPay returned true, show the button and hide the "checking" text. Otherwise,
         // notify the user that Pay with Google is not available.
         // Please adjust to fit in with your current user flow. You are not required to explicitly
         // let the user know if isReadyToPay returns false.
         if (available) {
-            mPwgStatusText.setVisibility(View.GONE);
-            mPwgButton.setVisibility(View.VISIBLE);
+            mGooglePayStatusText.setVisibility(View.GONE);
+            mGooglePayButton.setVisibility(View.VISIBLE);
         } else {
-            mPwgStatusText.setText(R.string.pwg_status_unavailable);
+            mGooglePayStatusText.setText(R.string.googlepay_status_unavailable);
         }
     }
 
@@ -123,7 +121,7 @@ public class CheckoutActivity extends Activity {
                 }
 
                 // Re-enables the Pay with Google button.
-                mPwgButton.setClickable(true);
+                mGooglePayButton.setClickable(true);
                 break;
         }
     }
@@ -157,7 +155,7 @@ public class CheckoutActivity extends Activity {
     // This method is called when the Pay with Google button is clicked.
     public void requestPayment(View view) {
         // Disables the button to prevent multiple clicks.
-        mPwgButton.setClickable(false);
+        mGooglePayButton.setClickable(false);
 
         // The price provided to the API should include taxes and shipping.
         // This price is not displayed to the user.
