@@ -58,10 +58,10 @@ public class Constants {
             // PAYMENT_METHOD_CARD returns to any card the user has stored in their Google Account.
             WalletConstants.PAYMENT_METHOD_CARD,
 
-            // PAYMENT_METHOD_TOKENIZED_CARD refers to cards added to Android Pay, assuming Android
-            // Pay is installed.
-            // Please keep in mind cards may exist in Android Pay without being added to the Google
-            // Account.
+            // PAYMENT_METHOD_TOKENIZED_CARD refers to EMV tokenized credentials stored in the
+            // Google Pay app, assuming it's installed.
+            // Please keep in mind tokenized cards may exist in the Google Pay app without being
+            // added to the user's Google Account.
             WalletConstants.PAYMENT_METHOD_TOKENIZED_CARD
     );
 

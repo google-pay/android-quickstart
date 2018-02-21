@@ -1,14 +1,15 @@
-# Google Payment API sample app
+# Google Pay API sample app
 
 ## Overview
-This sample demonstrates basic usage of the Google Payment API.
+This sample demonstrates basic usage of the Google Pay API.
 
-The Google Payment API can be used to request any credit or debit card stored in
-your customer’s Google account, including their Android Pay credentials.
+The Google Pay API can be used to request any credit or debit card stored in
+your customer’s Google account, including their tokenized credentials from
+the Google Pay app.
 
 For more information, visit the following link:
 
-https://developers.google.com/payments/overview
+https://developers.google.com/pay/api/overview
 
 ## Instructions
 
@@ -27,5 +28,5 @@ In order to build and run this sample app, make sure you:
 To be able to fully test the API, you will also need to:
 
 -   [Add a payment method to your Google Account](https://support.google.com/payments/answer/6220309).
--   [Install and add a payment method to Android Pay](https://support.google.com/androidpay/answer/6289372) (optional).
+-   [Install and add a payment method to the Google Pay app](https://support.google.com/pay/answer/6289372) (optional).
 -   Consult your payment processor's documentation to learn about whether they support paying with Google.
