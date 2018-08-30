@@ -24,7 +24,8 @@ android {
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
 
-    implementation 'com.google.android.gms:play-services:11.8.0'
+    implementation 'com.google.android.gms:play-services-wallet:16.0.0'
+    implementation 'com.android.support:appcompat-v7:24.1.1'
 
     // "wallet" is the only module needed for the Google Payment API and this sample app.
     // Apps that selectively compile Google Play service APIs need only this dependency.
