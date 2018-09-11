@@ -5,10 +5,11 @@ android {
     defaultConfig {
         applicationId "com.google.android.gms.samples.wallet"
 
-        // Google Payment API is not supported in SDK versions lower than 19
-        minSdkVersion 19
+        /* Google Payment API is not supported in SDK versions lower than 19. This example requires
+        this version due to use of newer constructs like Optional. */
+        minSdkVersion 24
 
-        targetSdkVersion 27
+        targetSdkVersion 28
         versionCode 1
         versionName "1.0"
     }
@@ -24,10 +25,11 @@ android {
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
 
+    /* "play-services-wallet" is the only module needed for the Google Pay API and this sample app
+     but the "play-services" module can also be used.
+     The version provided is the minimum version required for the most recent version of the
+     Google Pay API library. Your app may choose a dependency greater than the value above.
+     See https://developers.google.com/pay/api/android/guides/setup#dependencies for more info.
+     */
     implementation 'com.google.android.gms:play-services-wallet:16.0.0'
-    implementation 'com.android.support:appcompat-v7:24.1.1'
-
-    // "wallet" is the only module needed for the Google Payment API and this sample app.
-    // Apps that selectively compile Google Play service APIs need only this dependency.
-    //implementation 'com.google.android.gms:play-services-wallet:11.8.0'
 }

@@ -55,7 +55,10 @@ public class CheckoutActivity extends Activity {
      */
     private View mGooglePayButton;
 
-    // Arbitrarily-picked constant integer you define to track a request for payment data activity */
+    /**
+     * Arbitrarily-picked constant integer you define to track a request for payment data activity.
+     * @value #LOAD_PAYMENT_DATA_REQUEST_CODE
+     */
     private static final int LOAD_PAYMENT_DATA_REQUEST_CODE = 991;
 
     private TextView mGooglePayStatusText;
@@ -128,11 +131,12 @@ public class CheckoutActivity extends Activity {
     }
 
     /**
-     * If isReadyToPay returned true, show the button and hide the "checking" text. Otherwise, notify
-     * the user that Pay with Google is not available. Please adjust to fit in with your current user
-     * flow. You are not required to explicitly let the user know if isReadyToPay returns false.
+     * If isReadyToPay returned {@code true}, show the button and hide the "checking" text. Otherwise,
+     * notify the user that Google Pay is not available. Please adjust to fit in with your current
+     * user flow. You are not required to explicitly let the user know if isReadyToPay returns {@code
+     * false}.
      *
-     * @param available IsReadyToPay or not.
+     * @param available isReadyToPay API response.
      */
     private void setGooglePayAvailable(boolean available) {
         if (available) {
@@ -190,52 +194,45 @@ public class CheckoutActivity extends Activity {
      *     Data
      */
     private void handlePaymentSuccess(PaymentData paymentData) {
-        String token = paymentData.toJson();
+        String paymentInformation = paymentData.toJson();
 
         // Token will be null if PaymentDataRequest was not constructed using fromJson(String).
-        if (token != null) {
-            JSONObject tokenObject;
-            try {
-                tokenObject = new JSONObject(token);
-                // If the gateway is set to example, no payment information is returned - instead, the
-                // token will only consist of "examplePaymentMethodToken".
-                if (tokenObject
-                        .getJSONObject("paymentMethodData")
-                        .getJSONObject("tokenizationData")
-                        .getString("token")
-                        .equals("examplePaymentMethodToken")) {
-                    AlertDialog alertDialog =
-                            new AlertDialog.Builder(this)
-                                    .setTitle("Warning")
-                                    .setMessage(
-                                            "Gateway name set to \"example\" - please modify "
-                                                    + "Constants.java and replace it with your own gateway.")
-                                    .setPositiveButton("OK", null)
-                                    .create();
-                    alertDialog.show();
-                }
+        if (paymentInformation == null) {
+            return;
+        }
+        JSONObject paymentMethodData;
 
-                String billingName =
-                        tokenObject
-                                .getJSONObject("paymentMethodData")
-                                .getJSONObject("info")
-                                .getJSONObject("billingAddress")
-                                .getString("name");
-                Log.d("BillingName", billingName);
-                Toast.makeText(this, getString(R.string.payments_show_name, billingName), Toast.LENGTH_LONG)
-                        .show();
-
-                // Logging token string.
-                Log.d(
-                        "PaymentData",
-                        tokenObject
-                                .getJSONObject("paymentMethodData")
-                                .getJSONObject("tokenizationData")
-                                .getString("token"));
-            } catch (JSONException e) {
-                Log.e("handlePaymentSuccess failed", e.toString());
-                return;
+        try {
+            paymentMethodData = new JSONObject(paymentInformation).getJSONObject("paymentMethodData");
+            // If the gateway is set to example, no payment information is returned - instead, the
+            // token will only consist of "examplePaymentMethodToken".
+            if (paymentMethodData.getJSONObject("tokenizationData").getString("type").equals("PAYMENT_GATEWAY")
+                    && paymentMethodData
+                    .getJSONObject("tokenizationData")
+                    .getString("token")
+                    .equals("examplePaymentMethodToken")) {
+                AlertDialog alertDialog =
+                        new AlertDialog.Builder(this)
+                                .setTitle("Warning")
+                                .setMessage(
+                                        "Gateway name set to \"example\" - please modify "
+                                                + "Constants.java and replace it with your own gateway.")
+                                .setPositiveButton("OK", null)
+                                .create();
+                alertDialog.show();
             }
+
+            String billingName =
+                    paymentMethodData.getJSONObject("info").getJSONObject("billingAddress").getString("name");
+            Log.d("BillingName", billingName);
+            Toast.makeText(this, getString(R.string.payments_show_name, billingName), Toast.LENGTH_LONG)
+                    .show();
+
+            // Logging Payment Method Tokenization string.
+            Log.d("PaymentMethodTokenizationData", paymentMethodData.getJSONObject("tokenizationData").getString("token"));
+        } catch (JSONException e) {
+            Log.e("handlePaymentSuccess", "Error: " + e.toString());
+            return;
         }
     }
 

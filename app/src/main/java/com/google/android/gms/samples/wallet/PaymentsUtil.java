@@ -61,7 +61,7 @@ public class PaymentsUtil {
     }
 
     /**
-     * Gateway Integration: Identify your gateway and your site's gateway merchant identifier.
+     * Gateway Integration: Identify your gateway and your app's gateway merchant identifier.
      *
      * <p>The Google Pay API response will return an encrypted payment method capable of being charged
      * by a supported gateway after payer authorization.
@@ -73,7 +73,12 @@ public class PaymentsUtil {
      * @see <a href=
      *     "https://developers.google.com/pay/api/android/reference/object#PaymentMethodTokenizationSpecification">PaymentMethodTokenizationSpecification</a>
      */
-    private static JSONObject getGatewayTokenizationSpecification() throws JSONException {
+    private static JSONObject getGatewayTokenizationSpecification()
+            throws JSONException, RuntimeException {
+        if (Constants.GATEWAY_TOKENIZATION_PARAMETERS.isEmpty()) {
+            throw new RuntimeException(
+                    "Please edit the Constants.java file to add gateway name and other parameters your processor requires");
+        }
         JSONObject tokenizationSpecification = new JSONObject();
 
         tokenizationSpecification.put("type", "PAYMENT_GATEWAY");
@@ -95,17 +100,21 @@ public class PaymentsUtil {
      * @see <a
      *     href="https://developers.google.com/pay/api/android/reference/object#PaymentMethodTokenizationSpecification">PaymentMethodTokenizationSpecification</a>
      */
-    private static JSONObject getDirectTokenizationSpecification() throws JSONException {
-
+    private static JSONObject getDirectTokenizationSpecification()
+            throws JSONException, RuntimeException {
+        if (Constants.DIRECT_TOKENIZATION_PARAMETERS.isEmpty()
+                || Constants.DIRECT_TOKENIZATION_PUBLIC_KEY.isEmpty()
+                || Constants.DIRECT_TOKENIZATION_PUBLIC_KEY == null
+                || Constants.DIRECT_TOKENIZATION_PUBLIC_KEY == "REPLACE_ME") {
+            throw new RuntimeException(
+                    "Please edit the Constants.java file to add protocol version & public key.");
+        }
         JSONObject tokenizationSpecification = new JSONObject();
+
         tokenizationSpecification.put("type", "DIRECT");
-        tokenizationSpecification.put(
-                "parameters",
-                new JSONObject()
-                        .put("protocolVersion", "ECv1")
-                        // Omitting the publicKey will result in a request for unencrypted data.
-                        // Please refer to the documentation for more information on unencrypted requests.
-                        .put("publicKey", Constants.DIRECT_TOKENIZATION_PUBLIC_KEY));
+        JSONObject parameters = new JSONObject(Constants.DIRECT_TOKENIZATION_PARAMETERS);
+        tokenizationSpecification.put("parameters", parameters);
+
         return tokenizationSpecification;
     }
 
@@ -119,11 +128,7 @@ public class PaymentsUtil {
      *     href="https://developers.google.com/pay/api/android/reference/object#CardParameters">CardParameters</a>
      */
     private static JSONArray getAllowedCardNetworks() {
-        JSONArray allowedCardNetworks = new JSONArray();
-        for (String network : Constants.SUPPORTED_NETWORKS) {
-            allowedCardNetworks.put(network);
-        }
-        return allowedCardNetworks;
+        return new JSONArray(Constants.SUPPORTED_NETWORKS);
     }
 
     /**
@@ -137,11 +142,7 @@ public class PaymentsUtil {
      *     href="https://developers.google.com/pay/api/android/reference/object#CardParameters">CardParameters</a>
      */
     private static JSONArray getAllowedCardAuthMethods() {
-        JSONArray allowedCardAuthMethods = new JSONArray();
-        for (String method : Constants.SUPPORTED_METHODS) {
-            allowedCardAuthMethods.put(method);
-        }
-        return allowedCardAuthMethods;
+        return new JSONArray(Constants.SUPPORTED_METHODS);
     }
 
     /**
@@ -165,10 +166,10 @@ public class PaymentsUtil {
         // Optionally, you can add billing address/phone number associated with a CARD payment method.
         parameters.put("billingAddressRequired", true);
 
-        JSONObject billingAddrParams = new JSONObject();
-        billingAddrParams.put("format", "FULL");
+        JSONObject billingAddressParameters = new JSONObject();
+        billingAddressParameters.put("format", "FULL");
 
-        parameters.put("billingAddressParameters", billingAddrParams);
+        parameters.put("billingAddressParameters", billingAddressParameters);
 
         cardPaymentMethod.put("parameters", parameters);
 
@@ -203,21 +204,6 @@ public class PaymentsUtil {
             JSONObject isReadyToPayRequest = getBaseRequest();
             isReadyToPayRequest.put(
                     "allowedPaymentMethods", new JSONArray().put(getBaseCardPaymentMethod()));
-
-            // An optional shipping address requirement is a top-level property of the PaymentDataRequest
-            // JSON object. Omitting all together means all countries are supported.
-            isReadyToPayRequest.put("shippingAddressRequired", true);
-
-            JSONObject shippingAddrParams = new JSONObject();
-            shippingAddrParams.put("phoneNumberRequired", false);
-
-            JSONArray allowedCountryCodes = new JSONArray();
-            for (String country : Constants.SHIPPING_SUPPORTED_COUNTRIES) {
-                allowedCountryCodes.put(country);
-            }
-
-            shippingAddrParams.put("allowedCountryCodes", allowedCountryCodes);
-            isReadyToPayRequest.put("shippingAddressParameters", shippingAddrParams);
 
             return Optional.of(isReadyToPayRequest);
         } catch (JSONException e) {
@@ -268,6 +254,18 @@ public class PaymentsUtil {
                     "allowedPaymentMethods", new JSONArray().put(PaymentsUtil.getCardPaymentMethod()));
             paymentDataRequest.put("transactionInfo", PaymentsUtil.getTransactionInfo(price));
             paymentDataRequest.put("merchantInfo", PaymentsUtil.getMerchantInfo());
+
+            // An optional shipping address requirement is a top-level property of the PaymentDataRequest
+            // JSON object. Omitting all together means all countries are supported.
+            paymentDataRequest.put("shippingAddressRequired", true);
+
+            JSONObject shippingAddressParameters = new JSONObject();
+            shippingAddressParameters.put("phoneNumberRequired", false);
+
+            JSONArray allowedCountryCodes = new JSONArray(Constants.SHIPPING_SUPPORTED_COUNTRIES);
+
+            shippingAddressParameters.put("allowedCountryCodes", allowedCountryCodes);
+            paymentDataRequest.put("shippingAddressParameters", shippingAddressParameters);
             return Optional.of(paymentDataRequest);
         } catch (JSONException e) {
             return Optional.empty();
