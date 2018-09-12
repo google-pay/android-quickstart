@@ -204,9 +204,12 @@ public class CheckoutActivity extends Activity {
 
         try {
             paymentMethodData = new JSONObject(paymentInformation).getJSONObject("paymentMethodData");
-            // If the gateway is set to example, no payment information is returned - instead, the
+            // If the gateway is set to "example", no payment information is returned - instead, the
             // token will only consist of "examplePaymentMethodToken".
-            if (paymentMethodData.getJSONObject("tokenizationData").getString("type").equals("PAYMENT_GATEWAY")
+            if (paymentMethodData
+                    .getJSONObject("tokenizationData")
+                    .getString("type")
+                    .equals("PAYMENT_GATEWAY")
                     && paymentMethodData
                     .getJSONObject("tokenizationData")
                     .getString("token")

@@ -255,8 +255,8 @@ public class PaymentsUtil {
             paymentDataRequest.put("transactionInfo", PaymentsUtil.getTransactionInfo(price));
             paymentDataRequest.put("merchantInfo", PaymentsUtil.getMerchantInfo());
 
-            // An optional shipping address requirement is a top-level property of the PaymentDataRequest
-            // JSON object. Omitting all together means all countries are supported.
+            // An optional shipping address requirement is a top-level property of the
+            // PaymentDataRequest JSON object.
             paymentDataRequest.put("shippingAddressRequired", true);
 
             JSONObject shippingAddressParameters = new JSONObject();
