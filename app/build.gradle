@@ -27,8 +27,8 @@ dependencies {
 
     /* "play-services-wallet" is the only module needed for the Google Pay API and this sample app
      but the "play-services" module can also be used.
-     The version provided is the minimum version required for the most recent version of the
-     Google Pay API library. Your app may choose a dependency greater than the value above.
+     The version provided is the minimum version required for the most recent major version of the
+     Google Pay API library. Your app may choose a dependency greater than the value below.
      See https://developers.google.com/pay/api/android/guides/setup#dependencies for more info.
      */
     implementation 'com.google.android.gms:play-services-wallet:16.0.0'
