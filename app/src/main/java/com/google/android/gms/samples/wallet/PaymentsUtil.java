@@ -77,7 +77,7 @@ public class PaymentsUtil {
       throws JSONException, RuntimeException {
     if (Constants.PAYMENT_GATEWAY_TOKENIZATION_PARAMETERS.isEmpty()) {
       throw new RuntimeException(
-          "Please edit the Constants.java file to add gateway name and other parameters your"
+          "Please edit the Constants.java file to add gateway name and other parameters your "
               + "processor requires");
     }
     JSONObject tokenizationSpecification = new JSONObject();
