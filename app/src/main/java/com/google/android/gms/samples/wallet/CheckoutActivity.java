@@ -182,7 +182,7 @@ public class CheckoutActivity extends Activity {
             // Do nothing.
         }
 
-        // Re-enables the Pay with Google button.
+        // Re-enables the Google Pay payment button.
         mGooglePayButton.setClickable(true);
         break;
     }
