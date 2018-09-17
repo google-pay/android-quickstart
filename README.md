@@ -23,7 +23,7 @@ In order to build and run this sample app, make sure you:
 
 -   Have Android Studio 3.0 or newer installed.
 -   Have a device running Android 4.4 (KitKat) or newer.
--   Have Google Play services version 11.4.0 or newer installed on this device.
+-   Have Google Play services version 16.0.0 or newer installed on this device.
 
 To be able to fully test the API, you will also need to:
 
