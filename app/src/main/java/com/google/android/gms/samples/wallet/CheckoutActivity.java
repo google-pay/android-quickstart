@@ -236,7 +236,7 @@ public class CheckoutActivity extends Activity {
           .show();
 
       // Logging token string.
-      Log.d("PaymentData", paymentMethodData.getJSONObject("tokenizationData").getString("token"));
+      Log.d("GooglePaymentToken", paymentMethodData.getJSONObject("tokenizationData").getString("token"));
     } catch (JSONException e) {
       Log.e("handlePaymentSuccess", "Error: " + e.toString());
       return;
