@@ -1,7 +1,9 @@
 apply plugin: 'com.android.application'
+apply plugin: 'kotlin-android'
+apply plugin: 'kotlin-android-extensions'
 
 android {
-    compileSdkVersion 27
+    compileSdkVersion 28
     defaultConfig {
         applicationId "com.google.android.gms.samples.wallet"
 
@@ -23,13 +25,12 @@ android {
 }
 
 dependencies {
-    implementation fileTree(dir: 'libs', include: ['*.jar'])
-
     /* "play-services-wallet" is the only module needed for the Google Pay API and this sample app
      but the "play-services" module can also be used.
      The version provided is the minimum version required for the most recent major version of the
      Google Pay API library. Your app may choose a dependency greater than the value below.
      See https://developers.google.com/pay/api/android/guides/setup#dependencies for more info.
      */
-    implementation 'com.google.android.gms:play-services-wallet:16.0.0'
+    implementation 'com.google.android.gms:play-services-wallet:16.0.1'
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
 }
