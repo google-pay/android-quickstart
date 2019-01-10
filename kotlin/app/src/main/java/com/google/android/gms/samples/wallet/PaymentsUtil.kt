@@ -139,10 +139,7 @@ object PaymentsUtil {
                 put("allowedAuthMethods", allowedCardAuthMethods)
                 put("allowedCardNetworks", allowedCardNetworks)
                 put("billingAddressRequired", true)
-                val billingAddressParameters = JSONObject().apply {
-                    put("format", "FULL")
-                }
-                put("billingAddressParameters", billingAddressParameters)
+                put("billingAddressParameters", JSONObject(mapOf("format" to "FULL")))
             }
             put("parameters", parameters)
         }
@@ -216,7 +213,6 @@ object PaymentsUtil {
             put("totalPrice", price)
             put("totalPriceStatus", "FINAL")
             put("currencyCode", Constants.CURRENCY_CODE)
-
         }
     }
 
