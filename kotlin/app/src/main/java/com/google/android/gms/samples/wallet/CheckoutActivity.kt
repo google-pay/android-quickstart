@@ -31,6 +31,7 @@ import kotlinx.android.synthetic.main.activity_checkout.*
 import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
+import kotlin.math.roundToLong
 
 
 /**
@@ -46,6 +47,7 @@ class CheckoutActivity : Activity() {
     private val shippingCost = (90 * 1000000).toLong()
 
     private lateinit var garmentList: JSONArray
+    private lateinit var selectedGarment: JSONObject
 
     /**
      * Arbitrarily-picked constant integer you define to track a request for payment data activity.
@@ -64,7 +66,8 @@ class CheckoutActivity : Activity() {
         setContentView(R.layout.activity_checkout)
 
         // Set up the mock information for our item in the UI.
-        displayGarment(fetchRandomGarment())
+        selectedGarment = fetchRandomGarment()
+        displayGarment(selectedGarment)
 
         // Initialize a Google Pay API client for an environment suitable for testing.
         // It's recommended to create the PaymentsClient object inside of the onCreate method.
@@ -228,7 +231,8 @@ class CheckoutActivity : Activity() {
 
         // The price provided to the API should include taxes and shipping.
         // This price is not displayed to the user.
-        val price = (bikeItem.priceMicros + shippingCost).microsToString()
+        val garmentPriceMicros = (selectedGarment.getDouble("price") * 1000000).roundToLong()
+        val price = (garmentPriceMicros + shippingCost).microsToString()
 
         val paymentDataRequestJson = PaymentsUtil.getPaymentDataRequest(price)
         if (paymentDataRequestJson == null) {
