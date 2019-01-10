@@ -142,13 +142,14 @@ class CheckoutActivity : Activity() {
             // value passed in AutoResolveHelper
             LOAD_PAYMENT_DATA_REQUEST_CODE -> {
                 when (resultCode) {
-                    Activity.RESULT_OK -> {
-                        PaymentData.getFromIntent(data)?.let {
-                            handlePaymentSuccess(it)
-                        }
-                    }
+                    Activity.RESULT_OK ->
+                        PaymentData.getFromIntent(data)?.let(::handlePaymentSuccess)
+
                     Activity.RESULT_CANCELED -> {
+                        // Nothing to do here normally - the user simply cancelled without selecting a
+                        // payment method.
                     }
+
                     AutoResolveHelper.RESULT_ERROR -> {
                         AutoResolveHelper.getStatusFromIntent(data)?.let {
                             handleError(it.statusCode)
@@ -156,9 +157,6 @@ class CheckoutActivity : Activity() {
 
                     }
                 }
-                // Nothing to do here normally - the user simply cancelled without selecting a
-                // payment method.
-                // Do nothing.
 
                 // Re-enables the Google Pay payment button.
                 googlePayButton.isClickable = true
