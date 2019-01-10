@@ -224,7 +224,7 @@ object PaymentsUtil {
      */
     fun getPaymentDataRequest(price: String): JSONObject? {
         try {
-            return baseRequest.apply {
+            return JSONObject(baseRequest.toString()).apply {
                 put("allowedPaymentMethods", JSONArray().put(cardPaymentMethod()))
                 put("transactionInfo", getTransactionInfo(price))
                 put("merchantInfo", merchantInfo)
