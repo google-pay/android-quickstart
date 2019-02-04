@@ -21,6 +21,7 @@ import com.google.android.gms.wallet.PaymentsClient;
 import com.google.android.gms.wallet.Wallet;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.HashMap;
 import java.util.Optional;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -73,20 +74,15 @@ public class PaymentsUtil {
    * @see <a href=
    *     "https://developers.google.com/pay/api/android/reference/object#PaymentMethodTokenizationSpecification">PaymentMethodTokenizationSpecification</a>
    */
-  private static JSONObject getGatewayTokenizationSpecification()
-      throws JSONException, RuntimeException {
-    if (Constants.PAYMENT_GATEWAY_TOKENIZATION_PARAMETERS.isEmpty()) {
-      throw new RuntimeException(
-          "Please edit the Constants.java file to add gateway name and other parameters your "
-              + "processor requires");
-    }
-    JSONObject tokenizationSpecification = new JSONObject();
-
-    tokenizationSpecification.put("type", "PAYMENT_GATEWAY");
-    JSONObject parameters = new JSONObject(Constants.PAYMENT_GATEWAY_TOKENIZATION_PARAMETERS);
-    tokenizationSpecification.put("parameters", parameters);
-
-    return tokenizationSpecification;
+  private static JSONObject getGatewayTokenizationSpecification() throws JSONException {
+    return new JSONObject(){{
+      put("type", "PAYMENT_GATEWAY");
+      put("parameters", new JSONObject(){{
+        put("gateway", "example");
+        put("gatewayMerchantId", "exampleGatewayMerchantId");
+        }
+      });
+    }};
   }
 
   /**
