@@ -131,7 +131,7 @@ public class Constants {
   public static final HashMap<String, String> DIRECT_TOKENIZATION_PARAMETERS =
       new HashMap<String, String>() {
         {
-          put("protocolVersion", "ECv1");
+          put("protocolVersion", "ECv2");
           put("publicKey", DIRECT_TOKENIZATION_PUBLIC_KEY);
         }
       };
