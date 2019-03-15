@@ -41,7 +41,10 @@ object PaymentsUtil {
      * @return Google Pay API base request object.
      * @throws JSONException
      */
-    private val baseRequest = JSONObject().put("apiVersion", 2).put("apiVersionMinor", 0)
+    private val baseRequest = JSONObject().apply {
+        put("apiVersion", 2)
+        put("apiVersionMinor", 0)
+    }
 
     /**
      * Gateway Integration: Identify your gateway and your app's gateway merchant identifier.
@@ -60,13 +63,13 @@ object PaymentsUtil {
     private fun gatewayTokenizationSpecification(): JSONObject {
         if (Constants.PAYMENT_GATEWAY_TOKENIZATION_PARAMETERS.isEmpty()) {
             throw RuntimeException(
-                    "Please edit the Constants.java file to add gateway name and other parameters your " + "processor requires")
+                    "Please edit the Constants.java file to add gateway name and other " +
+                    "parameters your processor requires")
         }
 
         return JSONObject().apply {
             put("type", "PAYMENT_GATEWAY")
-            val parameters = JSONObject(Constants.PAYMENT_GATEWAY_TOKENIZATION_PARAMETERS)
-            put("parameters", parameters)
+            put("parameters", JSONObject(Constants.PAYMENT_GATEWAY_TOKENIZATION_PARAMETERS))
         }
     }
 
@@ -83,17 +86,17 @@ object PaymentsUtil {
      * @see [PaymentMethodTokenizationSpecification](https://developers.google.com/pay/api/android/reference/object.PaymentMethodTokenizationSpecification)
      */
     private fun directTokenizationSpecification(): JSONObject {
-        if ((Constants.DIRECT_TOKENIZATION_PARAMETERS.isEmpty()
-                        || Constants.DIRECT_TOKENIZATION_PUBLIC_KEY.isEmpty())
-                || Constants.DIRECT_TOKENIZATION_PUBLIC_KEY == "REPLACE_ME") {
+        if (Constants.DIRECT_TOKENIZATION_PUBLIC_KEY == "REPLACE_ME" ||
+                (Constants.DIRECT_TOKENIZATION_PARAMETERS.isEmpty() ||
+                 Constants.DIRECT_TOKENIZATION_PUBLIC_KEY.isEmpty())) {
+
             throw RuntimeException(
                     "Please edit the Constants.java file to add protocol version & public key.")
         }
 
         return JSONObject().apply {
             put("type", "DIRECT")
-            val parameters = JSONObject(Constants.DIRECT_TOKENIZATION_PARAMETERS)
-            put("parameters", parameters)
+            put("parameters", JSONObject(Constants.DIRECT_TOKENIZATION_PARAMETERS))
         }
     }
 
@@ -134,13 +137,17 @@ object PaymentsUtil {
     // Optionally, you can add billing address/phone number associated with a CARD payment method.
     private fun baseCardPaymentMethod(): JSONObject {
         return JSONObject().apply {
-            put("type", "CARD")
+
             val parameters = JSONObject().apply {
                 put("allowedAuthMethods", allowedCardAuthMethods)
                 put("allowedCardNetworks", allowedCardNetworks)
                 put("billingAddressRequired", true)
-                put("billingAddressParameters", JSONObject(mapOf("format" to "FULL")))
+                put("billingAddressParameters", JSONObject().apply {
+                    put("format", "FULL")
+                })
             }
+
+            put("type", "CARD")
             put("parameters", parameters)
         }
     }
@@ -168,11 +175,12 @@ object PaymentsUtil {
      */
     fun isReadyToPayRequest(): JSONObject? {
         return try {
-            val isReadyToPayRequest = baseRequest
+            val isReadyToPayRequest = JSONObject(baseRequest.toString())
             isReadyToPayRequest.put(
                     "allowedPaymentMethods", JSONArray().put(baseCardPaymentMethod()))
 
             isReadyToPayRequest
+
         } catch (e: JSONException) {
             null
         }
@@ -196,7 +204,10 @@ object PaymentsUtil {
      * @param activity is the caller's activity.
      */
     fun createPaymentsClient(activity: Activity): PaymentsClient {
-        val walletOptions = Wallet.WalletOptions.Builder().setEnvironment(Constants.PAYMENTS_ENVIRONMENT).build()
+        val walletOptions = Wallet.WalletOptions.Builder()
+                .setEnvironment(Constants.PAYMENTS_ENVIRONMENT)
+                .build()
+
         return Wallet.getPaymentsClient(activity, walletOptions)
     }
 
@@ -228,14 +239,14 @@ object PaymentsUtil {
                 put("allowedPaymentMethods", JSONArray().put(cardPaymentMethod()))
                 put("transactionInfo", getTransactionInfo(price))
                 put("merchantInfo", merchantInfo)
+
                 // An optional shipping address requirement is a top-level property of the
                 // PaymentDataRequest JSON object.
-                put("shippingAddressRequired", true)
                 val shippingAddressParameters = JSONObject().apply {
                     put("phoneNumberRequired", false)
-                    val allowedCountryCodes = JSONArray(Constants.SHIPPING_SUPPORTED_COUNTRIES)
-                    put("allowedCountryCodes", allowedCountryCodes)
+                    put("allowedCountryCodes", JSONArray(Constants.SHIPPING_SUPPORTED_COUNTRIES))
                 }
+                put("shippingAddressRequired", true)
                 put("shippingAddressParameters", shippingAddressParameters)
             }
         } catch (e: JSONException) {
@@ -245,11 +256,12 @@ object PaymentsUtil {
     }
 }
 
-
 /**
  * Converts micros to a string format accepted by [PaymentsUtil.getPaymentDataRequest].
  *
  * @param micros value of the price.
  */
-fun Long.microsToString() = BigDecimal(this).divide(PaymentsUtil.MICROS)
-        .setScale(2, RoundingMode.HALF_EVEN).toString()
+fun Long.microsToString() = BigDecimal(this)
+        .divide(PaymentsUtil.MICROS)
+        .setScale(2, RoundingMode.HALF_EVEN)
+        .toString()

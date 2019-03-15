@@ -38,6 +38,7 @@ import kotlin.math.roundToLong
  * Checkout implementation for the app
  */
 class CheckoutActivity : Activity() {
+
     /**
      * A client for interacting with the Google Pay API.
      *
@@ -96,8 +97,8 @@ class CheckoutActivity : Activity() {
      * @see [](https://developers.google.com/android/reference/com/google/android/gms/wallet/PaymentsClient.html.isReadyToPay
     ) */
     private fun possiblyShowGooglePayButton() {
+
         val isReadyToPayJson = PaymentsUtil.isReadyToPayRequest() ?: return
-        // JSON parsing should be probably made in a background thread in a production app
         val request = IsReadyToPayRequest.fromJson(isReadyToPayJson.toString()) ?: return
 
         // The call to isReadyToPay is asynchronous and returns a Task. We need to provide an
@@ -140,14 +141,15 @@ class CheckoutActivity : Activity() {
      * @see [Getting a result
      * from an Activity](https://developer.android.com/training/basics/intents/result)
      */
-    public override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent) {
+    public override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         when (requestCode) {
             // value passed in AutoResolveHelper
             LOAD_PAYMENT_DATA_REQUEST_CODE -> {
                 when (resultCode) {
                     Activity.RESULT_OK ->
-                        PaymentData.getFromIntent(data)?.let(::handlePaymentSuccess)
-
+                        data?.let { intent ->
+                            PaymentData.getFromIntent(intent)?.let(::handlePaymentSuccess)
+                        }
                     Activity.RESULT_CANCELED -> {
                         // Nothing to do here normally - the user simply cancelled without selecting a
                         // payment method.
@@ -157,10 +159,8 @@ class CheckoutActivity : Activity() {
                         AutoResolveHelper.getStatusFromIntent(data)?.let {
                             handleError(it.statusCode)
                         }
-
                     }
                 }
-
                 // Re-enables the Google Pay payment button.
                 googlePayButton.isClickable = true
             }
@@ -181,6 +181,7 @@ class CheckoutActivity : Activity() {
         try {
             // Token will be null if PaymentDataRequest was not constructed using fromJson(String).
             val paymentMethodData = JSONObject(paymentInformation).getJSONObject("paymentMethodData")
+
             // If the gateway is set to "example", no payment information is returned - instead, the
             // token will only consist of "examplePaymentMethodToken".
             if (paymentMethodData
@@ -188,23 +189,27 @@ class CheckoutActivity : Activity() {
                             .getString("type") == "PAYMENT_GATEWAY" && paymentMethodData
                             .getJSONObject("tokenizationData")
                             .getString("token") == "examplePaymentMethodToken") {
-                val alertDialog = AlertDialog.Builder(this)
+
+                AlertDialog.Builder(this)
                         .setTitle("Warning")
                         .setMessage("Gateway name set to \"example\" - please modify " +
                                 "Constants.java and replace it with your own gateway.")
                         .setPositiveButton("OK", null)
                         .create()
-                alertDialog.show()
+                        .show()
             }
 
             val billingName = paymentMethodData.getJSONObject("info")
                     .getJSONObject("billingAddress").getString("name")
             Log.d("BillingName", billingName)
-            Toast.makeText(this, getString(R.string.payments_show_name, billingName), Toast.LENGTH_LONG)
-                    .show()
+
+            Toast.makeText(this, getString(R.string.payments_show_name, billingName), Toast.LENGTH_LONG).show()
 
             // Logging token string.
-            Log.d("GooglePaymentToken", paymentMethodData.getJSONObject("tokenizationData").getString("token"))
+            Log.d("GooglePaymentToken", paymentMethodData
+                    .getJSONObject("tokenizationData")
+                    .getString("token"))
+
         } catch (e: JSONException) {
             Log.e("handlePaymentSuccess", "Error: " + e.toString())
         }
@@ -226,6 +231,7 @@ class CheckoutActivity : Activity() {
 
     // This method is called when the Pay with Google button is clicked.
     private fun requestPayment() {
+
         // Disables the button to prevent multiple clicks.
         googlePayButton.isClickable = false
 
