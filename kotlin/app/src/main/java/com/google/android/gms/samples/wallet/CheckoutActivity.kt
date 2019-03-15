@@ -119,14 +119,15 @@ class CheckoutActivity : Activity() {
      * @see [Getting a result
      * from an Activity](https://developer.android.com/training/basics/intents/result)
      */
-    public override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent) {
+    public override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         when (requestCode) {
             // value passed in AutoResolveHelper
             LOAD_PAYMENT_DATA_REQUEST_CODE -> {
                 when (resultCode) {
                     Activity.RESULT_OK ->
-                        PaymentData.getFromIntent(data)?.let(::handlePaymentSuccess)
-
+                        data?.let { intent ->
+                            PaymentData.getFromIntent(intent)?.let(::handlePaymentSuccess)
+                        }
                     Activity.RESULT_CANCELED -> {
                         // Nothing to do here normally - the user simply cancelled without selecting a
                         // payment method.
