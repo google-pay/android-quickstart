@@ -20,6 +20,7 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
@@ -119,16 +120,14 @@ public class CheckoutActivity extends Activity {
     // The call to isReadyToPay is asynchronous and returns a Task. We need to provide an
     // OnCompleteListener to be triggered when the result of the call is known.
     Task<Boolean> task = mPaymentsClient.isReadyToPay(request);
-    task.addOnCompleteListener(
+    task.addOnCompleteListener(this,
         new OnCompleteListener<Boolean>() {
           @Override
-          public void onComplete(Task<Boolean> task) {
-            try {
-              boolean result = task.getResult(ApiException.class);
-              setGooglePayAvailable(result);
-            } catch (ApiException exception) {
-              // Process error
-              Log.w("isReadyToPay failed", exception);
+          public void onComplete(@NonNull Task<Boolean> task) {
+            if (task.isSuccessful()) {
+              setGooglePayAvailable(task.getResult());
+            } else {
+              Log.w("isReadyToPay failed", task.getException());
             }
           }
         });

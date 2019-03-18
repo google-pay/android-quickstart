@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 Google Inc.
+ * Copyright 2018 Google Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,14 +20,19 @@ import android.app.Activity
 import android.app.AlertDialog
 import android.content.Intent
 import android.os.Bundle
+import android.text.Html
 import android.util.Log
 import android.view.View
 import android.widget.Toast
 import com.google.android.gms.common.api.ApiException
+import com.google.android.gms.samples.wallet.util.Json
 import com.google.android.gms.wallet.*
 import kotlinx.android.synthetic.main.activity_checkout.*
+import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
+import kotlin.math.roundToLong
+
 
 /**
  * Checkout implementation for the app
@@ -40,8 +45,10 @@ class CheckoutActivity : Activity() {
      * @see [PaymentsClient](https://developers.google.com/android/reference/com/google/android/gms/wallet/PaymentsClient)
      */
     private lateinit var paymentsClient: PaymentsClient
-    private val bikeItem = ItemInfo("Simple Bike", (300 * 1000000).toLong(), R.drawable.bike)
     private val shippingCost = (90 * 1000000).toLong()
+
+    private lateinit var garmentList: JSONArray
+    private lateinit var selectedGarment: JSONObject
 
     /**
      * Arbitrarily-picked constant integer you define to track a request for payment data activity.
@@ -60,7 +67,8 @@ class CheckoutActivity : Activity() {
         setContentView(R.layout.activity_checkout)
 
         // Set up the mock information for our item in the UI.
-        initItemUI()
+        selectedGarment = fetchRandomGarment()
+        displayGarment(selectedGarment)
 
         // Initialize a Google Pay API client for an environment suitable for testing.
         // It's recommended to create the PaymentsClient object inside of the onCreate method.
@@ -68,6 +76,18 @@ class CheckoutActivity : Activity() {
         possiblyShowGooglePayButton()
 
         googlePayButton.setOnClickListener { requestPayment() }
+    }
+
+    private fun displayGarment(garment:JSONObject) {
+        detailTitle.setText(garment.getString("title"))
+        detailPrice.setText("\$${garment.getString("price")}")
+
+        val escapedHtmlText:String = Html.fromHtml(garment.getString("description")).toString()
+        detailDescription.setText(Html.fromHtml(escapedHtmlText))
+
+        val imageUri = "@drawable/${garment.getString("image")}"
+        val imageResource = resources.getIdentifier(imageUri, null, packageName)
+        detailImage.setImageResource(imageResource)
     }
 
     /**
@@ -103,10 +123,12 @@ class CheckoutActivity : Activity() {
      */
     private fun setGooglePayAvailable(available: Boolean) {
         if (available) {
-            googlePayStatusText.visibility = View.GONE
             googlePayButton.visibility = View.VISIBLE
         } else {
-            googlePayStatusText.setText(R.string.googlepay_status_unavailable)
+            Toast.makeText(
+                    this,
+                    "Unfortunately, Google Pay is not available on this device",
+                    Toast.LENGTH_LONG).show();
         }
     }
 
@@ -139,6 +161,7 @@ class CheckoutActivity : Activity() {
                         }
                     }
                 }
+                // Re-enables the Google Pay payment button.
                 googlePayButton.isClickable = true
             }
         }
@@ -214,7 +237,8 @@ class CheckoutActivity : Activity() {
 
         // The price provided to the API should include taxes and shipping.
         // This price is not displayed to the user.
-        val price = (bikeItem.priceMicros + shippingCost).microsToString()
+        val garmentPriceMicros = (selectedGarment.getDouble("price") * 1000000).roundToLong()
+        val price = (garmentPriceMicros + shippingCost).microsToString()
 
         val paymentDataRequestJson = PaymentsUtil.getPaymentDataRequest(price)
         if (paymentDataRequestJson == null) {
@@ -232,9 +256,12 @@ class CheckoutActivity : Activity() {
         }
     }
 
-    private fun initItemUI() {
-        itemName.text = bikeItem.name
-        itemImage.setImageResource(bikeItem.imageResourceId)
-        itemPrice.text = bikeItem.priceMicros.microsToString()
+    private fun fetchRandomGarment() : JSONObject {
+        if (!::garmentList.isInitialized) {
+            garmentList = Json.readFromResources(this, R.raw.tshirts)
+        }
+
+        val randomIndex:Int = Math.round(Math.random() * (garmentList.length() - 1)).toInt()
+        return garmentList.getJSONObject(randomIndex)
     }
 }
