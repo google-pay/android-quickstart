@@ -60,12 +60,11 @@ class CheckoutActivity : Activity() {
         setContentView(R.layout.activity_checkout)
         fetchAndShowRandomGarment()
 
-        // 1. Initialize a Google Pay API client for an environment suitable for testing.
-        // It's recommended to create the PaymentsClient object inside of the onCreate method.
+        // 1. Initialize a Google Pay API client specifying the environment to operate on.
 
 
         // 2. Implement the method that determines whether or not to show the Google Pay button
-        possiblyShowGooglePayButton()
+        // possiblyShowGooglePayButton()
 
         // Add click listener to Google Pay button
         googlePayButton.setOnClickListener { requestPayment() }
@@ -79,11 +78,10 @@ class CheckoutActivity : Activity() {
     ) */
     private fun possiblyShowGooglePayButton() {
 
-        // 3. Populate fields under the readyToPay request and turn it
-        // into a json string before calling isReadyToPay
+        // 3. Populate the fields under the readyToPay request before calling isReadyToPay
         // val isReadyToPayJson = ...
 
-        // 4. Use the previously formed object to call isReeadyToPay and capture the result
+        // 4. Use the previously created object to call isReadyToPay and capture the result
         // val task = paymentsClient.isReadyToPay(request)
         // task.addOnCompleteListener...: setGooglePayAvailable(available)
     }
@@ -96,14 +94,13 @@ class CheckoutActivity : Activity() {
      * @param available isReadyToPay API response.
      */
     private fun setGooglePayAvailable(available: Boolean) {
-        // 5. Show the Google Pay button if the user is able to pay using Google Pay
+        // 5. Show the Google Pay button if the user is able to pay using Google Pay.
         // Otherwise, update your UI and show notifications accordingly.
     }
 
     private fun requestPayment() {
-
         // 6. Construct the payment data request object and initiate the payment transaction
-        // by calling loadPaymentData on the payments client.
+        // by calling loadPaymentData.
     }
 
     /**
@@ -121,11 +118,11 @@ class CheckoutActivity : Activity() {
             LOAD_PAYMENT_DATA_REQUEST_CODE -> {
                 when (resultCode) {
                     Activity.RESULT_OK -> {
-                        // 7. Process the result of the transaction upon successful completion
+                        // 7. Process the result of the transaction upon successful completion.
                     }
                     Activity.RESULT_CANCELED -> {
-                        // Nothing to do here normally - the user simply cancelled without selecting a
-                        // payment method.
+                        // Nothing to do here normally - the user simply cancelled
+                        // without selecting a payment method.
                     }
 
                     AutoResolveHelper.RESULT_ERROR -> {
@@ -149,8 +146,8 @@ class CheckoutActivity : Activity() {
      * Data](https://developers.google.com/pay/api/android/reference/object.PaymentData)
      */
     private fun handlePaymentSuccess(paymentData: PaymentData) {
-        // 8. Inspect the resulting payload of the transaction and perform any necessary
-        // action as a result of the transaction
+        // 8. Inspect the resulting payload and update your application accordingly.
+        // For example, you may want to notify the user about the result of the transaction.
         // val paymentInformation = paymentData.toJson() ?: return
     }
 
