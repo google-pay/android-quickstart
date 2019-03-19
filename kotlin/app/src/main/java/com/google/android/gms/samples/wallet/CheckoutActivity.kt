@@ -78,18 +78,6 @@ class CheckoutActivity : Activity() {
         googlePayButton.setOnClickListener { requestPayment() }
     }
 
-    private fun displayGarment(garment:JSONObject) {
-        detailTitle.setText(garment.getString("title"))
-        detailPrice.setText("\$${garment.getString("price")}")
-
-        val escapedHtmlText:String = Html.fromHtml(garment.getString("description")).toString()
-        detailDescription.setText(Html.fromHtml(escapedHtmlText))
-
-        val imageUri = "@drawable/${garment.getString("image")}"
-        val imageResource = resources.getIdentifier(imageUri, null, packageName)
-        detailImage.setImageResource(imageResource)
-    }
-
     /**
      * Determine the viewer's ability to pay with a payment method supported by your app and display a
      * Google Pay payment button.
@@ -129,6 +117,32 @@ class CheckoutActivity : Activity() {
                     this,
                     "Unfortunately, Google Pay is not available on this device",
                     Toast.LENGTH_LONG).show();
+        }
+    }
+    
+    private fun requestPayment() {
+
+        // Disables the button to prevent multiple clicks.
+        googlePayButton.isClickable = false
+
+        // The price provided to the API should include taxes and shipping.
+        // This price is not displayed to the user.
+        val garmentPriceMicros = (selectedGarment.getDouble("price") * 1000000).roundToLong()
+        val price = (garmentPriceMicros + shippingCost).microsToString()
+
+        val paymentDataRequestJson = PaymentsUtil.getPaymentDataRequest(price)
+        if (paymentDataRequestJson == null) {
+            Log.e("RequestPayment", "Can't fetch payment data request")
+            return
+        }
+        val request = PaymentDataRequest.fromJson(paymentDataRequestJson.toString())
+
+        // Since loadPaymentData may show the UI asking the user to select a payment method, we use
+        // AutoResolveHelper to wait for the user interacting with it. Once completed,
+        // onActivityResult will be called with the result.
+        if (request != null) {
+            AutoResolveHelper.resolveTask(
+                    paymentsClient.loadPaymentData(request), this, LOAD_PAYMENT_DATA_REQUEST_CODE)
         }
     }
 
@@ -229,33 +243,6 @@ class CheckoutActivity : Activity() {
         Log.w("loadPaymentData failed", String.format("Error code: %d", statusCode))
     }
 
-    // This method is called when the Pay with Google button is clicked.
-    private fun requestPayment() {
-
-        // Disables the button to prevent multiple clicks.
-        googlePayButton.isClickable = false
-
-        // The price provided to the API should include taxes and shipping.
-        // This price is not displayed to the user.
-        val garmentPriceMicros = (selectedGarment.getDouble("price") * 1000000).roundToLong()
-        val price = (garmentPriceMicros + shippingCost).microsToString()
-
-        val paymentDataRequestJson = PaymentsUtil.getPaymentDataRequest(price)
-        if (paymentDataRequestJson == null) {
-            Log.e("RequestPayment", "Can't fetch payment data request")
-            return
-        }
-        val request = PaymentDataRequest.fromJson(paymentDataRequestJson.toString())
-
-        // Since loadPaymentData may show the UI asking the user to select a payment method, we use
-        // AutoResolveHelper to wait for the user interacting with it. Once completed,
-        // onActivityResult will be called with the result.
-        if (request != null) {
-            AutoResolveHelper.resolveTask(
-                    paymentsClient.loadPaymentData(request), this, LOAD_PAYMENT_DATA_REQUEST_CODE)
-        }
-    }
-
     private fun fetchRandomGarment() : JSONObject {
         if (!::garmentList.isInitialized) {
             garmentList = Json.readFromResources(this, R.raw.tshirts)
@@ -263,5 +250,17 @@ class CheckoutActivity : Activity() {
 
         val randomIndex:Int = Math.round(Math.random() * (garmentList.length() - 1)).toInt()
         return garmentList.getJSONObject(randomIndex)
+    }
+
+    private fun displayGarment(garment:JSONObject) {
+        detailTitle.setText(garment.getString("title"))
+        detailPrice.setText("\$${garment.getString("price")}")
+
+        val escapedHtmlText:String = Html.fromHtml(garment.getString("description")).toString()
+        detailDescription.setText(Html.fromHtml(escapedHtmlText))
+
+        val imageUri = "@drawable/${garment.getString("image")}"
+        val imageResource = resources.getIdentifier(imageUri, null, packageName)
+        detailImage.setImageResource(imageResource)
     }
 }
