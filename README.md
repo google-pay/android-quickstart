@@ -30,3 +30,7 @@ To be able to fully test the API, you will also need to:
 -   [Add a payment method to your Google Account](https://support.google.com/pay/answer/7625139).
 -   [Install and add a payment method to the Google Pay app](https://support.google.com/pay/answer/7625139?co=GENIE.Platform%3DAndroid) (optional).
 -   Consult your payment processor's documentation to learn about whether they support the Google Pay API.
+
+## Support
+
+For any questions or issues, please refer to our [How to get help](https://developers.google.com/pay/api/support) page. 
