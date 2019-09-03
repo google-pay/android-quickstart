@@ -76,16 +76,16 @@ public class Constants {
   /**
    * Required by the API, but not visible to the user.
    *
+   * @value #COUNTRY_CODE Your local country
+   */
+  public static final String COUNTRY_CODE = "US";
+
+  /**
+   * Required by the API, but not visible to the user.
+   *
    * @value #CURRENCY_CODE Your local currency
    */
   public static final String CURRENCY_CODE = "USD";
-
-    /**
-     * Required by the API, but not visible to the user.
-     *
-     * @value #COUNTRY_CODE Your local country
-     */
-    public static final String COUNTRY_CODE = "US";
 
   /**
    * Supported countries for shipping (use ISO 3166-1 alpha-2 country codes). Relevant only when

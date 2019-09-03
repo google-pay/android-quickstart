@@ -223,6 +223,7 @@ object PaymentsUtil {
         return JSONObject().apply {
             put("totalPrice", price)
             put("totalPriceStatus", "FINAL")
+            put("countryCode", Constants.COUNTRY_CODE)
             put("currencyCode", Constants.CURRENCY_CODE)
         }
     }
