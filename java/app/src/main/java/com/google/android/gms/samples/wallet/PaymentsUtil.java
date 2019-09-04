@@ -220,6 +220,7 @@ public class PaymentsUtil {
     JSONObject transactionInfo = new JSONObject();
     transactionInfo.put("totalPrice", price);
     transactionInfo.put("totalPriceStatus", "FINAL");
+    transactionInfo.put("countryCode", Constants.COUNTRY_CODE);
     transactionInfo.put("currencyCode", Constants.CURRENCY_CODE);
 
     return transactionInfo;
