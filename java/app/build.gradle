@@ -1,15 +1,15 @@
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 28
+    compileSdkVersion 26
     defaultConfig {
         applicationId "com.google.android.gms.samples.wallet"
 
         /* Google Payment API is not supported in SDK versions lower than 19. This example requires
         this version due to use of newer constructs like Optional. */
-        minSdkVersion 24
+        minSdkVersion 26
 
-        targetSdkVersion 28
+        targetSdkVersion 26
         versionCode 1
         versionName "1.0"
     }
@@ -32,4 +32,7 @@ dependencies {
      See https://developers.google.com/pay/api/android/guides/setup#dependencies for more info.
      */
     implementation 'com.google.android.gms:play-services-wallet:16.0.0'
+    implementation 'com.android.support:appcompat-v7:26.+'
+    implementation 'com.android.support.constraint:constraint-layout:1.1.3'
+    //implementation "com.android.support:support-compat:28.0.0"
 }

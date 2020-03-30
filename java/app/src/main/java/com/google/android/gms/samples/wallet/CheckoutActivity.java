@@ -18,15 +18,25 @@ package com.google.android.gms.samples.wallet;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.Notification;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
+import android.content.Context;
 import android.content.Intent;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.RemoteViews;
 import android.widget.TextView;
 import android.widget.Toast;
-import com.google.android.gms.common.api.ApiException;
+
 import com.google.android.gms.common.api.Status;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
@@ -36,6 +46,7 @@ import com.google.android.gms.wallet.PaymentData;
 import com.google.android.gms.wallet.PaymentDataRequest;
 import com.google.android.gms.wallet.PaymentsClient;
 import java.util.Optional;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -43,6 +54,7 @@ import org.json.JSONObject;
  * Checkout implementation for the app
  */
 public class CheckoutActivity extends Activity {
+
   /**
    * A client for interacting with the Google Pay API.
    *
@@ -70,6 +82,7 @@ public class CheckoutActivity extends Activity {
 
   private ItemInfo mBikeItem = new ItemInfo("Simple Bike", 300 * 1000000, R.drawable.bike);
   private long mShippingCost = 90 * 1000000;
+
   /**
    * Initialize the Google Pay API on creation of the activity
    *
@@ -98,6 +111,33 @@ public class CheckoutActivity extends Activity {
             requestPayment(view);
           }
         });
+  }
+
+  /**
+   * Add a menu option to trigger a notification
+   */
+  @Override
+  public boolean onCreateOptionsMenu(Menu menu) {
+    MenuInflater inflater = getMenuInflater();
+    inflater.inflate(R.menu.menus, menu);
+
+    // return true so that the menu pop up is opened
+    return true;
+  }
+
+  /**
+   * Handling menu options
+   */
+  @Override
+  public boolean onOptionsItemSelected(MenuItem item) {
+    // Handle item selection
+    switch (item.getItemId()) {
+      case R.id.send_notification:
+        PaymentNotification.trigger(getBaseContext(), 2);
+        return true;
+      default:
+        return super.onOptionsItemSelected(item);
+    }
   }
 
   /**
