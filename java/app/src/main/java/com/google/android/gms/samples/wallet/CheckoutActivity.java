@@ -35,6 +35,8 @@ import com.google.android.gms.wallet.IsReadyToPayRequest;
 import com.google.android.gms.wallet.PaymentData;
 import com.google.android.gms.wallet.PaymentDataRequest;
 import com.google.android.gms.wallet.PaymentsClient;
+
+import java.util.Locale;
 import java.util.Optional;
 
 import org.json.JSONArray;
@@ -113,7 +115,8 @@ public class CheckoutActivity extends Activity {
 
   private void displayGarment(JSONObject garment) throws JSONException {
     detailTitle.setText(garment.getString("title"));
-    detailPrice.setText(String.format("$%.2f", garment.getDouble("price")));
+    detailPrice.setText(
+            String.format(Locale.getDefault(), "$%.2f", garment.getDouble("price")));
 
     final String escapedHtmlText = Html.fromHtml(garment.getString("description")).toString();
     detailDescription.setText(Html.fromHtml(escapedHtmlText));
@@ -169,10 +172,7 @@ public class CheckoutActivity extends Activity {
     if (available) {
       googlePayButton.setVisibility(View.VISIBLE);
     } else {
-      Toast.makeText(
-              this,
-              "Unfortunately, Google Pay is not available on this device",
-              Toast.LENGTH_LONG).show();
+      Toast.makeText(this, R.string.googlepay_status_unavailable, Toast.LENGTH_LONG).show();
     }
   }
 
