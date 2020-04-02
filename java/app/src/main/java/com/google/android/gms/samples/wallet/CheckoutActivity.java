@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 Google Inc.
+ * Copyright 2020 Google Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,7 +23,6 @@ import android.os.Bundle;
 import android.text.Html;
 import android.util.Log;
 import android.view.View;
-import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -128,8 +127,9 @@ public class CheckoutActivity extends Activity {
    * Determine the viewer's ability to pay with a payment method supported by your app and display a
    * Google Pay payment button.
    *
-   * @see <a href=
-   *     "https://developers.google.com/android/reference/com/google/android/gms/wallet/PaymentsClient.html#isReadyToPay(com.google.android.gms.wallet.IsReadyToPayRequest)">PaymentsClient#IsReadyToPay</a>
+   * @see <a href="https://developers.google.com/android/reference/com/google/android/gms/wallet/
+   *      PaymentsClient.html#isReadyToPay(com.google.android.gms.wallet.
+   *      IsReadyToPayRequest)">PaymentsClient#IsReadyToPay</a>
    */
   private void possiblyShowGooglePayButton() {
     final Optional<JSONObject> isReadyToPayJson = PaymentsUtil.getIsReadyToPayRequest();
@@ -183,7 +183,7 @@ public class CheckoutActivity extends Activity {
    * @param resultCode Result code returned by the Google Pay API.
    * @param data Intent from the Google Pay API containing payment or error data.
    * @see <a href="https://developer.android.com/training/basics/intents/result">Getting a result
-   *     from an Activity</a>
+   *      from an Activity</a>
    */
   @Override
   public void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -191,18 +191,22 @@ public class CheckoutActivity extends Activity {
         // value passed in AutoResolveHelper
       case LOAD_PAYMENT_DATA_REQUEST_CODE:
         switch (resultCode) {
+
           case Activity.RESULT_OK:
             PaymentData paymentData = PaymentData.getFromIntent(data);
             handlePaymentSuccess(paymentData);
             break;
+
           case Activity.RESULT_CANCELED:
             // Nothing to here normally - the user simply cancelled without selecting a
             // payment method.
             break;
+
           case AutoResolveHelper.RESULT_ERROR:
             Status status = AutoResolveHelper.getStatusFromIntent(data);
             handleError(status.getStatusCode());
             break;
+
           default:
             // Do nothing.
         }
@@ -218,50 +222,41 @@ public class CheckoutActivity extends Activity {
    * requested information, such as billing and shipping address.
    *
    * @param paymentData A response object returned by Google after a payer approves payment.
-   * @see <a
-   *     href="https://developers.google.com/pay/api/android/reference/object#PaymentData">Payment
-   *     Data</a>
+   * @see <a href="https://developers.google.com/pay/api/android/reference/
+   *      object#PaymentData">PaymentData</a>
    */
   private void handlePaymentSuccess(PaymentData paymentData) {
-    String paymentInformation = paymentData.toJson();
 
     // Token will be null if PaymentDataRequest was not constructed using fromJson(String).
-    if (paymentInformation == null) {
-      return;
-    }
-    JSONObject paymentMethodData;
+    final String paymentInfo = paymentData.toJson();
+    if (paymentInfo == null) return;
 
     try {
-      paymentMethodData = new JSONObject(paymentInformation).getJSONObject("paymentMethodData");
+      JSONObject paymentMethodData = new JSONObject(paymentInfo).getJSONObject("paymentMethodData");
       // If the gateway is set to "example", no payment information is returned - instead, the
       // token will only consist of "examplePaymentMethodToken".
-      if (paymentMethodData
-              .getJSONObject("tokenizationData")
-              .getString("type")
-              .equals("PAYMENT_GATEWAY")
-          && paymentMethodData
-              .getJSONObject("tokenizationData")
-              .getString("token")
-              .equals("examplePaymentMethodToken")) {
-        AlertDialog alertDialog =
-            new AlertDialog.Builder(this)
+
+      final JSONObject tokenizationData = paymentMethodData.getJSONObject("tokenizationData");
+      final String tokenizationType = tokenizationData.getString("type");
+      final String token = tokenizationData.getString("token");
+
+      if ("PAYMENT_GATEWAY".equals(tokenizationType) && "examplePaymentMethodToken".equals(token)) {
+        new AlertDialog.Builder(this)
                 .setTitle("Warning")
-                .setMessage(
-                    "Gateway name set to \"example\" - please modify "
-                        + "Constants.java and replace it with your own gateway.")
+                .setMessage(getString(R.string.gateway_replace_name_example))
                 .setPositiveButton("OK", null)
-                .create();
-        alertDialog.show();
+                .create()
+                .show();
       }
 
-      String billingName =
-          paymentMethodData.getJSONObject("info").getJSONObject("billingAddress").getString("name");
-      Log.d("BillingName", billingName);
-      Toast.makeText(this, getString(R.string.payments_show_name, billingName), Toast.LENGTH_LONG)
-          .show();
+      final JSONObject info = paymentMethodData.getJSONObject("info");
+      final String billingName = info.getJSONObject("billingAddress").getString("name");
+      Toast.makeText(
+              this, getString(R.string.payments_show_name, billingName),
+              Toast.LENGTH_LONG).show();
 
       // Logging token string.
-      Log.d("GooglePaymentToken", paymentMethodData.getJSONObject("tokenizationData").getString("token"));
+      Log.d("Google Pay token: ", token);
 
     } catch (JSONException e) {
       throw new RuntimeException("The selected garment cannot be parsed from the list of elements");
@@ -273,16 +268,14 @@ public class CheckoutActivity extends Activity {
    * only logging is required.
    *
    * @param statusCode will hold the value of any constant from CommonStatusCode or one of the
-   *     WalletConstants.ERROR_CODE_* constants.
-   * @see <a
-   *     href="https://developers.google.com/android/reference/com/google/android/gms/wallet/WalletConstants#constant-summary">
-   *     Wallet Constants Library</a>
+   *                   WalletConstants.ERROR_CODE_* constants.
+   * @see <a href="https://developers.google.com/android/reference/com/google/android/gms/wallet/
+   *      WalletConstants#constant-summary">Wallet Constants Library</a>
    */
   private void handleError(int statusCode) {
     Log.w("loadPaymentData failed", String.format("Error code: %d", statusCode));
   }
 
-  // This method is called when the Pay with Google button is clicked.
   public void requestPayment(View view) {
 
     // Disables the button to prevent multiple clicks.
@@ -317,10 +310,13 @@ public class CheckoutActivity extends Activity {
   }
 
   private JSONObject fetchRandomGarment() {
+
+    // Only load the list of items if it has not been loaded before
     if (garmentList == null) {
       garmentList = Json.readFromResources(this, R.raw.tshirts);
     }
 
+    // Take a random element from the list
     int randomIndex = Math.toIntExact(Math.round(Math.random() * (garmentList.length() - 1)));
     try {
       return garmentList.getJSONObject(randomIndex);
