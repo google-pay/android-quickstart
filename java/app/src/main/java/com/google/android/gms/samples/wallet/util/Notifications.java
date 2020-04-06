@@ -1,4 +1,4 @@
-package com.google.android.gms.samples.wallet;
+package com.google.android.gms.samples.wallet.util;
 
 import android.app.Notification;
 import android.app.NotificationChannel;

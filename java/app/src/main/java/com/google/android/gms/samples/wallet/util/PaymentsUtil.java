@@ -14,14 +14,15 @@
  * limitations under the License.
  */
 
-package com.google.android.gms.samples.wallet;
+package com.google.android.gms.samples.wallet.util;
 
 import android.app.Activity;
+
+import com.google.android.gms.samples.wallet.Constants;
 import com.google.android.gms.wallet.PaymentsClient;
 import com.google.android.gms.wallet.Wallet;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.util.HashMap;
 import java.util.Optional;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -203,6 +204,7 @@ public class PaymentsUtil {
           "allowedPaymentMethods", new JSONArray().put(getBaseCardPaymentMethod()));
 
       return Optional.of(isReadyToPayRequest);
+
     } catch (JSONException e) {
       return Optional.empty();
     }

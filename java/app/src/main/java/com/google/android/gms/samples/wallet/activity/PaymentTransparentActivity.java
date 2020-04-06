@@ -1,4 +1,4 @@
-package com.google.android.gms.samples.wallet;
+package com.google.android.gms.samples.wallet.activity;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -9,6 +9,9 @@ import android.util.Log;
 import android.widget.Toast;
 
 import com.google.android.gms.common.api.Status;
+import com.google.android.gms.samples.wallet.util.Notifications;
+import com.google.android.gms.samples.wallet.util.PaymentsUtil;
+import com.google.android.gms.samples.wallet.R;
 import com.google.android.gms.wallet.AutoResolveHelper;
 import com.google.android.gms.wallet.PaymentData;
 import com.google.android.gms.wallet.PaymentDataRequest;
@@ -150,7 +153,7 @@ public class PaymentTransparentActivity extends AppCompatActivity {
             Log.d("GooglePaymentToken", paymentMethodData.getJSONObject("tokenizationData").getString("token"));
 
             // close the notification
-            PaymentNotification.remove(this);
+            Notifications.remove(this);
         } catch (JSONException e) {
             Log.e("handlePaymentSuccess", "Error: " + e.toString());
             return;
