@@ -17,14 +17,10 @@
 package com.google.android.gms.samples.wallet.activity;
 
 import android.app.Activity;
-import android.app.AlertDialog;
-import android.app.Notification;
 import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
 import android.widget.Toast;
 
-import com.google.android.gms.common.api.Status;
 import com.google.android.gms.samples.wallet.util.Notifications;
 import com.google.android.gms.samples.wallet.util.PaymentsUtil;
 import com.google.android.gms.samples.wallet.R;
@@ -45,155 +41,114 @@ import androidx.appcompat.app.AppCompatActivity;
  */
 public class PaymentTransparentActivity extends AppCompatActivity {
 
-    /**
-     * Arbitrarily-picked constant integer you define to track a request for payment data activity.
-     *
-     * @value #LOAD_PAYMENT_DATA_REQUEST_CODE
-     */
-    private static final int LOAD_PAYMENT_DATA_REQUEST_CODE = 991;
-    /**
-     * A client for interacting with the Google Pay API.
-     *
-     * @see <a
-     * href="https://developers.google.com/android/reference/com/google/android/gms/wallet/PaymentsClient">PaymentsClient</a>
-     */
-    private PaymentsClient mPaymentsClient;
+  // Arbitrarily-picked constant integer you define to track a request for payment data activity.
+  private static final int LOAD_PAYMENT_DATA_REQUEST_CODE = 991;
 
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_transparent);
+  // A client for interacting with the Google Pay API.
+  private PaymentsClient paymentsClient;
 
-        // Dismiss the notification UI if the activity was opened from a notification
-        if(Notifications.ACTION_PAY_GOOGLE_PAY.equals(getIntent().getAction())){
-            sendBroadcast(new Intent(Intent.ACTION_CLOSE_SYSTEM_DIALOGS));
-        }
+  @Override
+  protected void onCreate(Bundle savedInstanceState) {
+    super.onCreate(savedInstanceState);
+    setContentView(R.layout.activity_transparent);
 
-        // initialise the client
-        mPaymentsClient = PaymentsUtil.createPaymentsClient(this);
-
-        // The price provided to the API is passed via intent
-        // (but can be passed on in some other ways too)
-        // additional parameters could be passed via intent too
-        Intent intent = getIntent();
-        String price = intent.getStringExtra("price");
-
-        // TransactionInfo transaction = PaymentsUtil.createTransaction(price);
-        Optional<JSONObject> paymentDataRequestJson = PaymentsUtil.getPaymentDataRequest(price);
-        if (!paymentDataRequestJson.isPresent()) {
-            return;
-        }
-        PaymentDataRequest request =
-                PaymentDataRequest.fromJson(paymentDataRequestJson.get().toString());
-
-        // Since loadPaymentData may show the UI asking the user to select a payment method, we use
-        // AutoResolveHelper to wait for the user interacting with it. Once completed,
-        // onActivityResult will be called with the result.
-        if (request != null) {
-            AutoResolveHelper.resolveTask(
-                    mPaymentsClient.loadPaymentData(request), this, LOAD_PAYMENT_DATA_REQUEST_CODE);
-        }
-
+    // Dismiss the notification UI if the activity was opened from a notification
+    if (Notifications.ACTION_PAY_GOOGLE_PAY.equals(getIntent().getAction())) {
+      sendBroadcast(new Intent(Intent.ACTION_CLOSE_SYSTEM_DIALOGS));
     }
 
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        switch (requestCode) {
-            // value passed in AutoResolveHelper
-            case LOAD_PAYMENT_DATA_REQUEST_CODE:
-                switch (resultCode) {
-                    case Activity.RESULT_OK:
-                        PaymentData paymentData = PaymentData.getFromIntent(data);
-                        handlePaymentSuccess(paymentData);
-                        break;
-                    case Activity.RESULT_CANCELED:
-                        // Nothing to here normally - the user simply cancelled without selecting a
-                        // payment method.
-                        break;
-                    case AutoResolveHelper.RESULT_ERROR:
-                        Status status = AutoResolveHelper.getStatusFromIntent(data);
-                        handleError(status.getStatusCode());
-                        break;
-                    default:
-                        // Do nothing.
-                }
+    // Initialise the payments client
+    paymentsClient = PaymentsUtil.createPaymentsClient(this);
+    startPayment();
+  }
 
-                // close the activity - may be handled differently based on result
-                finish();
+  /**
+   * Handle a resolved activity from the Google Pay payment sheet.
+   *
+   * @param requestCode Request code originally supplied to AutoResolveHelper in requestPayment().
+   * @param resultCode Result code returned by the Google Pay API.
+   * @param data Intent from the Google Pay API containing payment or error data.
+   * @see <a href="https://developer.android.com/training/basics/intents/result">Getting a result
+   *      from an Activity</a>
+   */
+  @Override
+  public void onActivityResult(int requestCode, int resultCode, Intent data) {
 
-                break;
+    switch (requestCode) {
+
+      case LOAD_PAYMENT_DATA_REQUEST_CODE:
+        switch (resultCode) {
+
+          case Activity.RESULT_OK:
+            PaymentData paymentData = PaymentData.getFromIntent(data);
+            handlePaymentSuccess(paymentData);
+            break;
+
+          case Activity.RESULT_CANCELED:
+            // The user simply cancelled without selecting a payment method.
+            break;
+
+          case AutoResolveHelper.RESULT_ERROR:
+            // Get more details on the error with – AutoResolveHelper.getStatusFromIntent(data);
+            break;
         }
+
+        // Close the activity
+        finish();
+    }
+  }
+
+  private void startPayment() {
+
+    // Fetch the price based on the user selection
+    long priceCents = getIntent().getLongExtra(Notifications.OPTION_PRICE_EXTRA, 2500L);
+
+    // TransactionInfo transaction = PaymentsUtil.createTransaction(price);
+    Optional<JSONObject> paymentDataRequestJson = PaymentsUtil.getPaymentDataRequest(priceCents);
+    if (!paymentDataRequestJson.isPresent()) {
+      return;
     }
 
-    /**
-     * PaymentData response object contains the payment information, as well as any additional
-     * requested information, such as billing and shipping address.
-     *
-     * @param paymentData A response object returned by Google after a payer approves payment.
-     * @see <a
-     *     href="https://developers.google.com/pay/api/android/reference/object#PaymentData">Payment
-     *     Data</a>
-     */
-    private void handlePaymentSuccess(PaymentData paymentData) {
-        String paymentInformation = paymentData.toJson();
+    PaymentDataRequest request =
+        PaymentDataRequest.fromJson(paymentDataRequestJson.get().toString());
 
-        // Token will be null if PaymentDataRequest was not constructed using fromJson(String).
-        if (paymentInformation == null) {
-            return;
-        }
-        JSONObject paymentMethodData;
+    if (request != null) {
+      AutoResolveHelper.resolveTask(
+          paymentsClient.loadPaymentData(request),
+          this, LOAD_PAYMENT_DATA_REQUEST_CODE);
+    }
+  }
 
-        try {
-            paymentMethodData = new JSONObject(paymentInformation).getJSONObject("paymentMethodData");
-            // If the gateway is set to "example", no payment information is returned - instead, the
-            // token will only consist of "examplePaymentMethodToken".
-            if (paymentMethodData
-                    .getJSONObject("tokenizationData")
-                    .getString("type")
-                    .equals("PAYMENT_GATEWAY")
-                    && paymentMethodData
-                    .getJSONObject("tokenizationData")
-                    .getString("token")
-                    .equals("examplePaymentMethodToken")) {
-                AlertDialog alertDialog =
-                        new AlertDialog.Builder(this)
-                                .setTitle("Warning")
-                                .setMessage(
-                                        "Gateway name set to \"example\" - please modify "
-                                                + "Constants.java and replace it with your own gateway.")
-                                .setPositiveButton("OK", null)
-                                .create();
-                alertDialog.show();
-            }
+  /**
+   * PaymentData response object contains the payment information, as well as any additional
+   * requested information, such as billing and shipping address.
+   *
+   * @param paymentData A response object returned by Google after a payer approves payment.
+   * @see <a href="https://developers.google.com/pay/api/android/reference/
+   *      object#PaymentData">PaymentData</a>
+   */
+  private void handlePaymentSuccess(PaymentData paymentData) {
 
-            String billingName =
-                    paymentMethodData.getJSONObject("info").getJSONObject("billingAddress").getString("name");
-            Log.d("BillingName", billingName);
-            Toast.makeText(this, getString(R.string.payments_show_name, billingName), Toast.LENGTH_LONG)
-                    .show();
-
-            // Logging token string.
-            Log.d("GooglePaymentToken", paymentMethodData.getJSONObject("tokenizationData").getString("token"));
-
-            // close the notification
-            Notifications.remove(this);
-        } catch (JSONException e) {
-            Log.e("handlePaymentSuccess", "Error: " + e.toString());
-            return;
-        }
+    // Token will be null if PaymentDataRequest was not constructed using fromJson(String).
+    final String paymentInfo = paymentData.toJson();
+    if (paymentInfo == null) {
+      return;
     }
 
-    /**
-     * At this stage, the user has already seen a popup informing them an error occurred. Normally,
-     * only logging is required.
-     *
-     * @param statusCode will hold the value of any constant from CommonStatusCode or one of the
-     *     WalletConstants.ERROR_CODE_* constants.
-     * @see <a
-     *     href="https://developers.google.com/android/reference/com/google/android/gms/wallet/WalletConstants#constant-summary">
-     *     Wallet Constants Library</a>
-     */
-    private void handleError(int statusCode) {
-        Log.w("loadPaymentData failed", String.format("Error code: %d", statusCode));
+    // Remove the payment notification
+    Notifications.remove(this);
+
+    try {
+      JSONObject paymentMethodData = new JSONObject(paymentInfo).getJSONObject("paymentMethodData");
+
+      final JSONObject info = paymentMethodData.getJSONObject("info");
+      final String billingName = info.getJSONObject("billingAddress").getString("name");
+      Toast.makeText(
+          this, getString(R.string.payments_show_name, billingName),
+          Toast.LENGTH_LONG).show();
+
+    } catch (JSONException e) {
+      throw new RuntimeException("The selected garment cannot be parsed from the list of elements");
     }
+  }
 }
