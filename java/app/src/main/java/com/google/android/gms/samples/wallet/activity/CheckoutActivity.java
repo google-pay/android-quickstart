@@ -109,6 +109,73 @@ public class CheckoutActivity extends AppCompatActivity {
     possiblyShowGooglePayButton();
   }
 
+  /**
+   * Add a menu option to trigger a notification
+   */
+  @Override
+  public boolean onCreateOptionsMenu(Menu menu) {
+    MenuInflater inflater = getMenuInflater();
+    inflater.inflate(R.menu.menus, menu);
+
+    // return true so that the menu pop up is opened
+    return true;
+  }
+
+  /**
+   * Handling menu options
+   */
+  @Override
+  public boolean onOptionsItemSelected(MenuItem item) {
+    // Handle item selection
+    switch (item.getItemId()) {
+      case R.id.send_notification:
+        Notifications.triggerPaymentNotification(this);
+        return true;
+      default:
+        return super.onOptionsItemSelected(item);
+    }
+  }
+
+  /**
+   * Handle a resolved activity from the Google Pay payment sheet.
+   *
+   * @param requestCode Request code originally supplied to AutoResolveHelper in requestPayment().
+   * @param resultCode Result code returned by the Google Pay API.
+   * @param data Intent from the Google Pay API containing payment or error data.
+   * @see <a href="https://developer.android.com/training/basics/intents/result">Getting a result
+   *      from an Activity</a>
+   */
+  @Override
+  public void onActivityResult(int requestCode, int resultCode, Intent data) {
+    switch (requestCode) {
+      // value passed in AutoResolveHelper
+      case LOAD_PAYMENT_DATA_REQUEST_CODE:
+        switch (resultCode) {
+
+          case Activity.RESULT_OK:
+            PaymentData paymentData = PaymentData.getFromIntent(data);
+            handlePaymentSuccess(paymentData);
+            break;
+
+          case Activity.RESULT_CANCELED:
+            // Nothing to here normally - the user simply cancelled without selecting a
+            // payment method.
+            break;
+
+          case AutoResolveHelper.RESULT_ERROR:
+            Status status = AutoResolveHelper.getStatusFromIntent(data);
+            handleError(status.getStatusCode());
+            break;
+
+          default:
+            // Do nothing.
+        }
+
+        // Re-enables the Google Pay payment button.
+        googlePayButton.setClickable(true);
+    }
+  }
+
   private void initializeUi() {
 
     // Dismiss the notification UI if the activity was opened from a notification
@@ -217,47 +284,6 @@ public class CheckoutActivity extends AppCompatActivity {
       googlePayButton.setVisibility(View.VISIBLE);
     } else {
       Toast.makeText(this, R.string.googlepay_status_unavailable, Toast.LENGTH_LONG).show();
-    }
-  }
-
-  /**
-   * Handle a resolved activity from the Google Pay payment sheet.
-   *
-   * @param requestCode Request code originally supplied to AutoResolveHelper in requestPayment().
-   * @param resultCode Result code returned by the Google Pay API.
-   * @param data Intent from the Google Pay API containing payment or error data.
-   * @see <a href="https://developer.android.com/training/basics/intents/result">Getting a result
-   *      from an Activity</a>
-   */
-  @Override
-  public void onActivityResult(int requestCode, int resultCode, Intent data) {
-    switch (requestCode) {
-        // value passed in AutoResolveHelper
-      case LOAD_PAYMENT_DATA_REQUEST_CODE:
-        switch (resultCode) {
-
-          case Activity.RESULT_OK:
-            PaymentData paymentData = PaymentData.getFromIntent(data);
-            handlePaymentSuccess(paymentData);
-            break;
-
-          case Activity.RESULT_CANCELED:
-            // Nothing to here normally - the user simply cancelled without selecting a
-            // payment method.
-            break;
-
-          case AutoResolveHelper.RESULT_ERROR:
-            Status status = AutoResolveHelper.getStatusFromIntent(data);
-            handleError(status.getStatusCode());
-            break;
-
-          default:
-            // Do nothing.
-        }
-
-        // Re-enables the Google Pay payment button.
-        googlePayButton.setClickable(true);
-        break;
     }
   }
 
