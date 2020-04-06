@@ -2,8 +2,8 @@ package com.google.android.gms.samples.wallet.activity;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.Notification;
 import android.content.Intent;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.Toast;
@@ -21,6 +21,8 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.Optional;
+
+import androidx.appcompat.app.AppCompatActivity;
 
 /**
  * Transparent activity to be triggered from notification
@@ -45,6 +47,11 @@ public class PaymentTransparentActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_transparent);
+
+        // Dismiss the notification UI if the activity was opened from a notification
+        if(Notifications.ACTION_PAY_GOOGLE_PAY.equals(getIntent().getAction())){
+            sendBroadcast(new Intent(Intent.ACTION_CLOSE_SYSTEM_DIALOGS));
+        }
 
         // initialise the client
         mPaymentsClient = PaymentsUtil.createPaymentsClient(this);

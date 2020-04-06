@@ -52,11 +52,12 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
 
 /**
  * Checkout implementation for the app
  */
-public class CheckoutActivity extends Activity {
+public class CheckoutActivity extends AppCompatActivity {
 
   // A client for interacting with the Google Pay API.
   private PaymentsClient paymentsClient;
@@ -109,6 +110,11 @@ public class CheckoutActivity extends Activity {
   }
 
   private void initializeUi() {
+
+    // Dismiss the notification UI if the activity was opened from a notification
+    if(Notifications.ACTION_PAY_GOOGLE_PAY.equals(getIntent().getAction())){
+      sendBroadcast(new Intent(Intent.ACTION_CLOSE_SYSTEM_DIALOGS));
+    }
 
     googlePayButton = findViewById(R.id.googlePayButton);
 
