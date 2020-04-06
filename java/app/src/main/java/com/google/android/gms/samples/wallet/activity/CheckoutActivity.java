@@ -65,7 +65,7 @@ public class CheckoutActivity extends AppCompatActivity {
   // Arbitrarily-picked constant integer you define to track a request for payment data activity.
   private static final int LOAD_PAYMENT_DATA_REQUEST_CODE = 991;
 
-  private static final long SHIPPING_COST_MICROS = 90 * 1000000;
+  private static final long SHIPPING_COST_CENTS = 90 * PaymentsUtil.CENTS_IN_A_UNIT.longValue();
 
   // UI elements
   private TextView detailTitle;
@@ -329,14 +329,15 @@ public class CheckoutActivity extends AppCompatActivity {
     // The price provided to the API should include taxes and shipping.
     // This price is not displayed to the user.
     try {
-      long garmentPriceMicros = Math.round(selectedGarment.getDouble("price") * 1000000);
-      final String price = PaymentsUtil.microsToString(garmentPriceMicros + SHIPPING_COST_MICROS);
+      double garmentPrice = selectedGarment.getDouble("price");
+      long garmentPriceCents = Math.round(garmentPrice * PaymentsUtil.CENTS_IN_A_UNIT.longValue());
+      long priceCents = garmentPriceCents + SHIPPING_COST_CENTS;
 
-      // TransactionInfo transaction = PaymentsUtil.createTransaction(price);
-      Optional<JSONObject> paymentDataRequestJson = PaymentsUtil.getPaymentDataRequest(price);
+      Optional<JSONObject> paymentDataRequestJson = PaymentsUtil.getPaymentDataRequest(priceCents);
       if (!paymentDataRequestJson.isPresent()) {
         return;
       }
+
       PaymentDataRequest request =
               PaymentDataRequest.fromJson(paymentDataRequestJson.get().toString());
 
