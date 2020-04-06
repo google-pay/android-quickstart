@@ -142,6 +142,4 @@ public class Constants {
           put("publicKey", DIRECT_TOKENIZATION_PUBLIC_KEY);
         }
       };
-
-  private Constants() {}
 }
