@@ -229,7 +229,9 @@ public class CheckoutActivity extends Activity {
 
     // Token will be null if PaymentDataRequest was not constructed using fromJson(String).
     final String paymentInfo = paymentData.toJson();
-    if (paymentInfo == null) return;
+    if (paymentInfo == null) {
+      return;
+    }
 
     try {
       JSONObject paymentMethodData = new JSONObject(paymentInfo).getJSONObject("paymentMethodData");
