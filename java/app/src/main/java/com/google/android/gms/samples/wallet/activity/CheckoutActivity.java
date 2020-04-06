@@ -213,33 +213,6 @@ public class CheckoutActivity extends AppCompatActivity {
   }
 
   /**
-   * Add a menu option to trigger a notification
-   */
-  @Override
-  public boolean onCreateOptionsMenu(Menu menu) {
-    MenuInflater inflater = getMenuInflater();
-    inflater.inflate(R.menu.menus, menu);
-
-    // return true so that the menu pop up is opened
-    return true;
-  }
-
-  /**
-   * Handling menu options
-   */
-  @Override
-  public boolean onOptionsItemSelected(MenuItem item) {
-    // Handle item selection
-    switch (item.getItemId()) {
-      case R.id.send_notification:
-        Notifications.triggerPaymentNotification(this);
-        return true;
-      default:
-        return super.onOptionsItemSelected(item);
-    }
-  }
-
-  /**
    * Determine the viewer's ability to pay with a payment method supported by your app and display a
    * Google Pay payment button.
    *

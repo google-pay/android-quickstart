@@ -36,9 +36,8 @@ import org.json.JSONObject;
  * relevant to your implementation.
  */
 public class PaymentsUtil {
-  private static final BigDecimal MICROS = new BigDecimal(1000000d);
 
-  private PaymentsUtil() {}
+  public static final BigDecimal CENTS_IN_A_UNIT = new BigDecimal(100d);
 
   /**
    * Create a Google Pay API base request object with properties used in all requests.
@@ -247,7 +246,10 @@ public class PaymentsUtil {
    * @see <a
    *     href="https://developers.google.com/pay/api/android/reference/object#PaymentDataRequest">PaymentDataRequest</a>
    */
-  public static Optional<JSONObject> getPaymentDataRequest(String price) {
+  public static Optional<JSONObject> getPaymentDataRequest(long priceCents) {
+
+    final String price = PaymentsUtil.centsToString(priceCents);
+
     try {
       JSONObject paymentDataRequest = PaymentsUtil.getBaseRequest();
       paymentDataRequest.put(
@@ -267,17 +269,21 @@ public class PaymentsUtil {
       shippingAddressParameters.put("allowedCountryCodes", allowedCountryCodes);
       paymentDataRequest.put("shippingAddressParameters", shippingAddressParameters);
       return Optional.of(paymentDataRequest);
+
     } catch (JSONException e) {
       return Optional.empty();
     }
   }
 
   /**
-   * Converts micros to a string format accepted by {@link PaymentsUtil#getPaymentDataRequest}.
+   * Converts cents to a string format accepted by {@link PaymentsUtil#getPaymentDataRequest}.
    *
-   * @param micros value of the price.
+   * @param cents value of the price in cents.
    */
-  public static String microsToString(long micros) {
-    return new BigDecimal(micros).divide(MICROS).setScale(2, RoundingMode.HALF_EVEN).toString();
+  public static String centsToString(long cents) {
+    return new BigDecimal(cents)
+        .divide(CENTS_IN_A_UNIT)
+        .setScale(2, RoundingMode.HALF_EVEN)
+        .toString();
   }
 }
