@@ -22,7 +22,7 @@
     <!-- Payment notification -->
     <string name="channel_name">Payment Channel</string>
     <string name="send_notification">Send Notification</string>
-    <string name="notification_title"  translatable="false">Account TopUp</string>
+    <string name="notification_title"  translatable="false">Account top up</string>
     <string name="notification_text">Your account balance in close to zero. Top it up now.</string>
     <string name="pay_other_method">Top-up using a different method</string>
 

@@ -25,4 +25,7 @@
     <dimen name="buy_button_height">48sp</dimen>
     <dimen name="buy_button_min_width">200dp</dimen>
 
+    <!-- Notifications -->
+    <dimen name="price_option_size">43dp</dimen>
+
 </resources>
