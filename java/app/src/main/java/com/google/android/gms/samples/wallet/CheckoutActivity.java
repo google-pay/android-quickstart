@@ -56,7 +56,7 @@ public class CheckoutActivity extends Activity {
   // Arbitrarily-picked constant integer you define to track a request for payment data activity.
   private static final int LOAD_PAYMENT_DATA_REQUEST_CODE = 991;
 
-  private long shippingCostMicros = 90 * 1000000;
+  private static final long SHIPPING_COST_MICROS = 90 * 1000000;
 
   // UI elements
   private TextView detailTitle;
@@ -285,7 +285,7 @@ public class CheckoutActivity extends Activity {
     // This price is not displayed to the user.
     try {
       long garmentPriceMicros = Math.round(selectedGarment.getDouble("price") * 1000000);
-      final String price = PaymentsUtil.microsToString(garmentPriceMicros + shippingCostMicros);
+      final String price = PaymentsUtil.microsToString(garmentPriceMicros + SHIPPING_COST_MICROS);
 
       // TransactionInfo transaction = PaymentsUtil.createTransaction(price);
       Optional<JSONObject> paymentDataRequestJson = PaymentsUtil.getPaymentDataRequest(price);
