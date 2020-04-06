@@ -14,11 +14,12 @@
  * limitations under the License.
  */
 
-package com.google.android.gms.samples.wallet;
+package com.google.android.gms.samples.wallet.activity;
 
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
 import android.text.Html;
 import android.util.Log;
@@ -31,6 +32,9 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.common.api.Status;
+import com.google.android.gms.samples.wallet.util.Notifications;
+import com.google.android.gms.samples.wallet.util.PaymentsUtil;
+import com.google.android.gms.samples.wallet.R;
 import com.google.android.gms.samples.wallet.util.Json;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
@@ -84,6 +88,11 @@ public class CheckoutActivity extends Activity {
 
     setContentView(R.layout.activity_checkout);
     initializeUi();
+
+    // Create notification channels according to Android O+ guidelines
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+      Notifications.createNotificationChannelIfNotCreated(this);
+    }
 
     // Set up the mock information for our item in the UI.
     try {
@@ -150,7 +159,7 @@ public class CheckoutActivity extends Activity {
     // Handle item selection
     switch (item.getItemId()) {
       case R.id.send_notification:
-        PaymentNotification.trigger(getBaseContext(), 2);
+        Notifications.triggerPaymentNotification(this);
         return true;
       default:
         return super.onOptionsItemSelected(item);
@@ -166,17 +175,15 @@ public class CheckoutActivity extends Activity {
    *      IsReadyToPayRequest)">PaymentsClient#IsReadyToPay</a>
    */
   private void possiblyShowGooglePayButton() {
+
     final Optional<JSONObject> isReadyToPayJson = PaymentsUtil.getIsReadyToPayRequest();
     if (!isReadyToPayJson.isPresent()) {
-      return;
-    }
-    IsReadyToPayRequest request = IsReadyToPayRequest.fromJson(isReadyToPayJson.get().toString());
-    if (request == null) {
       return;
     }
 
     // The call to isReadyToPay is asynchronous and returns a Task. We need to provide an
     // OnCompleteListener to be triggered when the result of the call is known.
+    IsReadyToPayRequest request = IsReadyToPayRequest.fromJson(isReadyToPayJson.get().toString());
     Task<Boolean> task = paymentsClient.isReadyToPay(request);
     task.addOnCompleteListener(this,
         new OnCompleteListener<Boolean>() {
