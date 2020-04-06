@@ -116,17 +116,14 @@ public class CheckoutActivity extends AppCompatActivity {
   public boolean onCreateOptionsMenu(Menu menu) {
     MenuInflater inflater = getMenuInflater();
     inflater.inflate(R.menu.menus, menu);
-
-    // return true so that the menu pop up is opened
     return true;
   }
 
   /**
-   * Handling menu options
+   * Handle selection in the options menu
    */
   @Override
   public boolean onOptionsItemSelected(MenuItem item) {
-    // Handle item selection
     switch (item.getItemId()) {
       case R.id.send_notification:
         Notifications.triggerPaymentNotification(this);
