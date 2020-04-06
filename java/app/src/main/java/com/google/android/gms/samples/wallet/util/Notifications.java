@@ -12,38 +12,36 @@ import android.os.Build;
 import android.widget.RemoteViews;
 
 import com.google.android.gms.samples.wallet.R;
-import com.google.android.gms.samples.wallet.activity.CheckoutActivity;
 import com.google.android.gms.samples.wallet.activity.PaymentTransparentActivity;
 import com.google.android.gms.samples.wallet.service.PaymentNotificationIntentService;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import androidx.annotation.RequiresApi;
 import androidx.core.app.NotificationCompat;
+import androidx.core.app.NotificationManagerCompat;
 
 public class Notifications {
 
     private static final int NOTIFICATION_ID = 1;
     private static final String NOTIFICATION_CHANNEL_ID = "payments_channel";
 
-    public static final String ACTION_SELECT_OPTION = "action_select_option";
-    public static final String ACTION_PAY_GOOGLE_PAY = "action_pay_google_pay";
-    public static final String ACTION_PAY_OTHER = "action_pay_other";
-
-    public static final String SELECTED_OPTION_EXTRA = "selectedOptionExtra";
-    public static final String OPTION_PRICE_EXTRA = "optionPriceExtra";
-
     private static final String OPTION_1 = "option1";
     private static final String OPTION_2 = "option2";
     private static final String OPTION_3 = "option3";
 
-    private static final HashMap<String, String> BUTTON_OPTIONS = new HashMap<String, String>() {{
-        put("buttonOption1", OPTION_1);
-        put("buttonOption2", OPTION_2);
-        put("buttonOption3", OPTION_3);
+    public static final String ACTION_SELECT_PREFIX = "action_select:";
+    public static final String ACTION_PAY_GOOGLE_PAY = "action_pay_google_pay";
+    public static final String ACTION_PAY_OTHER = "action_pay_other";
+
+    public static final String OPTION_PRICE_EXTRA = "optionPriceExtra";
+
+    private static final HashMap<String, String> OPTION_BUTTONS = new HashMap<String, String>() {{
+        put(OPTION_1, "buttonOption1");
+        put(OPTION_2, "buttonOption2");
+        put(OPTION_3, "buttonOption3");
     }};
 
     private static final HashMap<String, Long> OPTION_PRICE_CENTS = new HashMap<String, Long>() {{
@@ -51,10 +49,6 @@ public class Notifications {
         put(OPTION_2, 2500L);
         put(OPTION_3, 5000L);
     }};
-
-    private static NotificationManager getManager(Context context){
-        return context.getSystemService(NotificationManager.class);
-    }
 
     public static void triggerPaymentNotification(Context context) {
         triggerPaymentNotification(context, OPTION_2);
@@ -65,56 +59,59 @@ public class Notifications {
      */
     public static void triggerPaymentNotification(Context context, String selectedOption) {
 
+        final Resources res = context.getResources();
+        final String packageName = context.getPackageName();
+
         // Create a custom notification layout
-        RemoteViews notificationLayoutExpanded = new RemoteViews(context.getPackageName(),
-                R.layout.large_notification);
+        RemoteViews notificationLayout = new RemoteViews(packageName, R.layout.large_notification);
 
         // Creates the selectable options
         final List<String> options = new ArrayList<>(OPTION_PRICE_CENTS.keySet());
         for (String option : options) {
 
             // Adjust color based on selected option
-            final int optionColor = option.equals(selectedOption) ? Color.RED : Color.GRAY;
-            int buttonId = context.getResources().getIdentifier(
-                    BUTTON_OPTIONS.get(option), "id", context.getOpPackageName());
-            notificationLayoutExpanded.setTextColor(buttonId, optionColor);
+            int optionColor = res.getColor(R.color.price_button_grey, context.getTheme());
+            int optionBg = R.drawable.price_button_background;
+            if(option.equals(selectedOption)){
+                optionColor = Color.WHITE;
+                optionBg = R.drawable.price_button_background_selected;
+            }
+
+            int buttonId = res.getIdentifier(OPTION_BUTTONS.get(option), "id", packageName);
+            notificationLayout.setTextColor(buttonId, optionColor);
+            notificationLayout.setInt(buttonId, "setBackgroundResource", optionBg);
 
             // Create pendingIntent to respond to the click event
             Intent selectOptionIntent = new Intent(context, PaymentNotificationIntentService.class);
-            selectOptionIntent.setAction(ACTION_SELECT_OPTION);
-            selectOptionIntent.putExtra(SELECTED_OPTION_EXTRA, option);
-            notificationLayoutExpanded.setOnClickPendingIntent(buttonId,
-                    createPendingIntent(context, selectOptionIntent));
+            selectOptionIntent.setAction(ACTION_SELECT_PREFIX + option);
+            notificationLayout.setOnClickPendingIntent(buttonId, PendingIntent.getService(
+                    context, 0, selectOptionIntent, PendingIntent.FLAG_UPDATE_CURRENT));
         }
 
         // Set Google Pay button action
         Intent payIntent = new Intent(context, PaymentTransparentActivity.class);
+        payIntent.setAction(ACTION_PAY_GOOGLE_PAY);
         payIntent.putExtra(OPTION_PRICE_EXTRA, OPTION_PRICE_CENTS.get(selectedOption));
-        notificationLayoutExpanded.setOnClickPendingIntent(
+        notificationLayout.setOnClickPendingIntent(
                 R.id.googlePayButton, pendingIntentForActivity(context, payIntent));
-
-        // Set other pay button
-        Intent goBackIntent = new Intent(context, CheckoutActivity.class);
-        notificationLayoutExpanded.setOnClickPendingIntent(
-                R.id.buttonPayOther, pendingIntentForActivity(context, goBackIntent));
 
         // Create a notification and set the notification channel
         Notification notification = new NotificationCompat.Builder(context, NOTIFICATION_CHANNEL_ID)
                 .setSmallIcon(R.mipmap.ic_launcher)
                 .setContentTitle(context.getString(R.string.notification_title))
                 .setContentText(context.getString(R.string.notification_text))
-                .setCustomBigContentView(notificationLayoutExpanded)
+                .setCustomBigContentView(notificationLayout)
                 .setPriority(NotificationCompat.PRIORITY_DEFAULT)
                 .setAutoCancel(false)
                 .setOnlyAlertOnce(true)
                 .build();
 
         // Trigger or update the notification.
-        getManager(context).notify(NOTIFICATION_ID, notification);
+        NotificationManagerCompat.from(context).notify(NOTIFICATION_ID, notification);
     }
 
     public static void remove(Context context){
-        getManager(context).cancel(NOTIFICATION_ID);
+        NotificationManagerCompat.from(context).cancel(NOTIFICATION_ID);
     }
 
     /**
@@ -134,17 +131,7 @@ public class Notifications {
     }
 
     private static PendingIntent pendingIntentForActivity(Context context, Intent intent) {
-
-        // Dismiss notification
-        context.sendBroadcast(new Intent(Intent.ACTION_CLOSE_SYSTEM_DIALOGS));
-
-        // Create pending intent
-        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_SINGLE_TOP);
-        return createPendingIntent(context, intent);
-    }
-
-    private static PendingIntent createPendingIntent(Context context, Intent intent) {
-        return PendingIntent.getService(
+        return PendingIntent.getActivity(
                 context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
     }
 }
