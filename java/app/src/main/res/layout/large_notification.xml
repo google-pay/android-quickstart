@@ -31,37 +31,37 @@
             style="?android:attr/buttonBarStyle">
 
             <Button
-                android:id="@+id/buttonPrice1"
+                android:id="@+id/buttonOption1"
                 android:layout_width="30dp"
                 android:layout_height="wrap_content"
                 android:layout_marginHorizontal="4dp"
                 android:layout_weight="1"
                 android:backgroundTint="@android:color/transparent"
                 style="?android:attr/buttonBarButtonStyle"
-                android:text="@string/notification_price_1" />
+                android:text="$10" />
             <Button
-                android:id="@+id/buttonPrice2"
+                android:id="@+id/buttonOption2"
                 android:layout_width="30dp"
                 android:layout_height="wrap_content"
                 android:layout_marginHorizontal="4dp"
                 android:layout_weight="1"
                 android:backgroundTint="@android:color/transparent"
                 style="?android:attr/buttonBarButtonStyle"
-                android:text="@string/notification_price_2" />
+                android:text="$25" />
 
             <Button
-                android:id="@+id/buttonPrice3"
+                android:id="@+id/buttonOption3"
                 android:layout_width="30dp"
                 android:layout_height="wrap_content"
                 android:layout_marginHorizontal="4dp"
                 android:layout_weight="1"
                 android:backgroundTint="@android:color/transparent"
                 style="?android:attr/buttonBarButtonStyle"
-                android:text="@string/notification_price_3" />
+                android:text="$50" />
         </LinearLayout>
 
         <include
-            android:id="@+id/googlepay_button"
+            android:id="@+id/googlePayButton"
             layout="@layout/googlepay_button"
             android:layout_width="150dp"
             android:layout_height="@dimen/buy_button_height"
