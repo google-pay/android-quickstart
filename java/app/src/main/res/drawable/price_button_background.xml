@@ -15,14 +15,12 @@
      limitations under the License.
 -->
 
-<shape
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
     android:shape="oval">
-
-    <solid
-        android:color="#ddd"/>
 
     <size
         android:width="@dimen/price_option_size"
-        android:height="@dimen/price_option_size"/>
+        android:height="@dimen/price_option_size" />
+
+    <solid android:color="#ddd" />
 </shape>

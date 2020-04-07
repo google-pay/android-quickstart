@@ -137,10 +137,10 @@ public class CheckoutActivity extends AppCompatActivity {
    * Handle a resolved activity from the Google Pay payment sheet.
    *
    * @param requestCode Request code originally supplied to AutoResolveHelper in requestPayment().
-   * @param resultCode Result code returned by the Google Pay API.
-   * @param data Intent from the Google Pay API containing payment or error data.
+   * @param resultCode  Result code returned by the Google Pay API.
+   * @param data        Intent from the Google Pay API containing payment or error data.
    * @see <a href="https://developer.android.com/training/basics/intents/result">Getting a result
-   *      from an Activity</a>
+   * from an Activity</a>
    */
   @Override
   public void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -155,8 +155,7 @@ public class CheckoutActivity extends AppCompatActivity {
             break;
 
           case Activity.RESULT_CANCELED:
-            // Nothing to here normally - the user simply cancelled without selecting a
-            // payment method.
+            // The user cancelled the payment attempt
             break;
 
           case AutoResolveHelper.RESULT_ERROR:
@@ -176,7 +175,7 @@ public class CheckoutActivity extends AppCompatActivity {
   private void initializeUi() {
 
     // Dismiss the notification UI if the activity was opened from a notification
-    if(Notifications.ACTION_PAY_GOOGLE_PAY.equals(getIntent().getAction())){
+    if (Notifications.ACTION_PAY_GOOGLE_PAY.equals(getIntent().getAction())) {
       sendBroadcast(new Intent(Intent.ACTION_CLOSE_SYSTEM_DIALOGS));
     }
 
@@ -188,18 +187,18 @@ public class CheckoutActivity extends AppCompatActivity {
     detailImage = findViewById(R.id.detailImage);
 
     findViewById(R.id.googlePayButton).setOnClickListener(
-            new View.OnClickListener() {
-              @Override
-              public void onClick(View view) {
-                requestPayment(view);
-              }
-            });
+        new View.OnClickListener() {
+          @Override
+          public void onClick(View view) {
+            requestPayment(view);
+          }
+        });
   }
 
   private void displayGarment(JSONObject garment) throws JSONException {
     detailTitle.setText(garment.getString("title"));
     detailPrice.setText(
-            String.format(Locale.getDefault(), "$%.2f", garment.getDouble("price")));
+        String.format(Locale.getDefault(), "$%.2f", garment.getDouble("price")));
 
     final String escapedHtmlText = Html.fromHtml(garment.getString("description")).toString();
     detailDescription.setText(Html.fromHtml(escapedHtmlText));
@@ -214,8 +213,8 @@ public class CheckoutActivity extends AppCompatActivity {
    * Google Pay payment button.
    *
    * @see <a href="https://developers.google.com/android/reference/com/google/android/gms/wallet/
-   *      PaymentsClient.html#isReadyToPay(com.google.android.gms.wallet.
-   *      IsReadyToPayRequest)">PaymentsClient#IsReadyToPay</a>
+   * PaymentsClient.html#isReadyToPay(com.google.android.gms.wallet.
+   * IsReadyToPayRequest)">PaymentsClient#IsReadyToPay</a>
    */
   private void possiblyShowGooglePayButton() {
 
@@ -263,7 +262,7 @@ public class CheckoutActivity extends AppCompatActivity {
    *
    * @param paymentData A response object returned by Google after a payer approves payment.
    * @see <a href="https://developers.google.com/pay/api/android/reference/
-   *      object#PaymentData">PaymentData</a>
+   * object#PaymentData">PaymentData</a>
    */
   private void handlePaymentSuccess(PaymentData paymentData) {
 
@@ -284,18 +283,18 @@ public class CheckoutActivity extends AppCompatActivity {
 
       if ("PAYMENT_GATEWAY".equals(tokenizationType) && "examplePaymentMethodToken".equals(token)) {
         new AlertDialog.Builder(this)
-                .setTitle("Warning")
-                .setMessage(getString(R.string.gateway_replace_name_example))
-                .setPositiveButton("OK", null)
-                .create()
-                .show();
+            .setTitle("Warning")
+            .setMessage(getString(R.string.gateway_replace_name_example))
+            .setPositiveButton("OK", null)
+            .create()
+            .show();
       }
 
       final JSONObject info = paymentMethodData.getJSONObject("info");
       final String billingName = info.getJSONObject("billingAddress").getString("name");
       Toast.makeText(
-              this, getString(R.string.payments_show_name, billingName),
-              Toast.LENGTH_LONG).show();
+          this, getString(R.string.payments_show_name, billingName),
+          Toast.LENGTH_LONG).show();
 
       // Logging token string.
       Log.d("Google Pay token: ", token);
@@ -312,7 +311,7 @@ public class CheckoutActivity extends AppCompatActivity {
    * @param statusCode will hold the value of any constant from CommonStatusCode or one of the
    *                   WalletConstants.ERROR_CODE_* constants.
    * @see <a href="https://developers.google.com/android/reference/com/google/android/gms/wallet/
-   *      WalletConstants#constant-summary">Wallet Constants Library</a>
+   * WalletConstants#constant-summary">Wallet Constants Library</a>
    */
   private void handleError(int statusCode) {
     Log.w("loadPaymentData failed", String.format("Error code: %d", statusCode));
@@ -336,15 +335,15 @@ public class CheckoutActivity extends AppCompatActivity {
       }
 
       PaymentDataRequest request =
-              PaymentDataRequest.fromJson(paymentDataRequestJson.get().toString());
+          PaymentDataRequest.fromJson(paymentDataRequestJson.get().toString());
 
       // Since loadPaymentData may show the UI asking the user to select a payment method, we use
       // AutoResolveHelper to wait for the user interacting with it. Once completed,
       // onActivityResult will be called with the result.
       if (request != null) {
         AutoResolveHelper.resolveTask(
-                paymentsClient.loadPaymentData(request),
-                this, LOAD_PAYMENT_DATA_REQUEST_CODE);
+            paymentsClient.loadPaymentData(request),
+            this, LOAD_PAYMENT_DATA_REQUEST_CODE);
       }
 
     } catch (JSONException e) {

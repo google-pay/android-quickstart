@@ -66,10 +66,10 @@ public class PaymentTransparentActivity extends AppCompatActivity {
    * Handle a resolved activity from the Google Pay payment sheet.
    *
    * @param requestCode Request code originally supplied to AutoResolveHelper in requestPayment().
-   * @param resultCode Result code returned by the Google Pay API.
-   * @param data Intent from the Google Pay API containing payment or error data.
+   * @param resultCode  Result code returned by the Google Pay API.
+   * @param data        Intent from the Google Pay API containing payment or error data.
    * @see <a href="https://developer.android.com/training/basics/intents/result">Getting a result
-   *      from an Activity</a>
+   * from an Activity</a>
    */
   @Override
   public void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -125,7 +125,7 @@ public class PaymentTransparentActivity extends AppCompatActivity {
    *
    * @param paymentData A response object returned by Google after a payer approves payment.
    * @see <a href="https://developers.google.com/pay/api/android/reference/
-   *      object#PaymentData">PaymentData</a>
+   * object#PaymentData">PaymentData</a>
    */
   private void handlePaymentSuccess(PaymentData paymentData) {
 

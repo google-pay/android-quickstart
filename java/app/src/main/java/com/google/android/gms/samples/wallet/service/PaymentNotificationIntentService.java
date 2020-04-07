@@ -35,7 +35,7 @@ public class PaymentNotificationIntentService extends IntentService {
   protected void onHandleIntent(@Nullable final Intent intent) {
 
     final String intentAction = intent.getAction();
-    if(intentAction.startsWith(Notifications.ACTION_SELECT_PREFIX)) {
+    if (intentAction.startsWith(Notifications.ACTION_SELECT_PREFIX)) {
 
       Handler priceHandler = new Handler(Looper.getMainLooper());
       priceHandler.post(new Runnable() {

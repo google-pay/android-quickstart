@@ -17,6 +17,7 @@
 package com.google.android.gms.samples.wallet.util;
 
 import android.content.Context;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 
@@ -33,7 +34,7 @@ public class Json {
   /**
    * Loads a resource and creates a {@link JSONArray} object with the contents of the binary.
    *
-   * @param context where the execution is taking place.
+   * @param context  where the execution is taking place.
    * @param fileName path that points to the target binary.
    * @return a {@link JSONArray} object with the contents of the stream.
    */
@@ -42,7 +43,7 @@ public class Json {
       final InputStream inputStream = context.getAssets().open(fileName);
       return readFromInputStream(inputStream);
 
-    } catch (Exception e){
+    } catch (Exception e) {
       return new JSONArray();
     }
   }
@@ -50,7 +51,7 @@ public class Json {
   /**
    * Loads a resource and creates a {@link JSONArray} object with the contents of the binary.
    *
-   * @param context where the execution is taking place.
+   * @param context  where the execution is taking place.
    * @param resource identifier of the binary in the resource folders.
    * @return a {@link JSONArray} object with the contents of the stream.
    */
@@ -59,10 +60,10 @@ public class Json {
       final InputStream inputStream = context.getResources().openRawResource(resource);
       return readFromInputStream(inputStream);
 
-    } catch (Exception e){
+    } catch (Exception e) {
       return new JSONArray();
     }
-}
+  }
 
   /**
    * Create a {@link JSONArray} with the contents of an {@link InputStream} holding
@@ -73,7 +74,7 @@ public class Json {
    * @throws JSONException if the content could not be parsed.
    */
   private static JSONArray readFromInputStream(InputStream inputStream) throws JSONException {
-    final BufferedReader reader =  new BufferedReader(new InputStreamReader(inputStream));
+    final BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
     final String inputString = reader.lines().collect(Collectors.joining());
     return new JSONArray(inputString);
   }

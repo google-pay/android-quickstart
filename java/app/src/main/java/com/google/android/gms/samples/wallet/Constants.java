@@ -17,6 +17,7 @@
 package com.google.android.gms.samples.wallet;
 
 import com.google.android.gms.wallet.WalletConstants;
+
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
