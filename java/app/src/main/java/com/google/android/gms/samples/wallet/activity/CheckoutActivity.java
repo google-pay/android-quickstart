@@ -200,8 +200,10 @@ public class CheckoutActivity extends AppCompatActivity {
     detailPrice.setText(
         String.format(Locale.getDefault(), "$%.2f", garment.getDouble("price")));
 
-    final String escapedHtmlText = Html.fromHtml(garment.getString("description")).toString();
-    detailDescription.setText(Html.fromHtml(escapedHtmlText));
+    final String escapedHtmlText = Html.fromHtml(
+        garment.getString("description"), Html.FROM_HTML_MODE_COMPACT).toString();
+    layoutBinding.detailDescription.setText(Html.fromHtml(
+        escapedHtmlText, Html.FROM_HTML_MODE_COMPACT));
 
     final String imageUri = String.format("@drawable/%s", garment.getString("image"));
     final int imageResource = getResources().getIdentifier(imageUri, null, getPackageName());
