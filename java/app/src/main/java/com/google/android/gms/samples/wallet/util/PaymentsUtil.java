@@ -226,6 +226,7 @@ public class PaymentsUtil {
     transactionInfo.put("totalPriceStatus", "FINAL");
     transactionInfo.put("countryCode", Constants.COUNTRY_CODE);
     transactionInfo.put("currencyCode", Constants.CURRENCY_CODE);
+    transactionInfo.put("checkoutOption", "COMPLETE_IMMEDIATE_PURCHASE");
 
     return transactionInfo;
   }
