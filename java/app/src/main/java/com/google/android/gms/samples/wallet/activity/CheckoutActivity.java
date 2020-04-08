@@ -27,11 +27,10 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.ImageView;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.common.api.Status;
+import com.google.android.gms.samples.wallet.databinding.ActivityCheckoutBinding;
 import com.google.android.gms.samples.wallet.util.Notifications;
 import com.google.android.gms.samples.wallet.util.PaymentsUtil;
 import com.google.android.gms.samples.wallet.R;
@@ -59,20 +58,15 @@ import androidx.appcompat.app.AppCompatActivity;
  */
 public class CheckoutActivity extends AppCompatActivity {
 
-  // A client for interacting with the Google Pay API.
-  private PaymentsClient paymentsClient;
-
   // Arbitrarily-picked constant integer you define to track a request for payment data activity.
   private static final int LOAD_PAYMENT_DATA_REQUEST_CODE = 991;
 
   private static final long SHIPPING_COST_CENTS = 90 * PaymentsUtil.CENTS_IN_A_UNIT.longValue();
 
-  // UI elements
-  private TextView detailTitle;
-  private TextView detailPrice;
-  private TextView detailDescription;
-  private ImageView detailImage;
+  // A client for interacting with the Google Pay API.
+  private PaymentsClient paymentsClient;
 
+  private ActivityCheckoutBinding layoutBinding;
   private View googlePayButton;
 
   private JSONArray garmentList;
@@ -87,7 +81,6 @@ public class CheckoutActivity extends AppCompatActivity {
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
 
-    setContentView(R.layout.activity_checkout);
     initializeUi();
 
     // Create notification channels according to Android O+ guidelines
@@ -174,19 +167,18 @@ public class CheckoutActivity extends AppCompatActivity {
 
   private void initializeUi() {
 
+    // Use view binding to access the UI elements
+    layoutBinding = ActivityCheckoutBinding.inflate(getLayoutInflater());
+    setContentView(layoutBinding.getRoot());
+
     // Dismiss the notification UI if the activity was opened from a notification
     if (Notifications.ACTION_PAY_GOOGLE_PAY.equals(getIntent().getAction())) {
       sendBroadcast(new Intent(Intent.ACTION_CLOSE_SYSTEM_DIALOGS));
     }
 
-    googlePayButton = findViewById(R.id.googlePayButton);
-
-    detailTitle = findViewById(R.id.detailTitle);
-    detailPrice = findViewById(R.id.detailPrice);
-    detailDescription = findViewById(R.id.detailDescription);
-    detailImage = findViewById(R.id.detailImage);
-
-    findViewById(R.id.googlePayButton).setOnClickListener(
+    // The Google Pay button is a layout file – take the root view
+    googlePayButton = layoutBinding.googlePayButton.getRoot();
+    googlePayButton.setOnClickListener(
         new View.OnClickListener() {
           @Override
           public void onClick(View view) {
@@ -196,8 +188,8 @@ public class CheckoutActivity extends AppCompatActivity {
   }
 
   private void displayGarment(JSONObject garment) throws JSONException {
-    detailTitle.setText(garment.getString("title"));
-    detailPrice.setText(
+    layoutBinding.detailTitle.setText(garment.getString("title"));
+    layoutBinding.detailPrice.setText(
         String.format(Locale.getDefault(), "$%.2f", garment.getDouble("price")));
 
     final String escapedHtmlText = Html.fromHtml(
@@ -207,7 +199,7 @@ public class CheckoutActivity extends AppCompatActivity {
 
     final String imageUri = String.format("@drawable/%s", garment.getString("image"));
     final int imageResource = getResources().getIdentifier(imageUri, null, getPackageName());
-    detailImage.setImageResource(imageResource);
+    layoutBinding.detailImage.setImageResource(imageResource);
   }
 
   /**
