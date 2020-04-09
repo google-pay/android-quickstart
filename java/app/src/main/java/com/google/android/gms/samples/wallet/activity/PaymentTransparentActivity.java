@@ -44,9 +44,6 @@ public class PaymentTransparentActivity extends AppCompatActivity {
   // Arbitrarily-picked constant integer you define to track a request for payment data activity.
   private static final int LOAD_PAYMENT_DATA_REQUEST_CODE = 991;
 
-  // A client for interacting with the Google Pay API.
-  private PaymentsClient paymentsClient;
-
   @Override
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
@@ -58,7 +55,6 @@ public class PaymentTransparentActivity extends AppCompatActivity {
     }
 
     // Initialise the payments client
-    paymentsClient = PaymentsUtil.createPaymentsClient(this);
     startPayment();
   }
 
@@ -113,6 +109,7 @@ public class PaymentTransparentActivity extends AppCompatActivity {
         PaymentDataRequest.fromJson(paymentDataRequestJson.get().toString());
 
     if (request != null) {
+      final PaymentsClient paymentsClient = PaymentsUtil.createPaymentsClient(this);
       AutoResolveHelper.resolveTask(
           paymentsClient.loadPaymentData(request),
           this, LOAD_PAYMENT_DATA_REQUEST_CODE);
