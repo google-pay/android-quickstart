@@ -15,17 +15,8 @@
      limitations under the License.
 -->
 
-<resources>
-
-    <dimen name="padding_small">5dp</dimen>
-    <dimen name="margin_large">10dp</dimen>
-    <dimen name="margin_xlarge">30dp</dimen>
-
-    <dimen name="buy_button_width">300dp</dimen>
-    <dimen name="buy_button_height">48sp</dimen>
-    <dimen name="buy_button_min_width">200dp</dimen>
-
-    <!-- Notifications -->
-    <dimen name="price_option_size">43dp</dimen>
-
-</resources>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/send_notification"
+        android:title="@string/send_notification" />
+</menu>

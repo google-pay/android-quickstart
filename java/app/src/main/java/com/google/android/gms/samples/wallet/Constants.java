@@ -17,6 +17,7 @@
 package com.google.android.gms.samples.wallet;
 
 import com.google.android.gms.wallet.WalletConstants;
+
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -40,6 +41,7 @@ import java.util.List;
  *      per the instructions.
  */
 public class Constants {
+
   /**
    * Changing this to ENVIRONMENT_PRODUCTION will make the API return chargeable card information.
    * Please refer to the documentation to read about the required steps needed to enable
@@ -56,11 +58,11 @@ public class Constants {
    * @value #SUPPORTED_NETWORKS
    */
   public static final List<String> SUPPORTED_NETWORKS = Arrays.asList(
-    "AMEX",
-    "DISCOVER",
-    "JCB",
-    "MASTERCARD",
-    "VISA");
+      "AMEX",
+      "DISCOVER",
+      "JCB",
+      "MASTERCARD",
+      "VISA");
 
   /**
    * The Google Pay API may return cards on file on Google.com (PAN_ONLY) and/or a device token on
@@ -68,10 +70,9 @@ public class Constants {
    *
    * @value #SUPPORTED_METHODS
    */
-  public static final List<String> SUPPORTED_METHODS =
-      Arrays.asList(
-          "PAN_ONLY",
-          "CRYPTOGRAM_3DS");
+  public static final List<String> SUPPORTED_METHODS = Arrays.asList(
+      "PAN_ONLY",
+      "CRYPTOGRAM_3DS");
 
   /**
    * Required by the API, but not visible to the user.
@@ -112,13 +113,11 @@ public class Constants {
    * @value #PAYMENT_GATEWAY_TOKENIZATION_PARAMETERS
    */
   public static final HashMap<String, String> PAYMENT_GATEWAY_TOKENIZATION_PARAMETERS =
-      new HashMap<String, String>() {
-        {
-          put("gateway", PAYMENT_GATEWAY_TOKENIZATION_NAME);
-          put("gatewayMerchantId", "exampleGatewayMerchantId");
-          // Your processor may require additional parameters.
-        }
-      };
+      new HashMap<String, String>() {{
+        put("gateway", PAYMENT_GATEWAY_TOKENIZATION_NAME);
+        put("gatewayMerchantId", "exampleGatewayMerchantId");
+        // Your processor may require additional parameters.
+      }};
 
   /**
    * Only used for {@code DIRECT} tokenization. Can be removed when using {@code PAYMENT_GATEWAY}
@@ -136,12 +135,8 @@ public class Constants {
    * @value #DIRECT_TOKENIZATION_PARAMETERS
    */
   public static final HashMap<String, String> DIRECT_TOKENIZATION_PARAMETERS =
-      new HashMap<String, String>() {
-        {
-          put("protocolVersion", "ECv2");
-          put("publicKey", DIRECT_TOKENIZATION_PUBLIC_KEY);
-        }
-      };
-
-  private Constants() {}
+      new HashMap<String, String>() {{
+        put("protocolVersion", "ECv2");
+        put("publicKey", DIRECT_TOKENIZATION_PUBLIC_KEY);
+      }};
 }
