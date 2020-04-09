@@ -94,7 +94,7 @@ public class PaymentTransparentActivity extends AppCompatActivity {
         }
 
         // Close the activity
-        finish();
+        finishAndRemoveTask();
     }
   }
 
