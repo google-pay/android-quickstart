@@ -155,9 +155,6 @@ public class CheckoutActivity extends AppCompatActivity {
             Status status = AutoResolveHelper.getStatusFromIntent(data);
             handleError(status.getStatusCode());
             break;
-
-          default:
-            // Do nothing.
         }
 
         // Re-enables the Google Pay payment button.
