@@ -79,7 +79,7 @@ public class Notifications {
     final String packageName = context.getPackageName();
 
     // Create a custom notification layout
-    RemoteViews notificationLayout = new RemoteViews(packageName, R.layout.large_notification);
+    RemoteViews notificationLayout = new RemoteViews(packageName, R.layout.notification_top_up_account);
 
     // Creates the selectable options
     final List<String> options = new ArrayList<>(OPTION_PRICE_CENTS.keySet());
