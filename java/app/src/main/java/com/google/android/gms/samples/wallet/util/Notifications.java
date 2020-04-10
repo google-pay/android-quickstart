@@ -44,6 +44,9 @@ public class Notifications {
   private static final int NOTIFICATION_ID = 1;
   private static final String NOTIFICATION_CHANNEL_ID = "payments_channel";
 
+  private static final int REQUEST_CODE_SELECT_OPTION = 239357;
+  private static final int REQUEST_CODE_START_ACTIVITY = 27487;
+
   private static final String OPTION_1 = "option1";
   private static final String OPTION_2 = "option2";
   private static final String OPTION_3 = "option3";
@@ -101,7 +104,8 @@ public class Notifications {
       Intent selectOptionIntent = new Intent(context, PaymentNotificationIntentService.class);
       selectOptionIntent.setAction(ACTION_SELECT_PREFIX + option);
       notificationLayout.setOnClickPendingIntent(buttonId, PendingIntent.getService(
-          context, 0, selectOptionIntent, PendingIntent.FLAG_UPDATE_CURRENT));
+          context, REQUEST_CODE_SELECT_OPTION, selectOptionIntent,
+          PendingIntent.FLAG_UPDATE_CURRENT));
     }
 
     // Set Google Pay button action
@@ -148,6 +152,7 @@ public class Notifications {
 
   private static PendingIntent pendingIntentForActivity(Context context, Intent intent) {
     return PendingIntent.getActivity(
-        context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+        context, REQUEST_CODE_START_ACTIVITY, intent,
+        PendingIntent.FLAG_UPDATE_CURRENT);
   }
 }
