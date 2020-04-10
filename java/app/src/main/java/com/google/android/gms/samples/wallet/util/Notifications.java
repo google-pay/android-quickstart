@@ -48,9 +48,9 @@ public class Notifications {
   private static final String OPTION_2 = "option2";
   private static final String OPTION_3 = "option3";
 
-  public static final String ACTION_SELECT_PREFIX = "action_select:";
-  public static final String ACTION_PAY_GOOGLE_PAY = "action_pay_google_pay";
-  public static final String ACTION_PAY_OTHER = "action_pay_other";
+  public static final String ACTION_SELECT_PREFIX = "com.google.android.gms.samples.wallet.SELECT_PRICE";
+  public static final String ACTION_PAY_GOOGLE_PAY = "com.google.android.gms.samples.wallet.PAY_GOOGLE_PAY";
+  public static final String ACTION_PAY_OTHER = "com.google.android.gms.samples.wallet.PAY_OTHER";
 
   public static final String OPTION_PRICE_EXTRA = "optionPriceExtra";
 
