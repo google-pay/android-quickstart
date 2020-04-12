@@ -52,9 +52,8 @@ public class PaymentTransparentActivity extends AppCompatActivity {
     if (Notifications.ACTION_PAY_GOOGLE_PAY.equals(getIntent().getAction())) {
       sendBroadcast(new Intent(Intent.ACTION_CLOSE_SYSTEM_DIALOGS));
     }
-
-    // Initialise the payments client
-    startPayment();
+    
+    showPaymentsSheet();
   }
 
   /**
@@ -94,7 +93,7 @@ public class PaymentTransparentActivity extends AppCompatActivity {
     }
   }
 
-  private void startPayment() {
+  private void showPaymentsSheet() {
 
     // Fetch the price based on the user selection
     long priceCents = getIntent().getLongExtra(Notifications.OPTION_PRICE_EXTRA, 2500L);
