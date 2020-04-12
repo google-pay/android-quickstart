@@ -116,7 +116,8 @@ public class Notifications {
         R.id.googlePayButton, pendingIntentForActivity(context, payIntent));
 
     // Create a notification and set the notification channel
-    Notification notification = new NotificationCompat.Builder(context, NOTIFICATION_CHANNEL_ID)
+    Notification notification = new NotificationCompat
+        .Builder(context, NOTIFICATION_CHANNEL_ID)
         .setSmallIcon(R.mipmap.ic_launcher)
         .setContentTitle(context.getString(R.string.notification_title))
         .setContentText(context.getString(R.string.notification_text))
