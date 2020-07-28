@@ -61,12 +61,6 @@ object PaymentsUtil {
      * @see [PaymentMethodTokenizationSpecification](https://developers.google.com/pay/api/android/reference/object.PaymentMethodTokenizationSpecification)
      */
     private fun gatewayTokenizationSpecification(): JSONObject {
-        if (Constants.PAYMENT_GATEWAY_TOKENIZATION_PARAMETERS.isEmpty()) {
-            throw RuntimeException(
-                    "Please edit the Constants.java file to add gateway name and other " +
-                    "parameters your processor requires")
-        }
-
         return JSONObject().apply {
             put("type", "PAYMENT_GATEWAY")
             put("parameters", JSONObject(Constants.PAYMENT_GATEWAY_TOKENIZATION_PARAMETERS))
