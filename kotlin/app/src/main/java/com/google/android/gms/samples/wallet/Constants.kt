@@ -73,6 +73,13 @@ object Constants {
     /**
      * Required by the API, but not visible to the user.
      *
+     * @value #COUNTRY_CODE Your local country
+     */
+    const val COUNTRY_CODE = "US"
+
+    /**
+     * Required by the API, but not visible to the user.
+     *
      * @value #CURRENCY_CODE Your local currency
      */
     const val CURRENCY_CODE = "USD"

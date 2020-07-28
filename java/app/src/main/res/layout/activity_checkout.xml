@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-     Copyright (C) Google
+     Copyright 2020 Google Inc.
 
      Licensed under the Apache License, Version 2.0 (the "License");
      you may not use this file except in compliance with the License.
@@ -17,70 +17,68 @@
 
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="fill_parent"
-    android:layout_height="fill_parent"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#fff"
     android:fillViewport="true"
-    tools:context="com.google.android.gms.samples.wallet.CheckoutActivity">
+    tools:context="com.google.android.gms.samples.wallet.activity.CheckoutActivity">
 
     <LinearLayout
-        android:layout_width="fill_parent"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_margin="@dimen/padding_small"
+        android:layout_marginStart="20dp"
+        android:layout_marginEnd="20dp"
         android:orientation="vertical">
 
-        <TextView
-            android:id="@+id/text_item_name"
-            style="@android:style/TextAppearance.Large"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="@dimen/padding_small" />
-
-        <LinearLayout
+        <ImageView
+            android:id="@+id/detailImage"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="@dimen/padding_small"
-            android:minHeight="300dp"
-            android:orientation="horizontal">
+            android:layout_height="350dp"
+            android:layout_marginTop="20dp"
+            android:src="@drawable/ts_10_11019a" />
 
-            <ImageView
-                android:id="@+id/image_item_image"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:adjustViewBounds="true" />
-
-            <TextView
-                android:id="@+id/text_item_price"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_vertical"
-                android:layout_weight="1"
-                android:gravity="center_horizontal"
-                android:textStyle="bold" />
-
-        </LinearLayout>
-
-        <FrameLayout
+        <TextView
+            android:id="@+id/detailTitle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:layout_marginTop="@dimen/margin_xlarge">
+            android:layout_marginTop="15dp"
+            android:text="[Placeholder] Men's Tech Shell Full-Zip"
+            android:textColor="#333333"
+            android:textSize="20sp"
+            android:textStyle="bold" />
 
-            <include
-                android:id="@+id/googlepay_button"
-                layout="@layout/googlepay_button"
-                android:layout_width="@dimen/buy_button_width"
-                android:layout_height="@dimen/buy_button_height"
-                android:visibility="gone" />
+        <TextView
+            android:id="@+id/detailPrice"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="5dp"
+            android:text="$50.20"
+            android:textColor="#777777" />
 
-            <TextView
-                android:id="@+id/googlepay_status"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:gravity="center"
-                android:text="@string/googlepay_status_checking" />
-        </FrameLayout>
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="15dp"
+            android:text="@string/checkout_item_description"
+            android:textColor="#333333"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/detailDescription"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="5dp"
+            android:layout_marginBottom="15dp"
+            android:text="[Placeholder] A versatile full-zip that you can wear all day long and even..."
+            android:textColor="#777777" />
+
+        <include
+            android:id="@+id/googlePayButton"
+            layout="@layout/buy_with_googlepay_button"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/buy_button_height"
+            android:layout_marginBottom="20dp"
+            android:visibility="gone" />
 
     </LinearLayout>
 
