@@ -1,0 +1,30 @@
+apply plugin: "com.android.application"
+apply plugin: "kotlin-android"
+apply plugin: "kotlin-android-extensions"
+
+android {
+    buildToolsVersion "28.0.3"
+    compileSdkVersion 28
+    defaultConfig {
+        applicationId "com.google.android.gms.samples.wallet"
+
+        minSdkVersion 19
+
+        targetSdkVersion 28
+        versionCode 1
+        versionName "1.0"
+    }
+    buildTypes {
+        release {
+            shrinkResources true
+            minifyEnabled true
+            proguardFiles getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro"
+        }
+    }
+    buildToolsVersion "28.0.3"
+}
+
+dependencies {
+    implementation "com.google.android.gms:play-services-wallet:16.0.1"
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
+}
