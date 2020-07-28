@@ -305,7 +305,7 @@ public class CheckoutActivity extends AppCompatActivity {
    * WalletConstants#constant-summary">Wallet Constants Library</a>
    */
   private void handleError(int statusCode) {
-    Log.w("loadPaymentData failed", String.format("Error code: %d", statusCode));
+    Log.e("loadPaymentData failed", String.format("Error code: %d", statusCode));
   }
 
   public void requestPayment(View view) {

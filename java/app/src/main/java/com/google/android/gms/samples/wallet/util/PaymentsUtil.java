@@ -79,12 +79,10 @@ public class PaymentsUtil {
   private static JSONObject getGatewayTokenizationSpecification() throws JSONException {
     return new JSONObject() {{
       put("type", "PAYMENT_GATEWAY");
-      put("parameters", new JSONObject() {
-        {
-          put("gateway", "example");
-          put("gatewayMerchantId", "exampleGatewayMerchantId");
-        }
-      });
+      put("parameters", new JSONObject() {{
+        put("gateway", "example");
+        put("gatewayMerchantId", "exampleGatewayMerchantId");
+      }});
     }};
   }
 
