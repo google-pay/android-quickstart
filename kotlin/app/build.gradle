@@ -27,4 +27,5 @@ android {
 dependencies {
     implementation "com.google.android.gms:play-services-wallet:16.0.1"
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
+    implementation "com.fasterxml.jackson.module:jackson-module-kotlin:2.11.0"
 }

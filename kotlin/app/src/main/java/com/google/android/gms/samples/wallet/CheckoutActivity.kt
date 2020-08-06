@@ -25,7 +25,9 @@ import android.util.Log
 import android.view.View
 import android.widget.Toast
 import com.google.android.gms.common.api.ApiException
-import com.google.android.gms.samples.wallet.util.Json
+import com.google.android.gms.samples.wallet.util.*
+import com.google.android.gms.samples.wallet.util.TransactionInfo
+import com.google.android.gms.samples.wallet.util.serialization.PaymentRequestSerializer
 import com.google.android.gms.wallet.*
 import kotlinx.android.synthetic.main.activity_checkout.*
 import org.json.JSONArray
@@ -76,6 +78,55 @@ class CheckoutActivity : Activity() {
         possiblyShowGooglePayButton()
 
         googlePayButton.setOnClickListener { requestPayment() }
+
+        val paymentRequest = PaymentRequest(
+                apiVersion = 2,
+                apiVersionMinor = 0,
+                allowedPaymentMethods = arrayOf(
+                        TokenizationPaymentMethodSpecification(
+                                PaymentMethodType.CARD,
+                                CardParameters(
+                                        allowedAuthMethods = arrayOf(CardAuthMethod.CRYPTOGRAM_3DS, CardAuthMethod.PAN_ONLY),
+                                        allowedCardNetworks = arrayOf(CardNetwork.AMEX, CardNetwork.MASTERCARD, CardNetwork.VISA, CardNetwork("OTHER"))
+                                ),
+                                PaymentGatewayTokenizationSpecification(object {
+                                    val gateway = "example"
+                                    val gatewayMerchantId = "123"
+                                })
+                        ),
+                        TokenizationPaymentMethodSpecification(
+                                PaymentMethodType.CARD,
+                                CardParameters(
+                                        allowedAuthMethods = arrayOf(CardAuthMethod.CRYPTOGRAM_3DS, CardAuthMethod.PAN_ONLY),
+                                        allowedCardNetworks = arrayOf(CardNetwork.AMEX, CardNetwork.MASTERCARD, CardNetwork.VISA)
+                                ),
+                                DirectTokenizationSpecification(protocolVersion = "ECv2", publicKey = "abc")
+                        ),
+                        TokenizationPaymentMethodSpecification(
+                                PaymentMethodType.PAYPAL,
+                                object {
+                                    val purchase_context = object {
+                                        val purchase_units = arrayOf(object {
+                                            val payee = object {
+                                                val merchant_id = "<YOUR_PAYPAL_ACCOUNT_ID>"
+                                            }
+                                        })
+                                    }
+                                },
+                                DirectTokenizationSpecification()
+                        )
+                ),
+                merchantInfo = MerchantInfo("12345", "sample"),
+                transactionInfo = TransactionInfo(
+                        currencyCode = "USD",
+                        countryCode = "US",
+                        totalPrice = "100",
+                        totalPriceStatus = TotalPriceStatus.FINAL
+                )
+        )
+
+        val json = PaymentRequestSerializer().toJson(paymentRequest)
+        println(json)
     }
 
     /**
