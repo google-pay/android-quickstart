@@ -46,7 +46,7 @@ class CheckoutActivity : Activity() {
      *
      * @see [PaymentsClient](https://developers.google.com/android/reference/com/google/android/gms/wallet/PaymentsClient)
      */
-    private lateinit var paymentsClient: PaymentsClient+
+    private lateinit var paymentsClient: PaymentsClient
 
     private lateinit var garmentList: JSONArray
     private lateinit var selectedGarment: JSONObject

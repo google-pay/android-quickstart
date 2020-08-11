@@ -12,8 +12,7 @@
         <activity
             android:name=".activity.CheckoutActivity"
             android:label="@string/store_name"
-            android:screenOrientation="portrait"
-            android:theme="@style/Theme.AppCompat">
+            android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
