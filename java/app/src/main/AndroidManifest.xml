@@ -20,22 +20,10 @@
             </intent-filter>
         </activity>
 
-        <activity
-            android:name=".activity.PaymentTransparentActivity"
-            android:launchMode="singleTask"
-            android:taskAffinity=""
-            android:theme="@style/Transparent" />
-
         <!-- Enabling this flag is required in order to use the PaymentsClient -->
         <meta-data
             android:name="com.google.android.gms.wallet.api.enabled"
             android:value="true" />
-
-        <service
-            android:name=".service.PaymentNotificationIntentService"
-            android:enabled="true"
-            android:icon="@drawable/googlepay_button_overlay"
-            android:label="@string/app_name" />
     </application>
 
 </manifest>

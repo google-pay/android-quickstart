@@ -19,19 +19,14 @@ package com.google.android.gms.samples.wallet.activity;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Intent;
-import android.os.Build;
 import android.os.Bundle;
 import android.text.Html;
 import android.util.Log;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
 
 import com.google.android.gms.common.api.Status;
 import com.google.android.gms.samples.wallet.databinding.ActivityCheckoutBinding;
-import com.google.android.gms.samples.wallet.util.Notifications;
 import com.google.android.gms.samples.wallet.util.PaymentsUtil;
 import com.google.android.gms.samples.wallet.R;
 import com.google.android.gms.samples.wallet.util.Json;
@@ -80,13 +75,7 @@ public class CheckoutActivity extends AppCompatActivity {
   @Override
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
-
     initializeUi();
-
-    // Create notification channels according to Android O+ guidelines
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-      Notifications.createNotificationChannelIfNotCreated(this);
-    }
 
     // Set up the mock information for our item in the UI.
     try {
@@ -100,30 +89,6 @@ public class CheckoutActivity extends AppCompatActivity {
     // It's recommended to create the PaymentsClient object inside of the onCreate method.
     paymentsClient = PaymentsUtil.createPaymentsClient(this);
     possiblyShowGooglePayButton();
-  }
-
-  /**
-   * Add a menu option to trigger a notification
-   */
-  @Override
-  public boolean onCreateOptionsMenu(Menu menu) {
-    MenuInflater inflater = getMenuInflater();
-    inflater.inflate(R.menu.menus, menu);
-    return true;
-  }
-
-  /**
-   * Handle selection in the options menu
-   */
-  @Override
-  public boolean onOptionsItemSelected(MenuItem item) {
-    switch (item.getItemId()) {
-      case R.id.send_notification:
-        Notifications.triggerPaymentNotification(this);
-        return true;
-      default:
-        return super.onOptionsItemSelected(item);
-    }
   }
 
   /**
@@ -167,11 +132,6 @@ public class CheckoutActivity extends AppCompatActivity {
     // Use view binding to access the UI elements
     layoutBinding = ActivityCheckoutBinding.inflate(getLayoutInflater());
     setContentView(layoutBinding.getRoot());
-
-    // Dismiss the notification UI if the activity was opened from a notification
-    if (Notifications.ACTION_PAY_GOOGLE_PAY.equals(getIntent().getAction())) {
-      sendBroadcast(new Intent(Intent.ACTION_CLOSE_SYSTEM_DIALOGS));
-    }
 
     // The Google Pay button is a layout file – take the root view
     googlePayButton = layoutBinding.googlePayButton.getRoot();
@@ -269,18 +229,7 @@ public class CheckoutActivity extends AppCompatActivity {
       // token will only consist of "examplePaymentMethodToken".
 
       final JSONObject tokenizationData = paymentMethodData.getJSONObject("tokenizationData");
-      final String tokenizationType = tokenizationData.getString("type");
       final String token = tokenizationData.getString("token");
-
-      if ("PAYMENT_GATEWAY".equals(tokenizationType) && "examplePaymentMethodToken".equals(token)) {
-        new AlertDialog.Builder(this)
-            .setTitle("Warning")
-            .setMessage(getString(R.string.gateway_replace_name_example))
-            .setPositiveButton("OK", null)
-            .create()
-            .show();
-      }
-
       final JSONObject info = paymentMethodData.getJSONObject("info");
       final String billingName = info.getJSONObject("billingAddress").getString("name");
       Toast.makeText(
