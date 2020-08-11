@@ -22,7 +22,9 @@ import android.os.Bundle
 import android.text.Html
 import android.util.Log
 import com.google.android.gms.samples.wallet.util.Json
-import com.google.android.gms.wallet.*
+import com.google.android.gms.wallet.AutoResolveHelper
+import com.google.android.gms.wallet.PaymentData
+import com.google.android.gms.wallet.PaymentsClient
 import kotlinx.android.synthetic.main.activity_checkout.*
 import org.json.JSONArray
 import org.json.JSONObject
@@ -32,6 +34,8 @@ import org.json.JSONObject
  * Checkout implementation for the app
  */
 class CheckoutActivity : Activity() {
+
+    private val SHIPPING_COST_CENTS = 9 * PaymentsUtil.CENTS.toLong()
 
     /**
      * A client for interacting with the Google Pay API.
@@ -61,7 +65,6 @@ class CheckoutActivity : Activity() {
         fetchAndShowRandomGarment()
 
         // 1. Initialize a Google Pay API client specifying the environment to operate on.
-
 
         // 2. Implement the method that determines whether or not to show the Google Pay button
         // possiblyShowGooglePayButton()
@@ -99,6 +102,15 @@ class CheckoutActivity : Activity() {
     }
 
     private fun requestPayment() {
+
+        // Disables the button to prevent multiple clicks.
+        googlePayButton.isClickable = false
+
+        // The price provided to the API should include taxes and shipping.
+        // This price is not displayed to the user.
+        val garmentPrice = selectedGarment.getDouble("price")
+        val priceCents = Math.round(garmentPrice * PaymentsUtil.CENTS.toLong()) + SHIPPING_COST_CENTS
+
         // 6. Construct the payment data request object and initiate the payment transaction
         // by calling loadPaymentData.
     }
@@ -114,15 +126,15 @@ class CheckoutActivity : Activity() {
      */
     public override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         when (requestCode) {
-            // value passed in AutoResolveHelper
+            // Value passed in AutoResolveHelper
             LOAD_PAYMENT_DATA_REQUEST_CODE -> {
                 when (resultCode) {
-                    Activity.RESULT_OK -> {
+                    RESULT_OK -> {
                         // 7. Process the result of the transaction upon successful completion.
                     }
-                    Activity.RESULT_CANCELED -> {
-                        // Nothing to do here normally - the user simply cancelled
-                        // without selecting a payment method.
+
+                    RESULT_CANCELED -> {
+                        // The user cancelled the payment attempt
                     }
 
                     AutoResolveHelper.RESULT_ERROR -> {
@@ -131,6 +143,7 @@ class CheckoutActivity : Activity() {
                         }
                     }
                 }
+
                 // Re-enables the Google Pay payment button.
                 googlePayButton.isClickable = true
             }
