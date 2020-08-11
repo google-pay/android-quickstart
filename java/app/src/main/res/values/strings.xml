@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-     Copyright (C) Google
+     Copyright 2020 Google Inc.
 
      Licensed under the Apache License, Version 2.0 (the "License");
      you may not use this file except in compliance with the License.
@@ -16,9 +16,19 @@
 -->
 
 <resources>
-    <string name="app_name" translatable="false">My Online Store App</string>
-    <string name="store_name" translatable="false">My Online Store</string>
-    <string name="googlepay_status_unavailable" translatable="false">Unfortunately, Google Pay is not available on this phone.</string>
-    <string name="googlepay_status_checking" translatable="false">Checking if Google Pay is available...</string>
-    <string name="payments_show_name" translatable="false">Successfully received payment data for %s!</string>
+    <string name="app_name" translatable="false">Auto T-Shirt App</string>
+    <string name="store_name" translatable="false">Auto T-Shirt Shop</string>
+
+    <!-- Payment notification -->
+    <string name="channel_name">Payment Channel</string>
+    <string name="send_notification">Send Notification</string>
+    <string name="notification_title" translatable="false">Account top up</string>
+    <string name="notification_text">Your account balance in close to zero. Top it up now.</string>
+    <string name="pay_other_method">Top-up using a different method</string>
+
+    <!-- Checkout -->
+    <string name="googlepay_status_unavailable">Unfortunately, Google Pay is not available on this device.</string>
+    <string name="payments_show_name">Successfully received payment data for %s!</string>
+    <string name="gateway_replace_name_example">"Gateway name set to \"example\" - please modify Constants.java and replace it with your own gateway."</string>
+    <string name="checkout_item_description">Description</string>
 </resources>
