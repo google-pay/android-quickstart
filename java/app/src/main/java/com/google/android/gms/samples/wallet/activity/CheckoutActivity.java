@@ -84,10 +84,10 @@ public class CheckoutActivity extends AppCompatActivity {
       throw new RuntimeException("The list of garments cannot be loaded");
     }
 
-    // Initialize a Google Pay API client for an environment suitable for testing.
-    // It's recommended to create the PaymentsClient object inside of the onCreate method.
-    paymentsClient = PaymentsUtil.createPaymentsClient(this);
-    possiblyShowGooglePayButton();
+    // 1. Initialize a Google Pay API client specifying the environment to operate on.
+
+    // 2. Implement the method that determines whether or not to show the Google Pay button
+    // possiblyShowGooglePayButton()
   }
 
   /**
@@ -107,8 +107,7 @@ public class CheckoutActivity extends AppCompatActivity {
         switch (resultCode) {
 
           case Activity.RESULT_OK:
-            PaymentData paymentData = PaymentData.getFromIntent(data);
-            handlePaymentSuccess(paymentData);
+            // 7. Process the result of the transaction upon successful completion.
             break;
 
           case Activity.RESULT_CANCELED:
@@ -168,26 +167,12 @@ public class CheckoutActivity extends AppCompatActivity {
    */
   private void possiblyShowGooglePayButton() {
 
-    final Optional<JSONObject> isReadyToPayJson = PaymentsUtil.getIsReadyToPayRequest();
-    if (!isReadyToPayJson.isPresent()) {
-      return;
-    }
+    // 3. Populate the fields under the readyToPay request before calling isReadyToPay
+    // val isReadyToPayJson = ...
 
-    // The call to isReadyToPay is asynchronous and returns a Task. We need to provide an
-    // OnCompleteListener to be triggered when the result of the call is known.
-    IsReadyToPayRequest request = IsReadyToPayRequest.fromJson(isReadyToPayJson.get().toString());
-    Task<Boolean> task = paymentsClient.isReadyToPay(request);
-    task.addOnCompleteListener(this,
-        new OnCompleteListener<Boolean>() {
-          @Override
-          public void onComplete(@NonNull Task<Boolean> task) {
-            if (task.isSuccessful()) {
-              setGooglePayAvailable(task.getResult());
-            } else {
-              Log.w("isReadyToPay failed", task.getException());
-            }
-          }
-        });
+    // 4. Use the previously created object to call isReadyToPay and capture the result
+    // val task = paymentsClient.isReadyToPay(request)
+    // task.addOnCompleteListener...: setGooglePayAvailable(available)
   }
 
   /**
@@ -199,11 +184,8 @@ public class CheckoutActivity extends AppCompatActivity {
    * @param available isReadyToPay API response.
    */
   private void setGooglePayAvailable(boolean available) {
-    if (available) {
-      googlePayButton.setVisibility(View.VISIBLE);
-    } else {
-      Toast.makeText(this, R.string.googlepay_status_unavailable, Toast.LENGTH_LONG).show();
-    }
+    // 5. Show the Google Pay button if the user is able to pay using Google Pay.
+    // Otherwise, update your UI and show notifications accordingly.
   }
 
   /**
@@ -215,32 +197,9 @@ public class CheckoutActivity extends AppCompatActivity {
    * object#PaymentData">PaymentData</a>
    */
   private void handlePaymentSuccess(PaymentData paymentData) {
-
-    // Token will be null if PaymentDataRequest was not constructed using fromJson(String).
-    final String paymentInfo = paymentData.toJson();
-    if (paymentInfo == null) {
-      return;
-    }
-
-    try {
-      JSONObject paymentMethodData = new JSONObject(paymentInfo).getJSONObject("paymentMethodData");
-      // If the gateway is set to "example", no payment information is returned - instead, the
-      // token will only consist of "examplePaymentMethodToken".
-
-      final JSONObject tokenizationData = paymentMethodData.getJSONObject("tokenizationData");
-      final String token = tokenizationData.getString("token");
-      final JSONObject info = paymentMethodData.getJSONObject("info");
-      final String billingName = info.getJSONObject("billingAddress").getString("name");
-      Toast.makeText(
-          this, getString(R.string.payments_show_name, billingName),
-          Toast.LENGTH_LONG).show();
-
-      // Logging token string.
-      Log.d("Google Pay token: ", token);
-
-    } catch (JSONException e) {
-      throw new RuntimeException("The selected garment cannot be parsed from the list of elements");
-    }
+    // 8. Inspect the resulting payload and update your application accordingly.
+    // For example, you may want to notify the user about the result of the transaction.
+    // val paymentInformation = paymentData.toJson() ?: return
   }
 
   /**
@@ -268,22 +227,8 @@ public class CheckoutActivity extends AppCompatActivity {
       long garmentPriceCents = Math.round(garmentPrice * PaymentsUtil.CENTS_IN_A_UNIT.longValue());
       long priceCents = garmentPriceCents + SHIPPING_COST_CENTS;
 
-      Optional<JSONObject> paymentDataRequestJson = PaymentsUtil.getPaymentDataRequest(priceCents);
-      if (!paymentDataRequestJson.isPresent()) {
-        return;
-      }
-
-      PaymentDataRequest request =
-          PaymentDataRequest.fromJson(paymentDataRequestJson.get().toString());
-
-      // Since loadPaymentData may show the UI asking the user to select a payment method, we use
-      // AutoResolveHelper to wait for the user interacting with it. Once completed,
-      // onActivityResult will be called with the result.
-      if (request != null) {
-        AutoResolveHelper.resolveTask(
-            paymentsClient.loadPaymentData(request),
-            this, LOAD_PAYMENT_DATA_REQUEST_CODE);
-      }
+      // 6. Construct the payment data request object and initiate the payment transaction
+      // by calling loadPaymentData.
 
     } catch (JSONException e) {
       throw new RuntimeException("The price cannot be deserialized from the JSON object.");

@@ -70,9 +70,6 @@ class CheckoutActivity : Activity() {
 
         // 2. Implement the method that determines whether or not to show the Google Pay button
         // possiblyShowGooglePayButton()
-
-        // Add click listener to Google Pay button
-        googlePayButton.setOnClickListener { requestPayment() }
     }
 
     /**
