@@ -169,11 +169,9 @@ object PaymentsUtil {
      */
     fun isReadyToPayRequest(): JSONObject? {
         return try {
-            val isReadyToPayRequest = JSONObject(baseRequest.toString())
-            isReadyToPayRequest.put(
-                    "allowedPaymentMethods", JSONArray().put(baseCardPaymentMethod()))
-
-            isReadyToPayRequest
+            baseRequest.apply {
+                put("allowedPaymentMethods", JSONArray().put(baseCardPaymentMethod()))
+            }
 
         } catch (e: JSONException) {
             null
@@ -187,9 +185,8 @@ object PaymentsUtil {
      * @throws JSONException
      * @see [MerchantInfo](https://developers.google.com/pay/api/android/reference/object.MerchantInfo)
      */
-    private val merchantInfo: JSONObject
-        @Throws(JSONException::class)
-        get() = JSONObject().put("merchantName", "Example Merchant")
+    private val merchantInfo: JSONObject =
+            JSONObject().put("merchantName", "Example Merchant")
 
     /**
      * Creates an instance of [PaymentsClient] for use in an [Activity] using the
@@ -229,8 +226,8 @@ object PaymentsUtil {
      * @see [PaymentDataRequest](https://developers.google.com/pay/api/android/reference/object.PaymentDataRequest)
      */
     fun getPaymentDataRequest(price: String): JSONObject? {
-        try {
-            return JSONObject(baseRequest.toString()).apply {
+        return try {
+            baseRequest.apply {
                 put("allowedPaymentMethods", JSONArray().put(cardPaymentMethod()))
                 put("transactionInfo", getTransactionInfo(price))
                 put("merchantInfo", merchantInfo)
@@ -239,15 +236,14 @@ object PaymentsUtil {
                 // PaymentDataRequest JSON object.
                 val shippingAddressParameters = JSONObject().apply {
                     put("phoneNumberRequired", false)
-                    put("allowedCountryCodes", JSONArray(Constants.SHIPPING_SUPPORTED_COUNTRIES))
+                    put("allowedCountryCodes", JSONArray(listOf("US", "GB")))
                 }
-                put("shippingAddressRequired", true)
                 put("shippingAddressParameters", shippingAddressParameters)
+                put("shippingAddressRequired", true)
             }
         } catch (e: JSONException) {
-            return null
+            null
         }
-
     }
 }
 
