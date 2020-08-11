@@ -33,7 +33,7 @@ import java.math.RoundingMode
  * relevant to your implementation.
  */
 object PaymentsUtil {
-    val MICROS = BigDecimal(1000000.0)
+    val CENTS = BigDecimal(100)
 
     /**
      * Create a Google Pay API base request object with properties used in all requests.
@@ -225,11 +225,11 @@ object PaymentsUtil {
      * @return Payment data expected by your app.
      * @see [PaymentDataRequest](https://developers.google.com/pay/api/android/reference/object.PaymentDataRequest)
      */
-    fun getPaymentDataRequest(price: String): JSONObject? {
-        return try {
+    fun getPaymentDataRequest(priceCemts: Long): JSONObject? {
+            return try {
             baseRequest.apply {
                 put("allowedPaymentMethods", JSONArray().put(cardPaymentMethod()))
-                put("transactionInfo", getTransactionInfo(price))
+                put("transactionInfo", getTransactionInfo(priceCemts.centsToString()))
                 put("merchantInfo", merchantInfo)
 
                 // An optional shipping address requirement is a top-level property of the
@@ -248,11 +248,11 @@ object PaymentsUtil {
 }
 
 /**
- * Converts micros to a string format accepted by [PaymentsUtil.getPaymentDataRequest].
+ * Converts cents to a string format accepted by [PaymentsUtil.getPaymentDataRequest].
  *
- * @param micros value of the price.
+ * @param cents value of the price.
  */
-fun Long.microsToString() = BigDecimal(this)
-        .divide(PaymentsUtil.MICROS)
+fun Long.centsToString() = BigDecimal(this)
+        .divide(PaymentsUtil.CENTS)
         .setScale(2, RoundingMode.HALF_EVEN)
         .toString()

@@ -14,10 +14,9 @@
  * limitations under the License.
  */
 
-package com.google.android.gms.samples.wallet
+package com.google.android.gms.samples.wallet.activity
 
 import android.app.Activity
-import android.app.AlertDialog
 import android.content.Intent
 import android.os.Bundle
 import android.text.Html
@@ -25,13 +24,14 @@ import android.util.Log
 import android.view.View
 import android.widget.Toast
 import com.google.android.gms.common.api.ApiException
+import com.google.android.gms.samples.wallet.PaymentsUtil
+import com.google.android.gms.samples.wallet.R
 import com.google.android.gms.samples.wallet.util.Json
 import com.google.android.gms.wallet.*
 import kotlinx.android.synthetic.main.activity_checkout.*
 import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
-import kotlin.math.roundToLong
 
 
 /**
@@ -39,13 +39,14 @@ import kotlin.math.roundToLong
  */
 class CheckoutActivity : Activity() {
 
+    private val SHIPPING_COST_CENTS = 9 * PaymentsUtil.CENTS.toLong()
+
     /**
      * A client for interacting with the Google Pay API.
      *
      * @see [PaymentsClient](https://developers.google.com/android/reference/com/google/android/gms/wallet/PaymentsClient)
      */
-    private lateinit var paymentsClient: PaymentsClient
-    private val shippingCost = (90 * 1000000).toLong()
+    private lateinit var paymentsClient: PaymentsClient+
 
     private lateinit var garmentList: JSONArray
     private lateinit var selectedGarment: JSONObject
@@ -86,7 +87,8 @@ class CheckoutActivity : Activity() {
     ) */
     private fun possiblyShowGooglePayButton() {
 
-        val isReadyToPayJson = PaymentsUtil.isReadyToPayRequest() ?: return
+        val isReadyToPayJson = PaymentsUtil.isReadyToPayRequest()
+                ?: return
         val request = IsReadyToPayRequest.fromJson(isReadyToPayJson.toString()) ?: return
 
         // The call to isReadyToPay is asynchronous and returns a Task. We need to provide an
@@ -127,10 +129,10 @@ class CheckoutActivity : Activity() {
 
         // The price provided to the API should include taxes and shipping.
         // This price is not displayed to the user.
-        val garmentPriceMicros = (selectedGarment.getDouble("price") * 1000000).roundToLong()
-        val price = (garmentPriceMicros + shippingCost).microsToString()
+        val garmentPrice = selectedGarment.getDouble("price")
+        val priceCents = Math.round(garmentPrice * PaymentsUtil.CENTS.toLong()) + SHIPPING_COST_CENTS
 
-        val paymentDataRequestJson = PaymentsUtil.getPaymentDataRequest(price)
+        val paymentDataRequestJson = PaymentsUtil.getPaymentDataRequest(priceCents)
         if (paymentDataRequestJson == null) {
             Log.e("RequestPayment", "Can't fetch payment data request")
             return
