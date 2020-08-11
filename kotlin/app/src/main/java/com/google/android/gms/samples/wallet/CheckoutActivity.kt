@@ -196,24 +196,6 @@ class CheckoutActivity : Activity() {
         try {
             // Token will be null if PaymentDataRequest was not constructed using fromJson(String).
             val paymentMethodData = JSONObject(paymentInformation).getJSONObject("paymentMethodData")
-
-            // If the gateway is set to "example", no payment information is returned - instead, the
-            // token will only consist of "examplePaymentMethodToken".
-            if (paymentMethodData
-                            .getJSONObject("tokenizationData")
-                            .getString("type") == "PAYMENT_GATEWAY" && paymentMethodData
-                            .getJSONObject("tokenizationData")
-                            .getString("token") == "examplePaymentMethodToken") {
-
-                AlertDialog.Builder(this)
-                        .setTitle("Warning")
-                        .setMessage("Gateway name set to \"example\" - please modify " +
-                                "Constants.java and replace it with your own gateway.")
-                        .setPositiveButton("OK", null)
-                        .create()
-                        .show()
-            }
-
             val billingName = paymentMethodData.getJSONObject("info")
                     .getJSONObject("billingAddress").getString("name")
             Log.d("BillingName", billingName)
