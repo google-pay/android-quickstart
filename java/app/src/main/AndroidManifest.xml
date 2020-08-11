@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
 
     package="com.google.android.gms.samples.wallet">
@@ -10,8 +11,10 @@
         android:supportsRtl="true">
 
         <activity
-            android:name="CheckoutActivity"
-            android:label="@string/store_name" >
+            android:name=".activity.CheckoutActivity"
+            android:label="@string/store_name"
+            android:screenOrientation="portrait"
+            android:theme="@style/Theme.AppCompat">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
