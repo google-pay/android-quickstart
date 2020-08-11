@@ -226,7 +226,7 @@ object PaymentsUtil {
      * @see [PaymentDataRequest](https://developers.google.com/pay/api/android/reference/object.PaymentDataRequest)
      */
     fun getPaymentDataRequest(priceCemts: Long): JSONObject? {
-            return try {
+        return try {
             baseRequest.apply {
                 put("allowedPaymentMethods", JSONArray().put(cardPaymentMethod()))
                 put("transactionInfo", getTransactionInfo(priceCemts.centsToString()))
