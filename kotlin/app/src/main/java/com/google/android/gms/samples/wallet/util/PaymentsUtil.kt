@@ -14,9 +14,10 @@
  * limitations under the License.
  */
 
-package com.google.android.gms.samples.wallet
+package com.google.android.gms.samples.wallet.util
 
 import android.app.Activity
+import com.google.android.gms.samples.wallet.Constants
 import com.google.android.gms.wallet.PaymentsClient
 import com.google.android.gms.wallet.Wallet
 import org.json.JSONArray

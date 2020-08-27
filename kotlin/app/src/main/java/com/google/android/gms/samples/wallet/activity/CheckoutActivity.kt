@@ -24,7 +24,7 @@ import android.util.Log
 import android.view.View
 import android.widget.Toast
 import com.google.android.gms.common.api.ApiException
-import com.google.android.gms.samples.wallet.PaymentsUtil
+import com.google.android.gms.samples.wallet.util.PaymentsUtil
 import com.google.android.gms.samples.wallet.R
 import com.google.android.gms.samples.wallet.util.Json
 import com.google.android.gms.wallet.*
@@ -87,8 +87,7 @@ class CheckoutActivity : Activity() {
     ) */
     private fun possiblyShowGooglePayButton() {
 
-        val isReadyToPayJson = PaymentsUtil.isReadyToPayRequest()
-                ?: return
+        val isReadyToPayJson = PaymentsUtil.isReadyToPayRequest() ?: return
         val request = IsReadyToPayRequest.fromJson(isReadyToPayJson.toString()) ?: return
 
         // The call to isReadyToPay is asynchronous and returns a Task. We need to provide an
