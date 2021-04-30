@@ -47,7 +47,6 @@ public class PaymentTransparentActivity extends AppCompatActivity {
   @Override
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
-    setContentView(R.layout.activity_transparent);
 
     // Dismiss the notification UI if the activity was opened from a notification
     if (Notifications.ACTION_PAY_GOOGLE_PAY.equals(getIntent().getAction())) {

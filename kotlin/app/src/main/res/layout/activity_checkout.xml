@@ -21,7 +21,7 @@
     android:layout_height="match_parent"
     android:background="#fff"
     android:fillViewport="true"
-    tools:context="com.google.android.gms.samples.wallet.CheckoutActivity">
+    tools:context=".activity.CheckoutActivity">
 
     <LinearLayout
         android:layout_width="match_parent"
