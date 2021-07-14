@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Google Inc.
+ * Copyright 2021 Google Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,20 +16,17 @@
 
 package com.google.android.gms.samples.wallet.activity
 
-import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
-import android.text.Html
 import android.util.Log
 import android.view.View
 import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
 import com.google.android.gms.common.api.ApiException
 import com.google.android.gms.samples.wallet.util.PaymentsUtil
 import com.google.android.gms.samples.wallet.R
-import com.google.android.gms.samples.wallet.util.Json
+import com.google.android.gms.samples.wallet.databinding.ActivityCheckoutBinding
 import com.google.android.gms.wallet.*
-import kotlinx.android.synthetic.main.activity_checkout.*
-import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
 
@@ -37,9 +34,7 @@ import org.json.JSONObject
 /**
  * Checkout implementation for the app
  */
-class CheckoutActivity : Activity() {
-
-    private val SHIPPING_COST_CENTS = 9 * PaymentsUtil.CENTS.toLong()
+class CheckoutActivity : AppCompatActivity() {
 
     /**
      * A client for interacting with the Google Pay API.
@@ -48,35 +43,34 @@ class CheckoutActivity : Activity() {
      */
     private lateinit var paymentsClient: PaymentsClient
 
-    private lateinit var garmentList: JSONArray
-    private lateinit var selectedGarment: JSONObject
-
     /**
      * Arbitrarily-picked constant integer you define to track a request for payment data activity.
      *
      * @value #LOAD_PAYMENT_DATA_REQUEST_CODE
      */
-    private val LOAD_PAYMENT_DATA_REQUEST_CODE = 991
+    private val loadPaymentDataRequestCode = 991
+
+    private lateinit var layoutBinding: ActivityCheckoutBinding
+    private lateinit var googlePayButton: View
 
     /**
      * Initialize the Google Pay API on creation of the activity
      *
-     * @see Activity.onCreate
+     * @see AppCompatActivity.onCreate
      */
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_checkout)
 
-        // Set up the mock information for our item in the UI.
-        selectedGarment = fetchRandomGarment()
-        displayGarment(selectedGarment)
+        // Use view binding to access the UI elements
+        layoutBinding = ActivityCheckoutBinding.inflate(layoutInflater)
+        setContentView(layoutBinding.root)
+        googlePayButton = layoutBinding.googlePayButton.root
+        googlePayButton.setOnClickListener { requestPayment() }
 
         // Initialize a Google Pay API client for an environment suitable for testing.
         // It's recommended to create the PaymentsClient object inside of the onCreate method.
         paymentsClient = PaymentsUtil.createPaymentsClient(this)
         possiblyShowGooglePayButton()
-
-        googlePayButton.setOnClickListener { requestPayment() }
     }
 
     /**
@@ -117,7 +111,7 @@ class CheckoutActivity : Activity() {
             Toast.makeText(
                     this,
                     "Unfortunately, Google Pay is not available on this device",
-                    Toast.LENGTH_LONG).show();
+                    Toast.LENGTH_LONG).show()
         }
     }
     
@@ -128,10 +122,11 @@ class CheckoutActivity : Activity() {
 
         // The price provided to the API should include taxes and shipping.
         // This price is not displayed to the user.
-        val garmentPrice = selectedGarment.getDouble("price")
-        val priceCents = Math.round(garmentPrice * PaymentsUtil.CENTS.toLong()) + SHIPPING_COST_CENTS
+        val dummyPriceCents = 100
+        val shippingCostCents = 900
+        val priceCents = dummyPriceCents + shippingCostCents
 
-        val paymentDataRequestJson = PaymentsUtil.getPaymentDataRequest(priceCents)
+        val paymentDataRequestJson = PaymentsUtil.getPaymentDataRequest(priceCents.toLong())
         if (paymentDataRequestJson == null) {
             Log.e("RequestPayment", "Can't fetch payment data request")
             return
@@ -143,7 +138,7 @@ class CheckoutActivity : Activity() {
         // onActivityResult will be called with the result.
         if (request != null) {
             AutoResolveHelper.resolveTask(
-                    paymentsClient.loadPaymentData(request), this, LOAD_PAYMENT_DATA_REQUEST_CODE)
+                    paymentsClient.loadPaymentData(request), this, loadPaymentDataRequestCode)
         }
     }
 
@@ -156,10 +151,11 @@ class CheckoutActivity : Activity() {
      * @see [Getting a result
      * from an Activity](https://developer.android.com/training/basics/intents/result)
      */
-    public override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
         when (requestCode) {
             // Value passed in AutoResolveHelper
-            LOAD_PAYMENT_DATA_REQUEST_CODE -> {
+            loadPaymentDataRequestCode -> {
                 when (resultCode) {
                     RESULT_OK ->
                         data?.let { intent ->
@@ -208,8 +204,8 @@ class CheckoutActivity : Activity() {
                     .getJSONObject("tokenizationData")
                     .getString("token"))
 
-        } catch (e: JSONException) {
-            Log.e("handlePaymentSuccess", "Error: " + e.toString())
+        } catch (error: JSONException) {
+            Log.e("handlePaymentSuccess", "Error: $error")
         }
 
     }
@@ -225,26 +221,5 @@ class CheckoutActivity : Activity() {
      */
     private fun handleError(statusCode: Int) {
         Log.w("loadPaymentData failed", String.format("Error code: %d", statusCode))
-    }
-
-    private fun fetchRandomGarment() : JSONObject {
-        if (!::garmentList.isInitialized) {
-            garmentList = Json.readFromResources(this, R.raw.tshirts)
-        }
-
-        val randomIndex:Int = Math.round(Math.random() * (garmentList.length() - 1)).toInt()
-        return garmentList.getJSONObject(randomIndex)
-    }
-
-    private fun displayGarment(garment:JSONObject) {
-        detailTitle.setText(garment.getString("title"))
-        detailPrice.setText("\$${garment.getString("price")}")
-
-        val escapedHtmlText:String = Html.fromHtml(garment.getString("description")).toString()
-        detailDescription.setText(Html.fromHtml(escapedHtmlText))
-
-        val imageUri = "@drawable/${garment.getString("image")}"
-        val imageResource = resources.getIdentifier(imageUri, null, packageName)
-        detailImage.setImageResource(imageResource)
     }
 }

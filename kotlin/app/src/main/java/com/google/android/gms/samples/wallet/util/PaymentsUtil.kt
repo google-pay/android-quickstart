@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Google Inc.
+ * Copyright 2021 Google Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -59,39 +59,12 @@ object PaymentsUtil {
      *
      * @return Payment data tokenization for the CARD payment method.
      * @throws JSONException
-     * @see [PaymentMethodTokenizationSpecification](https://developers.google.com/pay/api/android/reference/object.PaymentMethodTokenizationSpecification)
+     * See [PaymentMethodTokenizationSpecification](https://developers.google.com/pay/api/android/reference/object.PaymentMethodTokenizationSpecification)
      */
     private fun gatewayTokenizationSpecification(): JSONObject {
         return JSONObject().apply {
             put("type", "PAYMENT_GATEWAY")
             put("parameters", JSONObject(Constants.PAYMENT_GATEWAY_TOKENIZATION_PARAMETERS))
-        }
-    }
-
-    /**
-     * `DIRECT` Integration: Decrypt a response directly on your servers. This configuration has
-     * additional data security requirements from Google and additional PCI DSS compliance complexity.
-     *
-     *
-     * Please refer to the documentation for more information about `DIRECT` integration. The
-     * type of integration you use depends on your payment processor.
-     *
-     * @return Payment data tokenization for the CARD payment method.
-     * @throws JSONException
-     * @see [PaymentMethodTokenizationSpecification](https://developers.google.com/pay/api/android/reference/object.PaymentMethodTokenizationSpecification)
-     */
-    private fun directTokenizationSpecification(): JSONObject {
-        if (Constants.DIRECT_TOKENIZATION_PUBLIC_KEY == "REPLACE_ME" ||
-                (Constants.DIRECT_TOKENIZATION_PARAMETERS.isEmpty() ||
-                 Constants.DIRECT_TOKENIZATION_PUBLIC_KEY.isEmpty())) {
-
-            throw RuntimeException(
-                    "Please edit the Constants.java file to add protocol version & public key.")
-        }
-
-        return JSONObject().apply {
-            put("type", "DIRECT")
-            put("parameters", JSONObject(Constants.DIRECT_TOKENIZATION_PARAMETERS))
         }
     }
 
@@ -102,7 +75,7 @@ object PaymentsUtil {
      * TODO: Confirm card networks supported by your app and gateway & update in Constants.java.
      *
      * @return Allowed card networks
-     * @see [CardParameters](https://developers.google.com/pay/api/android/reference/object.CardParameters)
+     * See [CardParameters](https://developers.google.com/pay/api/android/reference/object.CardParameters)
      */
     private val allowedCardNetworks = JSONArray(Constants.SUPPORTED_NETWORKS)
 
@@ -114,7 +87,7 @@ object PaymentsUtil {
      * and make updates in Constants.java.
      *
      * @return Allowed card authentication methods.
-     * @see [CardParameters](https://developers.google.com/pay/api/android/reference/object.CardParameters)
+     * See [CardParameters](https://developers.google.com/pay/api/android/reference/object.CardParameters)
      */
     private val allowedCardAuthMethods = JSONArray(Constants.SUPPORTED_METHODS)
 
@@ -127,7 +100,7 @@ object PaymentsUtil {
      *
      * @return A CARD PaymentMethod object describing accepted cards.
      * @throws JSONException
-     * @see [PaymentMethod](https://developers.google.com/pay/api/android/reference/object.PaymentMethod)
+     * See [PaymentMethod](https://developers.google.com/pay/api/android/reference/object.PaymentMethod)
      */
     // Optionally, you can add billing address/phone number associated with a CARD payment method.
     private fun baseCardPaymentMethod(): JSONObject {
@@ -152,7 +125,7 @@ object PaymentsUtil {
      *
      * @return A CARD PaymentMethod describing accepted cards and optional fields.
      * @throws JSONException
-     * @see [PaymentMethod](https://developers.google.com/pay/api/android/reference/object.PaymentMethod)
+     * See [PaymentMethod](https://developers.google.com/pay/api/android/reference/object.PaymentMethod)
      */
     private fun cardPaymentMethod(): JSONObject {
         val cardPaymentMethod = baseCardPaymentMethod()
@@ -166,7 +139,7 @@ object PaymentsUtil {
      * readiness to pay.
      *
      * @return API version and payment methods supported by the app.
-     * @see [IsReadyToPayRequest](https://developers.google.com/pay/api/android/reference/object.IsReadyToPayRequest)
+     * See [IsReadyToPayRequest](https://developers.google.com/pay/api/android/reference/object.IsReadyToPayRequest)
      */
     fun isReadyToPayRequest(): JSONObject? {
         return try {
@@ -184,7 +157,7 @@ object PaymentsUtil {
      *
      * @return Information about the merchant.
      * @throws JSONException
-     * @see [MerchantInfo](https://developers.google.com/pay/api/android/reference/object.MerchantInfo)
+     * See [MerchantInfo](https://developers.google.com/pay/api/android/reference/object.MerchantInfo)
      */
     private val merchantInfo: JSONObject =
             JSONObject().put("merchantName", "Example Merchant")
@@ -208,7 +181,7 @@ object PaymentsUtil {
      *
      * @return information about the requested payment.
      * @throws JSONException
-     * @see [TransactionInfo](https://developers.google.com/pay/api/android/reference/object.TransactionInfo)
+     * See [TransactionInfo](https://developers.google.com/pay/api/android/reference/object.TransactionInfo)
      */
     @Throws(JSONException::class)
     private fun getTransactionInfo(price: String): JSONObject {
@@ -224,7 +197,7 @@ object PaymentsUtil {
      * An object describing information requested in a Google Pay payment sheet
      *
      * @return Payment data expected by your app.
-     * @see [PaymentDataRequest](https://developers.google.com/pay/api/android/reference/object.PaymentDataRequest)
+     * See [PaymentDataRequest](https://developers.google.com/pay/api/android/reference/object.PaymentDataRequest)
      */
     fun getPaymentDataRequest(priceCemts: Long): JSONObject? {
         return try {
@@ -250,8 +223,6 @@ object PaymentsUtil {
 
 /**
  * Converts cents to a string format accepted by [PaymentsUtil.getPaymentDataRequest].
- *
- * @param cents value of the price.
  */
 fun Long.centsToString() = BigDecimal(this)
         .divide(PaymentsUtil.CENTS)

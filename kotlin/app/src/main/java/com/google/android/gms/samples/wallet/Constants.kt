@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Google Inc.
+ * Copyright 2021 Google Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -98,7 +98,7 @@ object Constants {
      *
      * @value #PAYMENT_GATEWAY_TOKENIZATION_NAME
      */
-    const val PAYMENT_GATEWAY_TOKENIZATION_NAME = "example"
+    private const val PAYMENT_GATEWAY_TOKENIZATION_NAME = "example"
 
     /**
      * Custom parameters required by the processor/gateway.

@@ -19,7 +19,6 @@ package com.google.android.gms.samples.wallet.activity;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
-import android.text.Html;
 import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
@@ -28,7 +27,6 @@ import com.google.android.gms.common.api.Status;
 import com.google.android.gms.samples.wallet.databinding.ActivityCheckoutBinding;
 import com.google.android.gms.samples.wallet.util.PaymentsUtil;
 import com.google.android.gms.samples.wallet.R;
-import com.google.android.gms.samples.wallet.util.Json;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.gms.wallet.AutoResolveHelper;
@@ -37,10 +35,8 @@ import com.google.android.gms.wallet.PaymentData;
 import com.google.android.gms.wallet.PaymentDataRequest;
 import com.google.android.gms.wallet.PaymentsClient;
 
-import java.util.Locale;
 import java.util.Optional;
 
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -55,16 +51,11 @@ public class CheckoutActivity extends AppCompatActivity {
   // Arbitrarily-picked constant integer you define to track a request for payment data activity.
   private static final int LOAD_PAYMENT_DATA_REQUEST_CODE = 991;
 
-  private static final long SHIPPING_COST_CENTS = 90 * PaymentsUtil.CENTS_IN_A_UNIT.longValue();
-
   // A client for interacting with the Google Pay API.
   private PaymentsClient paymentsClient;
 
   private ActivityCheckoutBinding layoutBinding;
   private View googlePayButton;
-
-  private JSONArray garmentList;
-  private JSONObject selectedGarment;
 
   /**
    * Initialize the Google Pay API on creation of the activity
@@ -75,14 +66,6 @@ public class CheckoutActivity extends AppCompatActivity {
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
     initializeUi();
-
-    // Set up the mock information for our item in the UI.
-    try {
-      selectedGarment = fetchRandomGarment();
-      displayGarment(selectedGarment);
-    } catch (JSONException e) {
-      throw new RuntimeException("The list of garments cannot be loaded");
-    }
 
     // Initialize a Google Pay API client for an environment suitable for testing.
     // It's recommended to create the PaymentsClient object inside of the onCreate method.
@@ -101,6 +84,7 @@ public class CheckoutActivity extends AppCompatActivity {
    */
   @Override
   public void onActivityResult(int requestCode, int resultCode, Intent data) {
+    super.onActivityResult(requestCode, resultCode, data);
     switch (requestCode) {
       // value passed in AutoResolveHelper
       case LOAD_PAYMENT_DATA_REQUEST_CODE:
@@ -141,21 +125,6 @@ public class CheckoutActivity extends AppCompatActivity {
             requestPayment(view);
           }
         });
-  }
-
-  private void displayGarment(JSONObject garment) throws JSONException {
-    layoutBinding.detailTitle.setText(garment.getString("title"));
-    layoutBinding.detailPrice.setText(
-        String.format(Locale.getDefault(), "$%.2f", garment.getDouble("price")));
-
-    final String escapedHtmlText = Html.fromHtml(
-        garment.getString("description"), Html.FROM_HTML_MODE_COMPACT).toString();
-    layoutBinding.detailDescription.setText(Html.fromHtml(
-        escapedHtmlText, Html.FROM_HTML_MODE_COMPACT));
-
-    final String imageUri = String.format("@drawable/%s", garment.getString("image"));
-    final int imageResource = getResources().getIdentifier(imageUri, null, getPackageName());
-    layoutBinding.detailImage.setImageResource(imageResource);
   }
 
   /**
@@ -263,46 +232,25 @@ public class CheckoutActivity extends AppCompatActivity {
 
     // The price provided to the API should include taxes and shipping.
     // This price is not displayed to the user.
-    try {
-      double garmentPrice = selectedGarment.getDouble("price");
-      long garmentPriceCents = Math.round(garmentPrice * PaymentsUtil.CENTS_IN_A_UNIT.longValue());
-      long priceCents = garmentPriceCents + SHIPPING_COST_CENTS;
+    long dummyPriceCents = 100;
+    long shippingCostCents = 900;
+    long priceCents = dummyPriceCents + shippingCostCents;
 
-      Optional<JSONObject> paymentDataRequestJson = PaymentsUtil.getPaymentDataRequest(priceCents);
-      if (!paymentDataRequestJson.isPresent()) {
-        return;
-      }
-
-      PaymentDataRequest request =
-          PaymentDataRequest.fromJson(paymentDataRequestJson.get().toString());
-
-      // Since loadPaymentData may show the UI asking the user to select a payment method, we use
-      // AutoResolveHelper to wait for the user interacting with it. Once completed,
-      // onActivityResult will be called with the result.
-      if (request != null) {
-        AutoResolveHelper.resolveTask(
-            paymentsClient.loadPaymentData(request),
-            this, LOAD_PAYMENT_DATA_REQUEST_CODE);
-      }
-
-    } catch (JSONException e) {
-      throw new RuntimeException("The price cannot be deserialized from the JSON object.");
-    }
-  }
-
-  private JSONObject fetchRandomGarment() {
-
-    // Only load the list of items if it has not been loaded before
-    if (garmentList == null) {
-      garmentList = Json.readFromResources(this, R.raw.tshirts);
+    Optional<JSONObject> paymentDataRequestJson = PaymentsUtil.getPaymentDataRequest(priceCents);
+    if (!paymentDataRequestJson.isPresent()) {
+      return;
     }
 
-    // Take a random element from the list
-    int randomIndex = Math.toIntExact(Math.round(Math.random() * (garmentList.length() - 1)));
-    try {
-      return garmentList.getJSONObject(randomIndex);
-    } catch (JSONException e) {
-      throw new RuntimeException("The index specified is out of bounds.");
+    PaymentDataRequest request =
+        PaymentDataRequest.fromJson(paymentDataRequestJson.get().toString());
+
+    // Since loadPaymentData may show the UI asking the user to select a payment method, we use
+    // AutoResolveHelper to wait for the user interacting with it. Once completed,
+    // onActivityResult will be called with the result.
+    if (request != null) {
+      AutoResolveHelper.resolveTask(
+          paymentsClient.loadPaymentData(request),
+          this, LOAD_PAYMENT_DATA_REQUEST_CODE);
     }
   }
 }
