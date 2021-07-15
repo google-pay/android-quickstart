@@ -35,8 +35,6 @@ import com.google.android.gms.wallet.PaymentData;
 import com.google.android.gms.wallet.PaymentDataRequest;
 import com.google.android.gms.wallet.PaymentsClient;
 
-import java.util.Optional;
-
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -137,14 +135,14 @@ public class CheckoutActivity extends AppCompatActivity {
    */
   private void possiblyShowGooglePayButton() {
 
-    final Optional<JSONObject> isReadyToPayJson = PaymentsUtil.getIsReadyToPayRequest();
-    if (!isReadyToPayJson.isPresent()) {
+    final JSONObject isReadyToPayJson = PaymentsUtil.getIsReadyToPayRequest();
+    if (isReadyToPayJson == null) {
       return;
     }
 
     // The call to isReadyToPay is asynchronous and returns a Task. We need to provide an
     // OnCompleteListener to be triggered when the result of the call is known.
-    IsReadyToPayRequest request = IsReadyToPayRequest.fromJson(isReadyToPayJson.get().toString());
+    IsReadyToPayRequest request = IsReadyToPayRequest.fromJson(isReadyToPayJson.toString());
     Task<Boolean> task = paymentsClient.isReadyToPay(request);
     task.addOnCompleteListener(this,
         new OnCompleteListener<Boolean>() {
@@ -236,13 +234,13 @@ public class CheckoutActivity extends AppCompatActivity {
     long shippingCostCents = 900;
     long priceCents = dummyPriceCents + shippingCostCents;
 
-    Optional<JSONObject> paymentDataRequestJson = PaymentsUtil.getPaymentDataRequest(priceCents);
-    if (!paymentDataRequestJson.isPresent()) {
+    JSONObject paymentDataRequestJson = PaymentsUtil.getPaymentDataRequest(priceCents);
+    if (paymentDataRequestJson == null) {
       return;
     }
 
     PaymentDataRequest request =
-        PaymentDataRequest.fromJson(paymentDataRequestJson.get().toString());
+        PaymentDataRequest.fromJson(paymentDataRequestJson.toString());
 
     // Since loadPaymentData may show the UI asking the user to select a payment method, we use
     // AutoResolveHelper to wait for the user interacting with it. Once completed,

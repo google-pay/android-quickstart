@@ -8,7 +8,7 @@ android {
 
         /* Google Payment API is not supported in SDK versions lower than 19. This example requires
         this version due to use of newer constructs like Optional. */
-        minSdkVersion 24
+        minSdkVersion 21
 
         targetSdkVersion 29
         versionCode 1
