@@ -110,7 +110,7 @@ class CheckoutActivity : AppCompatActivity() {
         } else {
             Toast.makeText(
                     this,
-                    "Unfortunately, Google Pay is not available on this device",
+                    R.string.googlepay_status_unavailable,
                     Toast.LENGTH_LONG).show()
         }
     }
