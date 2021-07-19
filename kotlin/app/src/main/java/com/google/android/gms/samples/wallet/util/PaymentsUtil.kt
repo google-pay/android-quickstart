@@ -17,6 +17,7 @@
 package com.google.android.gms.samples.wallet.util
 
 import android.app.Activity
+import android.content.Context
 import com.google.android.gms.samples.wallet.Constants
 import com.google.android.gms.wallet.PaymentsClient
 import com.google.android.gms.wallet.Wallet
@@ -166,14 +167,14 @@ object PaymentsUtil {
      * Creates an instance of [PaymentsClient] for use in an [Activity] using the
      * environment and theme set in [Constants].
      *
-     * @param activity is the caller's activity.
+     * @param context from the caller activity.
      */
-    fun createPaymentsClient(activity: Activity): PaymentsClient {
+    fun createPaymentsClient(context: Context): PaymentsClient {
         val walletOptions = Wallet.WalletOptions.Builder()
                 .setEnvironment(Constants.PAYMENTS_ENVIRONMENT)
                 .build()
 
-        return Wallet.getPaymentsClient(activity, walletOptions)
+        return Wallet.getPaymentsClient(context, walletOptions)
     }
 
     /**
@@ -200,8 +201,7 @@ object PaymentsUtil {
      * See [PaymentDataRequest](https://developers.google.com/pay/api/android/reference/object.PaymentDataRequest)
      */
     fun getPaymentDataRequest(priceCemts: Long): JSONObject? {
-        return try {
-            baseRequest.apply {
+        return baseRequest.apply {
                 put("allowedPaymentMethods", JSONArray().put(cardPaymentMethod()))
                 put("transactionInfo", getTransactionInfo(priceCemts.centsToString()))
                 put("merchantInfo", merchantInfo)
@@ -215,9 +215,6 @@ object PaymentsUtil {
                 put("shippingAddressParameters", shippingAddressParameters)
                 put("shippingAddressRequired", true)
             }
-        } catch (e: JSONException) {
-            null
-        }
     }
 }
 
