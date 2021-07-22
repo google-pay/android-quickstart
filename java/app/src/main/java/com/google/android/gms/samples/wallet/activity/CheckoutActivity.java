@@ -27,6 +27,7 @@ import com.google.android.gms.common.api.Status;
 import com.google.android.gms.samples.wallet.databinding.ActivityCheckoutBinding;
 import com.google.android.gms.samples.wallet.util.PaymentsUtil;
 import com.google.android.gms.samples.wallet.R;
+import com.google.android.gms.samples.wallet.viewmodel.CheckoutViewModel;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.gms.wallet.AutoResolveHelper;
@@ -40,6 +41,7 @@ import org.json.JSONObject;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.lifecycle.ViewModelProvider;
 
 /**
  * Checkout implementation for the app
@@ -49,8 +51,7 @@ public class CheckoutActivity extends AppCompatActivity {
   // Arbitrarily-picked constant integer you define to track a request for payment data activity.
   private static final int LOAD_PAYMENT_DATA_REQUEST_CODE = 991;
 
-  // A client for interacting with the Google Pay API.
-  private PaymentsClient paymentsClient;
+  private CheckoutViewModel model;
 
   private ActivityCheckoutBinding layoutBinding;
   private View googlePayButton;
@@ -65,10 +66,8 @@ public class CheckoutActivity extends AppCompatActivity {
     super.onCreate(savedInstanceState);
     initializeUi();
 
-    // Initialize a Google Pay API client for an environment suitable for testing.
-    // It's recommended to create the PaymentsClient object inside of the onCreate method.
-    paymentsClient = PaymentsUtil.createPaymentsClient(this);
-    possiblyShowGooglePayButton();
+    model = new ViewModelProvider(this).get(CheckoutViewModel.class);
+    model.getCanUseGooglePay().observe(this, this::setGooglePayAvailable);
   }
 
   /**
@@ -126,38 +125,6 @@ public class CheckoutActivity extends AppCompatActivity {
   }
 
   /**
-   * Determine the viewer's ability to pay with a payment method supported by your app and display a
-   * Google Pay payment button.
-   *
-   * @see <a href="https://developers.google.com/android/reference/com/google/android/gms/wallet/
-   * PaymentsClient.html#isReadyToPay(com.google.android.gms.wallet.
-   * IsReadyToPayRequest)">PaymentsClient#IsReadyToPay</a>
-   */
-  private void possiblyShowGooglePayButton() {
-
-    final JSONObject isReadyToPayJson = PaymentsUtil.getIsReadyToPayRequest();
-    if (isReadyToPayJson == null) {
-      return;
-    }
-
-    // The call to isReadyToPay is asynchronous and returns a Task. We need to provide an
-    // OnCompleteListener to be triggered when the result of the call is known.
-    IsReadyToPayRequest request = IsReadyToPayRequest.fromJson(isReadyToPayJson.toString());
-    Task<Boolean> task = paymentsClient.isReadyToPay(request);
-    task.addOnCompleteListener(this,
-        new OnCompleteListener<Boolean>() {
-          @Override
-          public void onComplete(@NonNull Task<Boolean> task) {
-            if (task.isSuccessful()) {
-              setGooglePayAvailable(task.getResult());
-            } else {
-              Log.w("isReadyToPay failed", task.getException());
-            }
-          }
-        });
-  }
-
-  /**
    * If isReadyToPay returned {@code true}, show the button and hide the "checking" text. Otherwise,
    * notify the user that Google Pay is not available. Please adjust to fit in with your current
    * user flow. You are not required to explicitly let the user know if isReadyToPay returns {@code
@@ -185,9 +152,6 @@ public class CheckoutActivity extends AppCompatActivity {
 
     // Token will be null if PaymentDataRequest was not constructed using fromJson(String).
     final String paymentInfo = paymentData.toJson();
-    if (paymentInfo == null) {
-      return;
-    }
 
     try {
       JSONObject paymentMethodData = new JSONObject(paymentInfo).getJSONObject("paymentMethodData");
@@ -232,23 +196,9 @@ public class CheckoutActivity extends AppCompatActivity {
     // This price is not displayed to the user.
     long dummyPriceCents = 100;
     long shippingCostCents = 900;
-    long priceCents = dummyPriceCents + shippingCostCents;
+    final Task task = model.getLoadPaymentDataTask(dummyPriceCents + shippingCostCents);
 
-    JSONObject paymentDataRequestJson = PaymentsUtil.getPaymentDataRequest(priceCents);
-    if (paymentDataRequestJson == null) {
-      return;
-    }
-
-    PaymentDataRequest request =
-        PaymentDataRequest.fromJson(paymentDataRequestJson.toString());
-
-    // Since loadPaymentData may show the UI asking the user to select a payment method, we use
-    // AutoResolveHelper to wait for the user interacting with it. Once completed,
-    // onActivityResult will be called with the result.
-    if (request != null) {
-      AutoResolveHelper.resolveTask(
-          paymentsClient.loadPaymentData(request),
-          this, LOAD_PAYMENT_DATA_REQUEST_CODE);
-    }
+    // Shows the payment sheet and forwards the result to the onActivityResult method.
+    AutoResolveHelper.resolveTask(task, this, LOAD_PAYMENT_DATA_REQUEST_CODE);
   }
 }

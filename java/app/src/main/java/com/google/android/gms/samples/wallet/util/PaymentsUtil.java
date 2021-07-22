@@ -17,6 +17,7 @@
 package com.google.android.gms.samples.wallet.util;
 
 import android.app.Activity;
+import android.content.Context;
 
 import com.google.android.gms.samples.wallet.Constants;
 import com.google.android.gms.wallet.PaymentsClient;
@@ -54,12 +55,12 @@ public class PaymentsUtil {
    * Creates an instance of {@link PaymentsClient} for use in an {@link Activity} using the
    * environment and theme set in {@link Constants}.
    *
-   * @param activity is the caller's activity.
+   * @param context is the caller's context.
    */
-  public static PaymentsClient createPaymentsClient(Activity activity) {
+  public static PaymentsClient createPaymentsClient(Context context) {
     Wallet.WalletOptions walletOptions =
         new Wallet.WalletOptions.Builder().setEnvironment(Constants.PAYMENTS_ENVIRONMENT).build();
-    return Wallet.getPaymentsClient(activity, walletOptions);
+    return Wallet.getPaymentsClient(context, walletOptions);
   }
 
   /**
