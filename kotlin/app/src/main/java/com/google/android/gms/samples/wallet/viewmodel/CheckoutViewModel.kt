@@ -22,6 +22,17 @@ class CheckoutViewModel(application: Application) : AndroidViewModel(application
      */
     private val paymentsClient: PaymentsClient = PaymentsUtil.createPaymentsClient(application)
 
+    // LiveData with the result of whether the user can pay using Google Pay
+    private val canUseGooglePayData: MutableLiveData<Boolean> by lazy {
+        MutableLiveData<Boolean>().also {
+            canUseGooglePay()
+        }
+    }
+
+    fun getCanUseGooglePay(): LiveData<Boolean> {
+        return canUseGooglePayData
+    }
+
     /**
      * Determine the user's ability to pay with a payment method supported by your app and display
      * a Google Pay payment button.
@@ -29,24 +40,20 @@ class CheckoutViewModel(application: Application) : AndroidViewModel(application
      * @return a [LiveData] object that holds the future result of the call.
      * @see [](https://developers.google.com/android/reference/com/google/android/gms/wallet/PaymentsClient.html.isReadyToPay)
     ) */
-    fun canUseGooglePay(): LiveData<Boolean> {
-        val canUseGooglePay = MutableLiveData<Boolean>()
-
+    private fun canUseGooglePay() {
         val isReadyToPayJson = PaymentsUtil.isReadyToPayRequest()
-        if (isReadyToPayJson == null) canUseGooglePay.value = false
+        if (isReadyToPayJson == null) canUseGooglePayData.value = false
 
         val request = IsReadyToPayRequest.fromJson(isReadyToPayJson.toString())
         val task = paymentsClient.isReadyToPay(request)
         task.addOnCompleteListener { completedTask ->
             try {
-                canUseGooglePay.value = completedTask.getResult(ApiException::class.java)
+                canUseGooglePayData.value = completedTask.getResult(ApiException::class.java)
             } catch (exception: ApiException) {
                 Log.w("isReadyToPay failed", exception)
-                canUseGooglePay.value = false
+                canUseGooglePayData.value = false
             }
         }
-
-        return canUseGooglePay
     }
 
     /**
