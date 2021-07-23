@@ -53,11 +53,11 @@ public class CheckoutViewModel extends AndroidViewModel {
         IsReadyToPayRequest request = IsReadyToPayRequest.fromJson(isReadyToPayJson.toString());
         Task<Boolean> task = paymentsClient.isReadyToPay(request);
         task.addOnCompleteListener(
-                task1 -> {
-                    if (task1.isSuccessful()) {
-                        canUseGooglePayData.setValue(task1.getResult());
+                completedTask -> {
+                    if (completedTask.isSuccessful()) {
+                        canUseGooglePayData.setValue(completedTask.getResult());
                     } else {
-                        Log.w("isReadyToPay failed", task1.getException());
+                        Log.w("isReadyToPay failed", completedTask.getException());
                         canUseGooglePayData.setValue(false);
                     }
                 });
