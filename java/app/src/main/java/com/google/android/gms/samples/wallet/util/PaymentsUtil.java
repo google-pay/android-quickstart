@@ -16,7 +16,6 @@
 
 package com.google.android.gms.samples.wallet.util;
 
-import android.app.Activity;
 import android.content.Context;
 
 import com.google.android.gms.samples.wallet.Constants;
@@ -52,7 +51,7 @@ public class PaymentsUtil {
   }
 
   /**
-   * Creates an instance of {@link PaymentsClient} for use in an {@link Activity} using the
+   * Creates an instance of {@link PaymentsClient} for use in an {@link Context} using the
    * environment and theme set in {@link Constants}.
    *
    * @param context is the caller's context.

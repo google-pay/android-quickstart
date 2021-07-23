@@ -16,7 +16,6 @@
 
 package com.google.android.gms.samples.wallet.util
 
-import android.app.Activity
 import android.content.Context
 import com.google.android.gms.samples.wallet.Constants
 import com.google.android.gms.wallet.PaymentsClient
@@ -164,7 +163,7 @@ object PaymentsUtil {
             JSONObject().put("merchantName", "Example Merchant")
 
     /**
-     * Creates an instance of [PaymentsClient] for use in an [Activity] using the
+     * Creates an instance of [PaymentsClient] for use in an [Context] using the
      * environment and theme set in [Constants].
      *
      * @param context from the caller activity.
