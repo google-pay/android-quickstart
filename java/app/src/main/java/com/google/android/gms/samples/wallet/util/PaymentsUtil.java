@@ -38,7 +38,7 @@ import org.json.JSONObject;
  */
 public class PaymentsUtil {
 
-  public static final BigDecimal CENTS_IN_A_UNIT = new BigDecimal(100d);
+  public static final BigDecimal CENTS_IN_A_UNIT = new BigDecimal(100);
 
   /**
    * Create a Google Pay API base request object with properties used in all requests.

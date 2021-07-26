@@ -23,25 +23,22 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
 
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.lifecycle.ViewModelProvider;
+
 import com.google.android.gms.common.api.Status;
 import com.google.android.gms.samples.wallet.databinding.ActivityCheckoutBinding;
-import com.google.android.gms.samples.wallet.util.PaymentsUtil;
 import com.google.android.gms.samples.wallet.R;
 import com.google.android.gms.samples.wallet.viewmodel.CheckoutViewModel;
-import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.gms.wallet.AutoResolveHelper;
-import com.google.android.gms.wallet.IsReadyToPayRequest;
 import com.google.android.gms.wallet.PaymentData;
-import com.google.android.gms.wallet.PaymentDataRequest;
-import com.google.android.gms.wallet.PaymentsClient;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.lifecycle.ViewModelProvider;
+import java.util.Locale;
 
 /**
  * Checkout implementation for the app
@@ -68,6 +65,49 @@ public class CheckoutActivity extends AppCompatActivity {
 
     model = new ViewModelProvider(this).get(CheckoutViewModel.class);
     model.canUseGooglePay.observe(this, this::setGooglePayAvailable);
+  }
+
+  private void initializeUi() {
+
+    // Use view binding to access the UI elements
+    layoutBinding = ActivityCheckoutBinding.inflate(getLayoutInflater());
+    setContentView(layoutBinding.getRoot());
+
+    // The Google Pay button is a layout file – take the root view
+    googlePayButton = layoutBinding.googlePayButton.getRoot();
+    googlePayButton.setOnClickListener(this::requestPayment);
+  }
+
+  /**
+   * If isReadyToPay returned {@code true}, show the button and hide the "checking" text.
+   * Otherwise, notify the user that Google Pay is not available. Please adjust to fit in with
+   * your current user flow. You are not required to explicitly let the user know if isReadyToPay
+   * returns {@code false}.
+   *
+   * @param available isReadyToPay API response.
+   */
+  private void setGooglePayAvailable(boolean available) {
+    if (available) {
+      googlePayButton.setVisibility(View.VISIBLE);
+    } else {
+      Toast.makeText(this, R.string.googlepay_status_unavailable, Toast.LENGTH_LONG).show();
+    }
+  }
+
+  public void requestPayment(View view) {
+
+    // Disables the button to prevent multiple clicks.
+    googlePayButton.setClickable(false);
+
+    // The price provided to the API should include taxes and shipping.
+    // This price is not displayed to the user.
+    long dummyPriceCents = 100;
+    long shippingCostCents = 900;
+    long totalPriceCents = dummyPriceCents + shippingCostCents;
+    final Task<PaymentData> task = model.getLoadPaymentDataTask(totalPriceCents);
+
+    // Shows the payment sheet and forwards the result to the onActivityResult method.
+    AutoResolveHelper.resolveTask(task, this, LOAD_PAYMENT_DATA_REQUEST_CODE);
   }
 
   /**
@@ -98,45 +138,12 @@ public class CheckoutActivity extends AppCompatActivity {
 
           case AutoResolveHelper.RESULT_ERROR:
             Status status = AutoResolveHelper.getStatusFromIntent(data);
-            handleError(status.getStatusCode());
+            handleError(status);
             break;
         }
 
         // Re-enables the Google Pay payment button.
         googlePayButton.setClickable(true);
-    }
-  }
-
-  private void initializeUi() {
-
-    // Use view binding to access the UI elements
-    layoutBinding = ActivityCheckoutBinding.inflate(getLayoutInflater());
-    setContentView(layoutBinding.getRoot());
-
-    // The Google Pay button is a layout file – take the root view
-    googlePayButton = layoutBinding.googlePayButton.getRoot();
-    googlePayButton.setOnClickListener(
-        new View.OnClickListener() {
-          @Override
-          public void onClick(View view) {
-            requestPayment(view);
-          }
-        });
-  }
-
-  /**
-   * If isReadyToPay returned {@code true}, show the button and hide the "checking" text. Otherwise,
-   * notify the user that Google Pay is not available. Please adjust to fit in with your current
-   * user flow. You are not required to explicitly let the user know if isReadyToPay returns {@code
-   * false}.
-   *
-   * @param available isReadyToPay API response.
-   */
-  private void setGooglePayAvailable(boolean available) {
-    if (available) {
-      googlePayButton.setVisibility(View.VISIBLE);
-    } else {
-      Toast.makeText(this, R.string.googlepay_status_unavailable, Toast.LENGTH_LONG).show();
     }
   }
 
@@ -148,9 +155,7 @@ public class CheckoutActivity extends AppCompatActivity {
    * @see <a href="https://developers.google.com/pay/api/android/reference/
    * object#PaymentData">PaymentData</a>
    */
-  private void handlePaymentSuccess(PaymentData paymentData) {
-
-    // Token will be null if PaymentDataRequest was not constructed using fromJson(String).
+  private void handlePaymentSuccess(@Nullable PaymentData paymentData) {
     final String paymentInfo = paymentData.toJson();
 
     try {
@@ -178,27 +183,18 @@ public class CheckoutActivity extends AppCompatActivity {
    * At this stage, the user has already seen a popup informing them an error occurred. Normally,
    * only logging is required.
    *
-   * @param statusCode will hold the value of any constant from CommonStatusCode or one of the
+   * @param status will hold the value of any constant from CommonStatusCode or one of the
    *                   WalletConstants.ERROR_CODE_* constants.
    * @see <a href="https://developers.google.com/android/reference/com/google/android/gms/wallet/
    * WalletConstants#constant-summary">Wallet Constants Library</a>
    */
-  private void handleError(int statusCode) {
-    Log.e("loadPaymentData failed", String.format("Error code: %d", statusCode));
-  }
+  private void handleError(@Nullable Status status) {
+    String errorString = "Unknown error.";
+    if (status != null) {
+      int statusCode = status.getStatusCode();
+      errorString = String.format(Locale.getDefault(), "Error code: %d", statusCode);
+    }
 
-  public void requestPayment(View view) {
-
-    // Disables the button to prevent multiple clicks.
-    googlePayButton.setClickable(false);
-
-    // The price provided to the API should include taxes and shipping.
-    // This price is not displayed to the user.
-    long dummyPriceCents = 100;
-    long shippingCostCents = 900;
-    final Task task = model.getLoadPaymentDataTask(dummyPriceCents + shippingCostCents);
-
-    // Shows the payment sheet and forwards the result to the onActivityResult method.
-    AutoResolveHelper.resolveTask(task, this, LOAD_PAYMENT_DATA_REQUEST_CODE);
+    Log.e("loadPaymentData failed", errorString);
   }
 }
