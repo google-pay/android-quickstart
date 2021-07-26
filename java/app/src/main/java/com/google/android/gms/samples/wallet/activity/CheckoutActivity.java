@@ -67,7 +67,7 @@ public class CheckoutActivity extends AppCompatActivity {
     initializeUi();
 
     model = new ViewModelProvider(this).get(CheckoutViewModel.class);
-    model.getCanUseGooglePay().observe(this, this::setGooglePayAvailable);
+    model.canUseGooglePay.observe(this, this::setGooglePayAvailable);
   }
 
   /**

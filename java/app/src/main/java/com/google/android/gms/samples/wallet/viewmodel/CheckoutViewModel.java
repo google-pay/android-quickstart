@@ -23,28 +23,25 @@ public class CheckoutViewModel extends AndroidViewModel {
     private final PaymentsClient paymentsClient;
 
     // LiveData with the result of whether the user can pay using Google Pay
-    private final MutableLiveData<Boolean> canUseGooglePayData;
+    private final MutableLiveData<Boolean> _canUseGooglePay = new MutableLiveData<>();
 
     public CheckoutViewModel(@NonNull Application application) {
         super(application);
         paymentsClient = PaymentsUtil.createPaymentsClient(application);
 
-        canUseGooglePayData = new MutableLiveData<>();
-        canUseGooglePay();
+        fetchCanUseGooglePay();
     }
 
-    public LiveData<Boolean> getCanUseGooglePay() {
-        return canUseGooglePayData;
-    }
+    public final LiveData<Boolean> canUseGooglePay = _canUseGooglePay;
 
     /**
      * Determine the user's ability to pay with a payment method supported by your app and display
      * a Google Pay payment button.
      */
-    private void canUseGooglePay() {
+    private void fetchCanUseGooglePay() {
         final JSONObject isReadyToPayJson = PaymentsUtil.getIsReadyToPayRequest();
         if (isReadyToPayJson == null) {
-            canUseGooglePayData.setValue(false);
+            _canUseGooglePay.setValue(false);
             return;
         }
 
@@ -55,10 +52,10 @@ public class CheckoutViewModel extends AndroidViewModel {
         task.addOnCompleteListener(
                 completedTask -> {
                     if (completedTask.isSuccessful()) {
-                        canUseGooglePayData.setValue(completedTask.getResult());
+                        _canUseGooglePay.setValue(completedTask.getResult());
                     } else {
                         Log.w("isReadyToPay failed", completedTask.getException());
-                        canUseGooglePayData.setValue(false);
+                        _canUseGooglePay.setValue(false);
                     }
                 });
     }

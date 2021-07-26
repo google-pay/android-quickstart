@@ -61,7 +61,7 @@ class CheckoutActivity : AppCompatActivity() {
         googlePayButton.setOnClickListener { requestPayment() }
 
         // Check whether Google Pay can be used to complete a payment
-        model.getCanUseGooglePay().observe(this, Observer(::setGooglePayAvailable))
+        model.canUseGooglePay.observe(this, Observer(::setGooglePayAvailable))
     }
 
     /**
