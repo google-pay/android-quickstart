@@ -185,7 +185,7 @@ class CheckoutActivity : Activity() {
     /**
      * Starts the payment card recognition `Activity`.
      */
-    fun startPaymentCardOcr() {
+    private fun startPaymentCardOcr() {
         val intentSender = paymentCardRecognitionPendingIntent.intentSender
         try {
             ActivityCompat.startIntentSenderForResult( /* activity= */
@@ -236,6 +236,7 @@ class CheckoutActivity : Activity() {
                 googlePayButton.isClickable = true
             }
           PAYMENT_CARD_RECOGNITION_REQUEST_CODE -> {
+              resetPaymentCardRecognitionIntent()
               when (resultCode) {
                   RESULT_OK -> data?.let {
                       handlePaymentCardRecognitionSuccess(
@@ -330,6 +331,14 @@ class CheckoutActivity : Activity() {
                 .append(creditCardExpirationDate.year)
         }
         Toast.makeText(this, resultStringBuilder.toString(), Toast.LENGTH_LONG).show()
+    }
+
+    /**
+     * Resets the Pending intent as it becomes invalid once used.
+     */
+    private fun resetPaymentCardRecognitionIntent() {
+        paymentCardOcrButton.visibility = View.GONE
+        requestPaymentCardOcrIntent()
     }
 
     private fun fetchRandomGarment() : JSONObject {

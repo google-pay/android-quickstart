@@ -179,6 +179,7 @@ public class CheckoutActivity extends AppCompatActivity {
         break;
 
       case PAYMENT_CARD_RECOGNITION_REQUEST_CODE:
+        resetPaymentCardRecognitionIntent();
         switch (resultCode) {
           case Activity.RESULT_OK:
             handlePaymentCardRecognitionSuccess(PaymentCardRecognitionResult.getFromIntent(data));
@@ -352,6 +353,15 @@ public class CheckoutActivity extends AppCompatActivity {
           .append(creditCardExpirationDate.getYear());
     }
     Toast.makeText(this, resultStringBuilder.toString(), Toast.LENGTH_LONG).show();
+  }
+
+
+  /**
+   * Resets the Pending intent as it becomes invalid once used.
+   */
+  private void resetPaymentCardRecognitionIntent() {
+    paymentCardOcrButton.setVisibility(View.GONE);
+    requestPaymentCardOcrIntent();
   }
 
   /**
