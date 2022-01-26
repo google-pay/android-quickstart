@@ -60,14 +60,6 @@ class CheckoutActivity : Activity() {
     private lateinit var garmentList: JSONArray
     private lateinit var selectedGarment: JSONObject
 
-    /**
-     * Arbitrarily-picked constant integer you define to track a request for payment data activity.
-     *
-     * @value #LOAD_PAYMENT_DATA_REQUEST_CODE
-     * @value #PAYMENT_CARD_RECOGNITION_REQUEST_CODE
-     */
-    private val LOAD_PAYMENT_DATA_REQUEST_CODE = 991
-    private val PAYMENT_CARD_RECOGNITION_REQUEST_CODE = 992
 
     /**
      * Initialize the Google Pay API on creation of the activity
@@ -177,8 +169,9 @@ class CheckoutActivity : Activity() {
                 paymentCardOcrButton.visibility = View.VISIBLE
             }
             .addOnFailureListener { e ->
-                throw RuntimeException("Failed to request payment card recognition intent.",
-                                       e)
+                // The API is not available either because the feature is not enabled on the device
+                // or because your app is not registered.
+                Log.e(TAG, "Payment card ocr not available.",  e)
             }
     }
 
@@ -360,5 +353,13 @@ class CheckoutActivity : Activity() {
         val imageUri = "@drawable/${garment.getString("image")}"
         val imageResource = resources.getIdentifier(imageUri, null, packageName)
         detailImage.setImageResource(imageResource)
+    }
+
+    companion object {
+        const val TAG: String = "CheckoutActivity"
+        // Arbitrarily-picked constant integer you define to track a request for payment API
+        // activities.
+        const val LOAD_PAYMENT_DATA_REQUEST_CODE = 991
+        const val PAYMENT_CARD_RECOGNITION_REQUEST_CODE = 992
     }
 }

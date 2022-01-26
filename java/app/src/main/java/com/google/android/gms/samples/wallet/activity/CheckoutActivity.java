@@ -69,6 +69,7 @@ import androidx.appcompat.app.AppCompatActivity;
  */
 public class CheckoutActivity extends AppCompatActivity {
 
+  private static final String TAG = "CheckoutActivity";
   // Arbitrarily-picked constant integer you define to track a request for payment data activity.
   private static final int LOAD_PAYMENT_DATA_REQUEST_CODE = 991;
   private static final int PAYMENT_CARD_RECOGNITION_REQUEST_CODE = 992;
@@ -434,7 +435,9 @@ public class CheckoutActivity extends AppCompatActivity {
         .addOnFailureListener(new OnFailureListener() {
           @Override
           public void onFailure(@NonNull Exception e) {
-            throw new RuntimeException("Failed to request payment card recognition intent.", e);
+            // The API is not available either because the feature is not enabled on the device
+            // or because your app is not registered.
+            Log.e(TAG, "Payment card ocr not available.",  e);
           }
         });
   }
