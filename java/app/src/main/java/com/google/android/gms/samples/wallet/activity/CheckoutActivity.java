@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Google Inc.
+ * Copyright 2022 Google Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,10 @@ package com.google.android.gms.samples.wallet.activity;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.PendingIntent;
 import android.content.Intent;
+import android.content.IntentSender;
+import android.content.IntentSender.SendIntentException;
 import android.os.Build;
 import android.os.Bundle;
 import android.text.Html;
@@ -27,8 +30,10 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Button;
 import android.widget.Toast;
 
+import androidx.core.app.ActivityCompat;
 import com.google.android.gms.common.api.Status;
 import com.google.android.gms.samples.wallet.databinding.ActivityCheckoutBinding;
 import com.google.android.gms.samples.wallet.util.Notifications;
@@ -36,9 +41,15 @@ import com.google.android.gms.samples.wallet.util.PaymentsUtil;
 import com.google.android.gms.samples.wallet.R;
 import com.google.android.gms.samples.wallet.util.Json;
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.gms.wallet.AutoResolveHelper;
+import com.google.android.gms.wallet.CreditCardExpirationDate;
 import com.google.android.gms.wallet.IsReadyToPayRequest;
+import com.google.android.gms.wallet.PaymentCardRecognitionIntentRequest;
+import com.google.android.gms.wallet.PaymentCardRecognitionIntentResponse;
+import com.google.android.gms.wallet.PaymentCardRecognitionResult;
 import com.google.android.gms.wallet.PaymentData;
 import com.google.android.gms.wallet.PaymentDataRequest;
 import com.google.android.gms.wallet.PaymentsClient;
@@ -60,14 +71,17 @@ public class CheckoutActivity extends AppCompatActivity {
 
   // Arbitrarily-picked constant integer you define to track a request for payment data activity.
   private static final int LOAD_PAYMENT_DATA_REQUEST_CODE = 991;
+  private static final int PAYMENT_CARD_RECOGNITION_REQUEST_CODE = 992;
 
   private static final long SHIPPING_COST_CENTS = 90 * PaymentsUtil.CENTS_IN_A_UNIT.longValue();
 
   // A client for interacting with the Google Pay API.
   private PaymentsClient paymentsClient;
+  private PendingIntent paymentCardRecognitionPendingIntent;
 
   private ActivityCheckoutBinding layoutBinding;
   private View googlePayButton;
+  private Button paymentCardOcrButton;
 
   private JSONArray garmentList;
   private JSONObject selectedGarment;
@@ -100,6 +114,8 @@ public class CheckoutActivity extends AppCompatActivity {
     // It's recommended to create the PaymentsClient object inside of the onCreate method.
     paymentsClient = PaymentsUtil.createPaymentsClient(this);
     possiblyShowGooglePayButton();
+
+    requestPaymentCardOcrIntent();
   }
 
   /**
@@ -127,7 +143,8 @@ public class CheckoutActivity extends AppCompatActivity {
   }
 
   /**
-   * Handle a resolved activity from the Google Pay payment sheet.
+   * Handle a resolved activity from the Google Pay payment sheet or the payment card recognition
+   * {@code Activity}.
    *
    * @param requestCode Request code originally supplied to AutoResolveHelper in requestPayment().
    * @param resultCode  Result code returned by the Google Pay API.
@@ -159,6 +176,19 @@ public class CheckoutActivity extends AppCompatActivity {
 
         // Re-enables the Google Pay payment button.
         googlePayButton.setClickable(true);
+        break;
+
+      case PAYMENT_CARD_RECOGNITION_REQUEST_CODE:
+        switch (resultCode) {
+          case Activity.RESULT_OK:
+            handlePaymentCardRecognitionSuccess(PaymentCardRecognitionResult.getFromIntent(data));
+            break;
+
+          case Activity.RESULT_CANCELED:
+            // The user cancelled the scan card attempt
+            break;
+        }
+        break;
     }
   }
 
@@ -182,6 +212,14 @@ public class CheckoutActivity extends AppCompatActivity {
             requestPayment(view);
           }
         });
+
+    paymentCardOcrButton = layoutBinding.paymentCardOcrButton;
+    paymentCardOcrButton.setOnClickListener(new View.OnClickListener() {
+      @Override
+      public void onClick(View view) {
+        startPaymentCardOcr(view);
+      }
+    });
   }
 
   private void displayGarment(JSONObject garment) throws JSONException {
@@ -296,11 +334,32 @@ public class CheckoutActivity extends AppCompatActivity {
   }
 
   /**
+   * Parses the results from the payment card recognition API and displays a toast.
+   *
+   * @param paymentCardRecognitionResult Result object from the payment card recognition API.
+   */
+  private void handlePaymentCardRecognitionSuccess(
+      PaymentCardRecognitionResult paymentCardRecognitionResult) {
+    StringBuilder resultStringBuilder = new StringBuilder();
+    resultStringBuilder.append("Card recognized. ");
+    resultStringBuilder.append("PAN: ").append(paymentCardRecognitionResult.getPan()).append(" ");
+    CreditCardExpirationDate creditCardExpirationDate =
+        paymentCardRecognitionResult.getCreditCardExpirationDate();
+    if (creditCardExpirationDate != null) {
+      resultStringBuilder.append("Expiration date: ")
+          .append(creditCardExpirationDate.getMonth())
+          .append("/")
+          .append(creditCardExpirationDate.getYear());
+    }
+    Toast.makeText(this, resultStringBuilder.toString(), Toast.LENGTH_LONG).show();
+  }
+
+  /**
    * At this stage, the user has already seen a popup informing them an error occurred. Normally,
    * only logging is required.
    *
    * @param statusCode will hold the value of any constant from CommonStatusCode or one of the
-   *                   WalletConstants.ERROR_CODE_* constants.
+   * WalletConstants.ERROR_CODE_* constants.
    * @see <a href="https://developers.google.com/android/reference/com/google/android/gms/wallet/
    * WalletConstants#constant-summary">Wallet Constants Library</a>
    */
@@ -339,6 +398,54 @@ public class CheckoutActivity extends AppCompatActivity {
 
     } catch (JSONException e) {
       throw new RuntimeException("The price cannot be deserialized from the JSON object.");
+    }
+  }
+
+  /**
+   * Calls
+   * {@link PaymentsClient#getPaymentCardRecognitionIntent(PaymentCardRecognitionIntentRequest)} API
+   * and fetches the {@link PendingIntent} needed to launch the payment card recognition
+   * {@code Activity}. Sets the "scan card" button to visible if the call is successful.
+   */
+  public void requestPaymentCardOcrIntent() {
+    PaymentCardRecognitionIntentRequest request =
+        PaymentCardRecognitionIntentRequest.getDefaultInstance();
+    paymentsClient
+        .getPaymentCardRecognitionIntent(request)
+        .addOnSuccessListener(new OnSuccessListener<PaymentCardRecognitionIntentResponse>() {
+          @Override
+          public void onSuccess(
+              PaymentCardRecognitionIntentResponse paymentCardRecognitionIntentResponse) {
+            paymentCardRecognitionPendingIntent = paymentCardRecognitionIntentResponse
+                .getPaymentCardRecognitionPendingIntent();
+            paymentCardOcrButton.setVisibility(View.VISIBLE);
+          }
+        })
+        .addOnFailureListener(new OnFailureListener() {
+          @Override
+          public void onFailure(@NonNull Exception e) {
+            throw new RuntimeException("Failed to request payment card recognition intent.", e);
+          }
+        });
+  }
+
+  /**
+   * Starts the payment card recognition {@code Activity}.
+   */
+  public void startPaymentCardOcr(View view) {
+    IntentSender intentSender = paymentCardRecognitionPendingIntent.getIntentSender();
+    try {
+      ActivityCompat.startIntentSenderForResult(
+          /* activity= */ CheckoutActivity.this,
+          intentSender,
+          PAYMENT_CARD_RECOGNITION_REQUEST_CODE,
+          /* fillInIntent= */ null,
+          /* flagsMask= */ 0,
+          /* flagsValues= */ 0,
+          /* extraFlags= */ 0,
+          /* options= */ null);
+    } catch (SendIntentException e) {
+      throw new RuntimeException("Failed to start payment card recognition.", e);
     }
   }
 

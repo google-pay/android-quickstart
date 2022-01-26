@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Google Inc.
+ * Copyright 2022 Google Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ package com.google.android.gms.samples.wallet
 
 import android.app.Activity
 import android.app.AlertDialog
+import android.app.PendingIntent
 import android.content.Intent
 import android.os.Bundle
 import android.text.Html
@@ -33,6 +34,14 @@ import org.json.JSONException
 import org.json.JSONObject
 import kotlin.math.roundToLong
 
+import java.lang.RuntimeException
+
+import com.google.android.gms.wallet.PaymentCardRecognitionResult
+import java.lang.StringBuilder
+import android.content.IntentSender.SendIntentException
+
+import androidx.core.app.ActivityCompat
+
 
 /**
  * Checkout implementation for the app
@@ -45,6 +54,7 @@ class CheckoutActivity : Activity() {
      * @see [PaymentsClient](https://developers.google.com/android/reference/com/google/android/gms/wallet/PaymentsClient)
      */
     private lateinit var paymentsClient: PaymentsClient
+    private lateinit var paymentCardRecognitionPendingIntent: PendingIntent
     private val shippingCost = (90 * 1000000).toLong()
 
     private lateinit var garmentList: JSONArray
@@ -54,8 +64,10 @@ class CheckoutActivity : Activity() {
      * Arbitrarily-picked constant integer you define to track a request for payment data activity.
      *
      * @value #LOAD_PAYMENT_DATA_REQUEST_CODE
+     * @value #PAYMENT_CARD_RECOGNITION_REQUEST_CODE
      */
     private val LOAD_PAYMENT_DATA_REQUEST_CODE = 991
+    private val PAYMENT_CARD_RECOGNITION_REQUEST_CODE = 992
 
     /**
      * Initialize the Google Pay API on creation of the activity
@@ -76,6 +88,9 @@ class CheckoutActivity : Activity() {
         possiblyShowGooglePayButton()
 
         googlePayButton.setOnClickListener { requestPayment() }
+
+        requestPaymentCardOcrIntent()
+        paymentCardOcrButton.setOnClickListener { startPaymentCardOcr() }
     }
 
     /**
@@ -119,7 +134,7 @@ class CheckoutActivity : Activity() {
                     Toast.LENGTH_LONG).show();
         }
     }
-    
+
     private fun requestPayment() {
 
         // Disables the button to prevent multiple clicks.
@@ -147,7 +162,49 @@ class CheckoutActivity : Activity() {
     }
 
     /**
-     * Handle a resolved activity from the Google Pay payment sheet.
+     * Calls
+     * {@link PaymentsClient#getPaymentCardRecognitionIntent(PaymentCardRecognitionIntentRequest)}
+     * API and fetches the {@link PendingIntent} needed to launch the payment card recognition
+     * `Activity`. Sets the "scan card" button to visible if the call is successful.
+     */
+    private fun requestPaymentCardOcrIntent() {
+        val request = PaymentCardRecognitionIntentRequest.getDefaultInstance()
+        paymentsClient
+            .getPaymentCardRecognitionIntent(request)
+            .addOnSuccessListener { paymentCardRecognitionIntentResponse ->
+                paymentCardRecognitionPendingIntent = paymentCardRecognitionIntentResponse
+                    .paymentCardRecognitionPendingIntent
+                paymentCardOcrButton.visibility = View.VISIBLE
+            }
+            .addOnFailureListener { e ->
+                throw RuntimeException("Failed to request payment card recognition intent.",
+                                       e)
+            }
+    }
+
+    /**
+     * Starts the payment card recognition `Activity`.
+     */
+    fun startPaymentCardOcr() {
+        val intentSender = paymentCardRecognitionPendingIntent.intentSender
+        try {
+            ActivityCompat.startIntentSenderForResult( /* activity= */
+                this@CheckoutActivity,
+                intentSender,
+                PAYMENT_CARD_RECOGNITION_REQUEST_CODE,  /* fillInIntent= */
+                null,  /* flagsMask= */
+                0,  /* flagsValues= */
+                0,  /* extraFlags= */
+                0,  /* options= */
+                null)
+        } catch (e: SendIntentException) {
+            throw RuntimeException("Failed to start payment card recognition.", e)
+        }
+    }
+
+    /**
+     * Handle a resolved activity from the Google Pay payment sheet or the payment card recognition
+     * {@code Activity}.
      *
      * @param requestCode Request code originally supplied to AutoResolveHelper in requestPayment().
      * @param resultCode Result code returned by the Google Pay API.
@@ -178,6 +235,17 @@ class CheckoutActivity : Activity() {
                 // Re-enables the Google Pay payment button.
                 googlePayButton.isClickable = true
             }
+          PAYMENT_CARD_RECOGNITION_REQUEST_CODE -> {
+              when (resultCode) {
+                  RESULT_OK -> data?.let {
+                      handlePaymentCardRecognitionSuccess(
+                          PaymentCardRecognitionResult.getFromIntent(data)!!)
+                  }
+                  RESULT_CANCELED -> {
+                      // The user cancelled the scan card attempt
+                  }
+              }
+          }
         }
     }
 
@@ -241,6 +309,27 @@ class CheckoutActivity : Activity() {
      */
     private fun handleError(statusCode: Int) {
         Log.w("loadPaymentData failed", String.format("Error code: %d", statusCode))
+    }
+
+    /**
+     * Parses the results from the payment card recognition API and displays a toast.
+     *
+     * @param paymentCardRecognitionResult Result object from the payment card recognition API.
+     */
+    private fun handlePaymentCardRecognitionSuccess(
+        paymentCardRecognitionResult: PaymentCardRecognitionResult
+    ) {
+        val resultStringBuilder = StringBuilder()
+        resultStringBuilder.append("Card recognized. ")
+        resultStringBuilder.append("PAN: ").append(paymentCardRecognitionResult.pan).append(" ")
+        val creditCardExpirationDate = paymentCardRecognitionResult.creditCardExpirationDate
+        if (creditCardExpirationDate != null) {
+            resultStringBuilder.append("Expiration date: ")
+                .append(creditCardExpirationDate.month)
+                .append("/")
+                .append(creditCardExpirationDate.year)
+        }
+        Toast.makeText(this, resultStringBuilder.toString(), Toast.LENGTH_LONG).show()
     }
 
     private fun fetchRandomGarment() : JSONObject {

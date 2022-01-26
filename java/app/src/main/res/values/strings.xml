@@ -31,4 +31,5 @@
     <string name="payments_show_name">Successfully received payment data for %s!</string>
     <string name="gateway_replace_name_example">"Gateway name set to \"example\" - please modify Constants.java and replace it with your own gateway."</string>
     <string name="checkout_item_description">Description</string>
+    <string name="scan_card_button_text">Scan card</string>
 </resources>
