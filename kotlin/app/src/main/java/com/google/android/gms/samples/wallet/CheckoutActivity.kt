@@ -81,7 +81,7 @@ class CheckoutActivity : Activity() {
 
         googlePayButton.setOnClickListener { requestPayment() }
 
-        requestPaymentCardOcrIntent()
+        possiblyShowPaymentCardOcrButton()
         paymentCardOcrButton.setOnClickListener { startPaymentCardOcr() }
     }
 
@@ -159,7 +159,10 @@ class CheckoutActivity : Activity() {
      * API and fetches the {@link PendingIntent} needed to launch the payment card recognition
      * `Activity`. Sets the "scan card" button to visible if the call is successful.
      */
-    private fun requestPaymentCardOcrIntent() {
+    private fun possiblyShowPaymentCardOcrButton() {
+        // The request can be used to configure the type of the payment card recognition. Currently
+        // the only supported type is card OCR, so it is sufficient to call the getDefaultInstance()
+        // method.
         val request = PaymentCardRecognitionIntentRequest.getDefaultInstance()
         paymentsClient
             .getPaymentCardRecognitionIntent(request)
@@ -331,7 +334,7 @@ class CheckoutActivity : Activity() {
      */
     private fun resetPaymentCardRecognitionIntent() {
         paymentCardOcrButton.visibility = View.GONE
-        requestPaymentCardOcrIntent()
+        possiblyShowPaymentCardOcrButton()
     }
 
     private fun fetchRandomGarment() : JSONObject {

@@ -116,7 +116,7 @@ public class CheckoutActivity extends AppCompatActivity {
     paymentsClient = PaymentsUtil.createPaymentsClient(this);
     possiblyShowGooglePayButton();
 
-    requestPaymentCardOcrIntent();
+    possiblyShowPaymentCardOcrButton();
   }
 
   /**
@@ -362,7 +362,7 @@ public class CheckoutActivity extends AppCompatActivity {
    */
   private void resetPaymentCardRecognitionIntent() {
     paymentCardOcrButton.setVisibility(View.GONE);
-    requestPaymentCardOcrIntent();
+    possiblyShowPaymentCardOcrButton();
   }
 
   /**
@@ -418,7 +418,9 @@ public class CheckoutActivity extends AppCompatActivity {
    * and fetches the {@link PendingIntent} needed to launch the payment card recognition
    * {@code Activity}. Sets the "scan card" button to visible if the call is successful.
    */
-  public void requestPaymentCardOcrIntent() {
+  public void possiblyShowPaymentCardOcrButton() {
+    // The request can be used to configure the type of the payment card recognition. Currently the
+    // only supported type is card OCR, so it is sufficient to call the getDefaultInstance() method.
     PaymentCardRecognitionIntentRequest request =
         PaymentCardRecognitionIntentRequest.getDefaultInstance();
     paymentsClient
