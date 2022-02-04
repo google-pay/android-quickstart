@@ -20,11 +20,13 @@ import android.app.Activity
 import android.app.AlertDialog
 import android.app.PendingIntent
 import android.content.Intent
+import android.content.IntentSender.SendIntentException
 import android.os.Bundle
 import android.text.Html
 import android.util.Log
 import android.view.View
 import android.widget.Toast
+import androidx.core.app.ActivityCompat
 import com.google.android.gms.common.api.ApiException
 import com.google.android.gms.samples.wallet.util.Json
 import com.google.android.gms.wallet.*
@@ -33,14 +35,6 @@ import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
 import kotlin.math.roundToLong
-
-import java.lang.RuntimeException
-
-import com.google.android.gms.wallet.PaymentCardRecognitionResult
-import java.lang.StringBuilder
-import android.content.IntentSender.SendIntentException
-
-import androidx.core.app.ActivityCompat
 
 
 /**
@@ -54,7 +48,7 @@ class CheckoutActivity : Activity() {
      * @see [PaymentsClient](https://developers.google.com/android/reference/com/google/android/gms/wallet/PaymentsClient)
      */
     private lateinit var paymentsClient: PaymentsClient
-    private lateinit var paymentCardRecognitionPendingIntent: PendingIntent
+    private lateinit var cardRecognitionPendingIntent: PendingIntent
     private val shippingCost = (90 * 1000000).toLong()
 
     private lateinit var garmentList: JSONArray
@@ -78,7 +72,6 @@ class CheckoutActivity : Activity() {
         // It's recommended to create the PaymentsClient object inside of the onCreate method.
         paymentsClient = PaymentsUtil.createPaymentsClient(this)
         possiblyShowGooglePayButton()
-
         googlePayButton.setOnClickListener { requestPayment() }
 
         possiblyShowPaymentCardOcrButton()
@@ -94,7 +87,7 @@ class CheckoutActivity : Activity() {
     private fun possiblyShowGooglePayButton() {
 
         val isReadyToPayJson = PaymentsUtil.isReadyToPayRequest() ?: return
-        val request = IsReadyToPayRequest.fromJson(isReadyToPayJson.toString()) ?: return
+        val request = IsReadyToPayRequest.fromJson(isReadyToPayJson.toString())
 
         // The call to isReadyToPay is asynchronous and returns a Task. We need to provide an
         // OnCompleteListener to be triggered when the result of the call is known.
@@ -121,9 +114,10 @@ class CheckoutActivity : Activity() {
             googlePayButton.visibility = View.VISIBLE
         } else {
             Toast.makeText(
-                    this,
-                    "Unfortunately, Google Pay is not available on this device",
-                    Toast.LENGTH_LONG).show();
+                this,
+                "Unfortunately, Google Pay is not available on this device",
+                Toast.LENGTH_LONG
+            ).show()
         }
     }
 
@@ -147,14 +141,13 @@ class CheckoutActivity : Activity() {
         // Since loadPaymentData may show the UI asking the user to select a payment method, we use
         // AutoResolveHelper to wait for the user interacting with it. Once completed,
         // onActivityResult will be called with the result.
-        if (request != null) {
-            AutoResolveHelper.resolveTask(
-                    paymentsClient.loadPaymentData(request), this, LOAD_PAYMENT_DATA_REQUEST_CODE)
-        }
+        AutoResolveHelper.resolveTask(
+            paymentsClient.loadPaymentData(request), this, LOAD_PAYMENT_DATA_REQUEST_CODE
+        )
     }
 
     /**
-     * Calls
+     * Calls the
      * {@link PaymentsClient#getPaymentCardRecognitionIntent(PaymentCardRecognitionIntentRequest)}
      * API and fetches the {@link PendingIntent} needed to launch the payment card recognition
      * `Activity`. Sets the "scan card" button to visible if the call is successful.
@@ -166,15 +159,14 @@ class CheckoutActivity : Activity() {
         val request = PaymentCardRecognitionIntentRequest.getDefaultInstance()
         paymentsClient
             .getPaymentCardRecognitionIntent(request)
-            .addOnSuccessListener { paymentCardRecognitionIntentResponse ->
-                paymentCardRecognitionPendingIntent = paymentCardRecognitionIntentResponse
-                    .paymentCardRecognitionPendingIntent
+            .addOnSuccessListener { intentResponse ->
+                cardRecognitionPendingIntent = intentResponse.paymentCardRecognitionPendingIntent
                 paymentCardOcrButton.visibility = View.VISIBLE
             }
             .addOnFailureListener { e ->
                 // The API is not available either because the feature is not enabled on the device
                 // or because your app is not registered.
-                Log.e(TAG, "Payment card ocr not available.",  e)
+                Log.e(TAG, "Payment card ocr not available.", e)
             }
     }
 
@@ -182,17 +174,13 @@ class CheckoutActivity : Activity() {
      * Starts the payment card recognition `Activity`.
      */
     private fun startPaymentCardOcr() {
-        val intentSender = paymentCardRecognitionPendingIntent.intentSender
         try {
-            ActivityCompat.startIntentSenderForResult( /* activity= */
+            ActivityCompat.startIntentSenderForResult(
                 this@CheckoutActivity,
-                intentSender,
-                PAYMENT_CARD_RECOGNITION_REQUEST_CODE,  /* fillInIntent= */
-                null,  /* flagsMask= */
-                0,  /* flagsValues= */
-                0,  /* extraFlags= */
-                0,  /* options= */
-                null)
+                cardRecognitionPendingIntent.intentSender,
+                PAYMENT_CARD_RECOGNITION_REQUEST_CODE,
+                null, 0, 0, 0, null
+            )
         } catch (e: SendIntentException) {
             throw RuntimeException("Failed to start payment card recognition.", e)
         }
@@ -213,11 +201,11 @@ class CheckoutActivity : Activity() {
             // value passed in AutoResolveHelper
             LOAD_PAYMENT_DATA_REQUEST_CODE -> {
                 when (resultCode) {
-                    Activity.RESULT_OK ->
+                    RESULT_OK ->
                         data?.let { intent ->
                             PaymentData.getFromIntent(intent)?.let(::handlePaymentSuccess)
                         }
-                    Activity.RESULT_CANCELED -> {
+                    RESULT_CANCELED -> {
                         // Nothing to do here normally - the user simply cancelled without selecting a
                         // payment method.
                     }
@@ -231,18 +219,18 @@ class CheckoutActivity : Activity() {
                 // Re-enables the Google Pay payment button.
                 googlePayButton.isClickable = true
             }
-          PAYMENT_CARD_RECOGNITION_REQUEST_CODE -> {
-              resetPaymentCardRecognitionIntent()
-              when (resultCode) {
-                  RESULT_OK -> data?.let {
-                      handlePaymentCardRecognitionSuccess(
-                          PaymentCardRecognitionResult.getFromIntent(data)!!)
-                  }
-                  RESULT_CANCELED -> {
-                      // The user cancelled the scan card attempt
-                  }
-              }
-          }
+            PAYMENT_CARD_RECOGNITION_REQUEST_CODE -> {
+                resetPaymentCardRecognitionIntent()
+                when (resultCode) {
+                    RESULT_OK -> data?.let {
+                        PaymentCardRecognitionResult.getFromIntent(intent)
+                            ?.let(::handlePaymentCardRecognitionSuccess)
+                    }
+                    RESULT_CANCELED -> {
+                        // The user cancelled the scan card attempt
+                    }
+                }
+            }
         }
     }
 
@@ -255,39 +243,49 @@ class CheckoutActivity : Activity() {
      * Data](https://developers.google.com/pay/api/android/reference/object.PaymentData)
      */
     private fun handlePaymentSuccess(paymentData: PaymentData) {
-        val paymentInformation = paymentData.toJson() ?: return
+        val paymentInformation = paymentData.toJson()
 
         try {
             // Token will be null if PaymentDataRequest was not constructed using fromJson(String).
-            val paymentMethodData = JSONObject(paymentInformation).getJSONObject("paymentMethodData")
+            val paymentMethodData =
+                JSONObject(paymentInformation).getJSONObject("paymentMethodData")
 
             // If the gateway is set to "example", no payment information is returned - instead, the
             // token will only consist of "examplePaymentMethodToken".
             if (paymentMethodData
-                            .getJSONObject("tokenizationData")
-                            .getString("type") == "PAYMENT_GATEWAY" && paymentMethodData
-                            .getJSONObject("tokenizationData")
-                            .getString("token") == "examplePaymentMethodToken") {
+                    .getJSONObject("tokenizationData")
+                    .getString("type") == "PAYMENT_GATEWAY" && paymentMethodData
+                    .getJSONObject("tokenizationData")
+                    .getString("token") == "examplePaymentMethodToken"
+            ) {
 
                 AlertDialog.Builder(this)
-                        .setTitle("Warning")
-                        .setMessage("Gateway name set to \"example\" - please modify " +
-                                "Constants.java and replace it with your own gateway.")
-                        .setPositiveButton("OK", null)
-                        .create()
-                        .show()
+                    .setTitle("Warning")
+                    .setMessage(
+                        "Gateway name set to \"example\" - please modify " +
+                                "Constants.java and replace it with your own gateway."
+                    )
+                    .setPositiveButton("OK", null)
+                    .create()
+                    .show()
             }
 
             val billingName = paymentMethodData.getJSONObject("info")
-                    .getJSONObject("billingAddress").getString("name")
+                .getJSONObject("billingAddress").getString("name")
             Log.d("BillingName", billingName)
 
-            Toast.makeText(this, getString(R.string.payments_show_name, billingName), Toast.LENGTH_LONG).show()
+            Toast.makeText(
+                this,
+                getString(R.string.payments_show_name, billingName),
+                Toast.LENGTH_LONG
+            ).show()
 
             // Logging token string.
-            Log.d("GooglePaymentToken", paymentMethodData
+            Log.d(
+                "GooglePaymentToken", paymentMethodData
                     .getJSONObject("tokenizationData")
-                    .getString("token"))
+                    .getString("token")
+            )
 
         } catch (e: JSONException) {
             Log.e("handlePaymentSuccess", "Error: " + e.toString())
@@ -314,19 +312,12 @@ class CheckoutActivity : Activity() {
      * @param paymentCardRecognitionResult Result object from the payment card recognition API.
      */
     private fun handlePaymentCardRecognitionSuccess(
-        paymentCardRecognitionResult: PaymentCardRecognitionResult
+        cardRecognitionResult: PaymentCardRecognitionResult
     ) {
-        val resultStringBuilder = StringBuilder()
-        resultStringBuilder.append("Card recognized. ")
-        resultStringBuilder.append("PAN: ").append(paymentCardRecognitionResult.pan).append(" ")
-        val creditCardExpirationDate = paymentCardRecognitionResult.creditCardExpirationDate
-        if (creditCardExpirationDate != null) {
-            resultStringBuilder.append("Expiration date: ")
-                .append(creditCardExpirationDate.month)
-                .append("/")
-                .append(creditCardExpirationDate.year)
-        }
-        Toast.makeText(this, resultStringBuilder.toString(), Toast.LENGTH_LONG).show()
+        val creditCardExpirationDate = cardRecognitionResult.creditCardExpirationDate
+        val expirationDate = creditCardExpirationDate?.let { "${it.month}/${it.year}" }
+        val cardResultText = "PAN: ${cardRecognitionResult.pan}\nExpiration date: $expirationDate"
+        Toast.makeText(this, cardResultText, Toast.LENGTH_LONG).show()
     }
 
     /**
@@ -337,21 +328,21 @@ class CheckoutActivity : Activity() {
         possiblyShowPaymentCardOcrButton()
     }
 
-    private fun fetchRandomGarment() : JSONObject {
+    private fun fetchRandomGarment(): JSONObject {
         if (!::garmentList.isInitialized) {
             garmentList = Json.readFromResources(this, R.raw.tshirts)
         }
 
-        val randomIndex:Int = Math.round(Math.random() * (garmentList.length() - 1)).toInt()
+        val randomIndex: Int = Math.round(Math.random() * (garmentList.length() - 1)).toInt()
         return garmentList.getJSONObject(randomIndex)
     }
 
-    private fun displayGarment(garment:JSONObject) {
-        detailTitle.setText(garment.getString("title"))
-        detailPrice.setText("\$${garment.getString("price")}")
+    private fun displayGarment(garment: JSONObject) {
+        detailTitle.text = garment.getString("title")
+        detailPrice.text = "\$${garment.getString("price")}"
 
-        val escapedHtmlText:String = Html.fromHtml(garment.getString("description")).toString()
-        detailDescription.setText(Html.fromHtml(escapedHtmlText))
+        val escapedHtmlText: String = Html.fromHtml(garment.getString("description")).toString()
+        detailDescription.text = Html.fromHtml(escapedHtmlText)
 
         val imageUri = "@drawable/${garment.getString("image")}"
         val imageResource = resources.getIdentifier(imageUri, null, packageName)
@@ -360,6 +351,7 @@ class CheckoutActivity : Activity() {
 
     companion object {
         const val TAG: String = "CheckoutActivity"
+
         // Arbitrarily-picked constant integer you define to track a request for payment API
         // activities.
         const val LOAD_PAYMENT_DATA_REQUEST_CODE = 991
