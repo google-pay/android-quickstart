@@ -174,17 +174,13 @@ class CheckoutActivity : Activity() {
      * Starts the payment card recognition `Activity`.
      */
     private fun startPaymentCardOcr() {
-        val intentSender = paymentCardRecognitionPendingIntent.intentSender
         try {
-            ActivityCompat.startIntentSenderForResult( /* activity= */
+            ActivityCompat.startIntentSenderForResult(
                 this@CheckoutActivity,
-                intentSender,
-                PAYMENT_CARD_RECOGNITION_REQUEST_CODE,  /* fillInIntent= */
-                null,  /* flagsMask= */
-                0,  /* flagsValues= */
-                0,  /* extraFlags= */
-                0,  /* options= */
-                null)
+                cardRecognitionPendingIntent.intentSender,
+                PAYMENT_CARD_RECOGNITION_REQUEST_CODE,
+                null, 0, 0, 0, null
+            )
         } catch (e: SendIntentException) {
             throw RuntimeException("Failed to start payment card recognition.", e)
         }
