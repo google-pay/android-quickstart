@@ -312,19 +312,12 @@ class CheckoutActivity : Activity() {
      * @param paymentCardRecognitionResult Result object from the payment card recognition API.
      */
     private fun handlePaymentCardRecognitionSuccess(
-        paymentCardRecognitionResult: PaymentCardRecognitionResult
+        cardRecognitionResult: PaymentCardRecognitionResult
     ) {
-        val resultStringBuilder = StringBuilder()
-        resultStringBuilder.append("Card recognized. ")
-        resultStringBuilder.append("PAN: ").append(paymentCardRecognitionResult.pan).append(" ")
-        val creditCardExpirationDate = paymentCardRecognitionResult.creditCardExpirationDate
-        if (creditCardExpirationDate != null) {
-            resultStringBuilder.append("Expiration date: ")
-                .append(creditCardExpirationDate.month)
-                .append("/")
-                .append(creditCardExpirationDate.year)
-        }
-        Toast.makeText(this, resultStringBuilder.toString(), Toast.LENGTH_LONG).show()
+        val creditCardExpirationDate = cardRecognitionResult.creditCardExpirationDate
+        val expirationDate = creditCardExpirationDate?.let { "${it.month}/${it.year}" }
+        val cardResultText = "PAN: ${cardRecognitionResult.pan}\nExpiration date: $expirationDate"
+        Toast.makeText(this, cardResultText, Toast.LENGTH_LONG).show()
     }
 
     /**
