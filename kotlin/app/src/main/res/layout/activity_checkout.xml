@@ -35,7 +35,7 @@
             android:layout_width="match_parent"
             android:layout_height="350dp"
             android:layout_marginTop="20dp"
-            android:src="@drawable/ts_10_11019a"/>
+            android:src="@drawable/ts_10_11019a" />
 
         <TextView
             android:id="@+id/detailTitle"
@@ -53,7 +53,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="5dp"
             android:textColor="#777777"
-            android:text="$50.20"/>
+            android:text="$50.20" />
 
         <TextView
             android:layout_width="wrap_content"
@@ -70,7 +70,7 @@
             android:layout_marginTop="5dp"
             android:layout_marginBottom="15dp"
             android:textColor="#777777"
-            android:text="A versatile full-zip that you can wear all day long and even..."/>
+            android:text="A versatile full-zip that you can wear all day long and even..." />
 
         <include
             android:id="@+id/googlePayButton"
@@ -78,7 +78,7 @@
             android:layout_width="match_parent"
             android:layout_height="@dimen/buy_button_height"
             android:layout_marginBottom="@dimen/buy_button_margin_bottom"
-            android:visibility="gone"/>
+            android:visibility="gone" />
 
         <com.google.android.material.button.MaterialButton
             xmlns:app="http://schemas.android.com/apk/res-auto"
