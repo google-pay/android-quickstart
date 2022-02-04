@@ -219,18 +219,18 @@ class CheckoutActivity : Activity() {
                 // Re-enables the Google Pay payment button.
                 googlePayButton.isClickable = true
             }
-          PAYMENT_CARD_RECOGNITION_REQUEST_CODE -> {
-              resetPaymentCardRecognitionIntent()
-              when (resultCode) {
-                  RESULT_OK -> data?.let {
-                      handlePaymentCardRecognitionSuccess(
-                          PaymentCardRecognitionResult.getFromIntent(data)!!)
-                  }
-                  RESULT_CANCELED -> {
-                      // The user cancelled the scan card attempt
-                  }
-              }
-          }
+            PAYMENT_CARD_RECOGNITION_REQUEST_CODE -> {
+                resetPaymentCardRecognitionIntent()
+                when (resultCode) {
+                    RESULT_OK -> data?.let {
+                        PaymentCardRecognitionResult.getFromIntent(intent)
+                            ?.let(::handlePaymentCardRecognitionSuccess)
+                    }
+                    RESULT_CANCELED -> {
+                        // The user cancelled the scan card attempt
+                    }
+                }
+            }
         }
     }
 
