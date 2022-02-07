@@ -29,7 +29,4 @@
     <dimen name="scan_card_button_padding">2sp</dimen>
     <dimen name="scan_card_button_font_size">19sp</dimen>
 
-    <!-- Notifications -->
-    <dimen name="price_option_size">43dp</dimen>
-
 </resources>

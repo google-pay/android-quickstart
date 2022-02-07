@@ -222,7 +222,7 @@ class CheckoutActivity : Activity() {
             PAYMENT_CARD_RECOGNITION_REQUEST_CODE -> {
                 resetPaymentCardRecognitionIntent()
                 when (resultCode) {
-                    RESULT_OK -> data?.let {
+                    RESULT_OK -> data?.let { intent ->
                         PaymentCardRecognitionResult.getFromIntent(intent)
                             ?.let(::handlePaymentCardRecognitionSuccess)
                     }
@@ -315,7 +315,7 @@ class CheckoutActivity : Activity() {
         cardRecognitionResult: PaymentCardRecognitionResult
     ) {
         val creditCardExpirationDate = cardRecognitionResult.creditCardExpirationDate
-        val expirationDate = creditCardExpirationDate?.let { "${it.month}/${it.year}" }
+        val expirationDate = creditCardExpirationDate?.let { "%02d/%02d".format(it.month, it.year) }
         val cardResultText = "PAN: ${cardRecognitionResult.pan}\nExpiration date: $expirationDate"
         Toast.makeText(this, cardResultText, Toast.LENGTH_LONG).show()
     }
