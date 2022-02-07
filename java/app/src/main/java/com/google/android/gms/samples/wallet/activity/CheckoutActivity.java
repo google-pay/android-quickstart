@@ -22,24 +22,22 @@ import android.app.PendingIntent;
 import android.content.Intent;
 import android.content.IntentSender;
 import android.content.IntentSender.SendIntentException;
-import android.os.Build;
 import android.os.Bundle;
 import android.text.Html;
 import android.util.Log;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
+
 import com.google.android.gms.common.api.Status;
-import com.google.android.gms.samples.wallet.databinding.ActivityCheckoutBinding;
-import com.google.android.gms.samples.wallet.util.Notifications;
-import com.google.android.gms.samples.wallet.util.PaymentsUtil;
 import com.google.android.gms.samples.wallet.R;
+import com.google.android.gms.samples.wallet.databinding.ActivityCheckoutBinding;
 import com.google.android.gms.samples.wallet.util.Json;
+import com.google.android.gms.samples.wallet.util.PaymentsUtil;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -54,15 +52,12 @@ import com.google.android.gms.wallet.PaymentData;
 import com.google.android.gms.wallet.PaymentDataRequest;
 import com.google.android.gms.wallet.PaymentsClient;
 
-import java.util.Locale;
-import java.util.Optional;
-
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
+import java.util.Locale;
+import java.util.Optional;
 
 /**
  * Checkout implementation for the app
@@ -70,6 +65,7 @@ import androidx.appcompat.app.AppCompatActivity;
 public class CheckoutActivity extends AppCompatActivity {
 
   private static final String TAG = "CheckoutActivity";
+
   // Arbitrarily-picked constant integer you define to track a request for payment data activity.
   private static final int LOAD_PAYMENT_DATA_REQUEST_CODE = 991;
   private static final int PAYMENT_CARD_RECOGNITION_REQUEST_CODE = 992;
@@ -78,7 +74,7 @@ public class CheckoutActivity extends AppCompatActivity {
 
   // A client for interacting with the Google Pay API.
   private PaymentsClient paymentsClient;
-  private PendingIntent paymentCardRecognitionPendingIntent;
+  private PendingIntent cardRecognitionPendingIntent;
 
   private ActivityCheckoutBinding layoutBinding;
   private View googlePayButton;
@@ -126,6 +122,7 @@ public class CheckoutActivity extends AppCompatActivity {
    */
   @Override
   public void onActivityResult(int requestCode, int resultCode, Intent data) {
+    super.onActivityResult(requestCode, resultCode, data);
     switch (requestCode) {
       // value passed in AutoResolveHelper
       case LOAD_PAYMENT_DATA_REQUEST_CODE:
@@ -154,7 +151,7 @@ public class CheckoutActivity extends AppCompatActivity {
         resetPaymentCardRecognitionIntent();
         switch (resultCode) {
           case Activity.RESULT_OK:
-            handlePaymentCardRecognitionSuccess(PaymentCardRecognitionResult.getFromIntent(data));
+            handleCardRecognitionSuccess(PaymentCardRecognitionResult.getFromIntent(data));
             break;
 
           case Activity.RESULT_CANCELED:
@@ -265,9 +262,6 @@ public class CheckoutActivity extends AppCompatActivity {
 
     // Token will be null if PaymentDataRequest was not constructed using fromJson(String).
     final String paymentInfo = paymentData.toJson();
-    if (paymentInfo == null) {
-      return;
-    }
 
     try {
       JSONObject paymentMethodData = new JSONObject(paymentInfo).getJSONObject("paymentMethodData");
@@ -336,7 +330,7 @@ public class CheckoutActivity extends AppCompatActivity {
    * only logging is required.
    *
    * @param statusCode will hold the value of any constant from CommonStatusCode or one of the
-   * WalletConstants.ERROR_CODE_* constants.
+   *                   WalletConstants.ERROR_CODE_* constants.
    * @see <a href="https://developers.google.com/android/reference/com/google/android/gms/wallet/
    * WalletConstants#constant-summary">Wallet Constants Library</a>
    */
@@ -367,11 +361,9 @@ public class CheckoutActivity extends AppCompatActivity {
       // Since loadPaymentData may show the UI asking the user to select a payment method, we use
       // AutoResolveHelper to wait for the user interacting with it. Once completed,
       // onActivityResult will be called with the result.
-      if (request != null) {
-        AutoResolveHelper.resolveTask(
-            paymentsClient.loadPaymentData(request),
-            this, LOAD_PAYMENT_DATA_REQUEST_CODE);
-      }
+      AutoResolveHelper.resolveTask(
+          paymentsClient.loadPaymentData(request),
+          this, LOAD_PAYMENT_DATA_REQUEST_CODE);
 
     } catch (JSONException e) {
       throw new RuntimeException("The price cannot be deserialized from the JSON object.");
@@ -391,22 +383,14 @@ public class CheckoutActivity extends AppCompatActivity {
         PaymentCardRecognitionIntentRequest.getDefaultInstance();
     paymentsClient
         .getPaymentCardRecognitionIntent(request)
-        .addOnSuccessListener(new OnSuccessListener<PaymentCardRecognitionIntentResponse>() {
-          @Override
-          public void onSuccess(
-              PaymentCardRecognitionIntentResponse paymentCardRecognitionIntentResponse) {
-            paymentCardRecognitionPendingIntent = paymentCardRecognitionIntentResponse
-                .getPaymentCardRecognitionPendingIntent();
-            paymentCardOcrButton.setVisibility(View.VISIBLE);
-          }
+        .addOnSuccessListener(intentResponse -> {
+          cardRecognitionPendingIntent = intentResponse.getPaymentCardRecognitionPendingIntent();
+          paymentCardOcrButton.setVisibility(View.VISIBLE);
         })
-        .addOnFailureListener(new OnFailureListener() {
-          @Override
-          public void onFailure(@NonNull Exception e) {
-            // The API is not available either because the feature is not enabled on the device
-            // or because your app is not registered.
-            Log.e(TAG, "Payment card ocr not available.",  e);
-          }
+        .addOnFailureListener(e -> {
+          // The API is not available either because the feature is not enabled on the device
+          // or because your app is not registered.
+          Log.e(TAG, "Payment card ocr not available.", e);
         });
   }
 
@@ -414,17 +398,11 @@ public class CheckoutActivity extends AppCompatActivity {
    * Starts the payment card recognition {@code Activity}.
    */
   public void startPaymentCardOcr(View view) {
-    IntentSender intentSender = paymentCardRecognitionPendingIntent.getIntentSender();
     try {
       ActivityCompat.startIntentSenderForResult(
-          /* activity= */ CheckoutActivity.this,
-          intentSender,
+          CheckoutActivity.this, cardRecognitionPendingIntent.getIntentSender(),
           PAYMENT_CARD_RECOGNITION_REQUEST_CODE,
-          /* fillInIntent= */ null,
-          /* flagsMask= */ 0,
-          /* flagsValues= */ 0,
-          /* extraFlags= */ 0,
-          /* options= */ null);
+          null, 0, 0, 0, null);
     } catch (SendIntentException e) {
       throw new RuntimeException("Failed to start payment card recognition.", e);
     }
