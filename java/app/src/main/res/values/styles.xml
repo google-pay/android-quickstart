@@ -26,12 +26,4 @@
         <item name="android:backgroundDimEnabled">false</item>
     </style>
 
-    <!-- Notifications -->
-    <style name="PriceButton" parent="Widget.AppCompat.Button.Borderless">
-        <item name="android:layout_width">@dimen/price_option_size</item>
-        <item name="android:layout_height">@dimen/price_option_size</item>
-        <item name="android:textColor">@color/price_button_grey</item>
-        <item name="android:background">@drawable/price_button_background</item>
-    </style>
-
 </resources>
