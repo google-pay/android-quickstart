@@ -298,22 +298,21 @@ public class CheckoutActivity extends AppCompatActivity {
   /**
    * Parses the results from the payment card recognition API and displays a toast.
    *
-   * @param paymentCardRecognitionResult Result object from the payment card recognition API.
+   * @param cardResult Result object from the payment card recognition API.
    */
-  private void handlePaymentCardRecognitionSuccess(
-      PaymentCardRecognitionResult paymentCardRecognitionResult) {
-    StringBuilder resultStringBuilder = new StringBuilder();
-    resultStringBuilder.append("Card recognized. ");
-    resultStringBuilder.append("PAN: ").append(paymentCardRecognitionResult.getPan()).append(" ");
-    CreditCardExpirationDate creditCardExpirationDate =
-        paymentCardRecognitionResult.getCreditCardExpirationDate();
-    if (creditCardExpirationDate != null) {
-      resultStringBuilder.append("Expiration date: ")
-          .append(creditCardExpirationDate.getMonth())
-          .append("/")
-          .append(creditCardExpirationDate.getYear());
+  private void handleCardRecognitionSuccess(PaymentCardRecognitionResult cardResult) {
+
+    String expirationDate = null;
+    Locale locale = Locale.getDefault();
+    CreditCardExpirationDate cardExpirationDate = cardResult.getCreditCardExpirationDate();
+    if(cardExpirationDate != null) {
+      expirationDate = String.format(locale,
+          "%02d/%02d", cardExpirationDate.getMonth(), cardExpirationDate.getYear());
     }
-    Toast.makeText(this, resultStringBuilder.toString(), Toast.LENGTH_LONG).show();
+
+    String cardResultString = String.format(locale,
+        "PAN: %s\nExpiration date: %s", cardResult.getPan(), expirationDate);
+    Toast.makeText(this, cardResultString, Toast.LENGTH_LONG).show();
   }
 
 

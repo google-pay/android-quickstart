@@ -77,20 +77,19 @@
             layout="@layout/buy_with_googlepay_button"
             android:layout_width="match_parent"
             android:layout_height="@dimen/buy_button_height"
-            android:layout_marginBottom="@dimen/buy_button_margin_bottom"
             android:visibility="gone" />
 
-        <com.google.android.material.button.MaterialButton
-            xmlns:app="http://schemas.android.com/apk/res-auto"
+        <Button
             android:id="@+id/paymentCardOcrButton"
-            app:materialThemeOverlay="@style/Theme.MaterialComponents"
-            style="@style/Widget.MaterialComponents.Button.TextButton"
+            style="?android:attr/borderlessButtonStyle"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="@dimen/buy_button_margin_bottom"
             android:text="@string/scan_card_button_text"
             android:textAllCaps="false"
-            android:textColor="#333333"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            android:textColor="#1976d2"
             android:visibility="gone" />
 
     </LinearLayout>
