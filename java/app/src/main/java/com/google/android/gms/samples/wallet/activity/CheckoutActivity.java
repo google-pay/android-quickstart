@@ -20,7 +20,6 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.PendingIntent;
 import android.content.Intent;
-import android.content.IntentSender;
 import android.content.IntentSender.SendIntentException;
 import android.os.Bundle;
 import android.text.Html;
@@ -39,14 +38,11 @@ import com.google.android.gms.samples.wallet.databinding.ActivityCheckoutBinding
 import com.google.android.gms.samples.wallet.util.Json;
 import com.google.android.gms.samples.wallet.util.PaymentsUtil;
 import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.gms.wallet.AutoResolveHelper;
 import com.google.android.gms.wallet.CreditCardExpirationDate;
 import com.google.android.gms.wallet.IsReadyToPayRequest;
 import com.google.android.gms.wallet.PaymentCardRecognitionIntentRequest;
-import com.google.android.gms.wallet.PaymentCardRecognitionIntentResponse;
 import com.google.android.gms.wallet.PaymentCardRecognitionResult;
 import com.google.android.gms.wallet.PaymentData;
 import com.google.android.gms.wallet.PaymentDataRequest;
@@ -170,21 +166,10 @@ public class CheckoutActivity extends AppCompatActivity {
 
     // The Google Pay button is a layout file – take the root view
     googlePayButton = layoutBinding.googlePayButton.getRoot();
-    googlePayButton.setOnClickListener(
-        new View.OnClickListener() {
-          @Override
-          public void onClick(View view) {
-            requestPayment(view);
-          }
-        });
+    googlePayButton.setOnClickListener(this::requestPayment);
 
     paymentCardOcrButton = layoutBinding.paymentCardOcrButton;
-    paymentCardOcrButton.setOnClickListener(new View.OnClickListener() {
-      @Override
-      public void onClick(View view) {
-        startPaymentCardOcr(view);
-      }
-    });
+    paymentCardOcrButton.setOnClickListener(this::startPaymentCardOcr);
   }
 
   private void displayGarment(JSONObject garment) throws JSONException {
@@ -220,16 +205,13 @@ public class CheckoutActivity extends AppCompatActivity {
     // The call to isReadyToPay is asynchronous and returns a Task. We need to provide an
     // OnCompleteListener to be triggered when the result of the call is known.
     IsReadyToPayRequest request = IsReadyToPayRequest.fromJson(isReadyToPayJson.get().toString());
-    Task<Boolean> task = paymentsClient.isReadyToPay(request);
-    task.addOnCompleteListener(this,
-        new OnCompleteListener<Boolean>() {
-          @Override
-          public void onComplete(@NonNull Task<Boolean> task) {
-            if (task.isSuccessful()) {
-              setGooglePayAvailable(task.getResult());
-            } else {
-              Log.w("isReadyToPay failed", task.getException());
-            }
+    Task<Boolean> requestTask = paymentsClient.isReadyToPay(request);
+    requestTask.addOnCompleteListener(this,
+        task -> {
+          if (task.isSuccessful()) {
+            setGooglePayAvailable(task.getResult());
+          } else {
+            Log.w("isReadyToPay failed", task.getException());
           }
         });
   }
@@ -307,7 +289,7 @@ public class CheckoutActivity extends AppCompatActivity {
     CreditCardExpirationDate cardExpirationDate = cardResult.getCreditCardExpirationDate();
     if(cardExpirationDate != null) {
       expirationDate = String.format(locale,
-          "%02d/%02d", cardExpirationDate.getMonth(), cardExpirationDate.getYear());
+          "%02d/%d", cardExpirationDate.getMonth(), cardExpirationDate.getYear());
     }
 
     String cardResultString = String.format(locale,

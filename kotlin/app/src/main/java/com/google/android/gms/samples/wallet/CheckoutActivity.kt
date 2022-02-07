@@ -34,6 +34,7 @@ import kotlinx.android.synthetic.main.activity_checkout.*
 import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
+import kotlin.math.roundToInt
 import kotlin.math.roundToLong
 
 
@@ -288,7 +289,7 @@ class CheckoutActivity : Activity() {
             )
 
         } catch (e: JSONException) {
-            Log.e("handlePaymentSuccess", "Error: " + e.toString())
+            Log.e("handlePaymentSuccess", "Error: $e")
         }
 
     }
@@ -309,13 +310,13 @@ class CheckoutActivity : Activity() {
     /**
      * Parses the results from the payment card recognition API and displays a toast.
      *
-     * @param paymentCardRecognitionResult Result object from the payment card recognition API.
+     * @param cardRecognitionResult Result object from the payment card recognition API.
      */
     private fun handlePaymentCardRecognitionSuccess(
         cardRecognitionResult: PaymentCardRecognitionResult
     ) {
         val creditCardExpirationDate = cardRecognitionResult.creditCardExpirationDate
-        val expirationDate = creditCardExpirationDate?.let { "%02d/%02d".format(it.month, it.year) }
+        val expirationDate = creditCardExpirationDate?.let { "%02d/%d".format(it.month, it.year) }
         val cardResultText = "PAN: ${cardRecognitionResult.pan}\nExpiration date: $expirationDate"
         Toast.makeText(this, cardResultText, Toast.LENGTH_LONG).show()
     }
@@ -333,7 +334,7 @@ class CheckoutActivity : Activity() {
             garmentList = Json.readFromResources(this, R.raw.tshirts)
         }
 
-        val randomIndex: Int = Math.round(Math.random() * (garmentList.length() - 1)).toInt()
+        val randomIndex: Int = (Math.random() * (garmentList.length() - 1)).roundToInt()
         return garmentList.getJSONObject(randomIndex)
     }
 
