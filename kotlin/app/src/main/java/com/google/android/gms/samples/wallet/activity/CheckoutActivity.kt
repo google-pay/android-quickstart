@@ -16,15 +16,19 @@
 
 package com.google.android.gms.samples.wallet.activity
 
-import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.view.View
 import android.widget.Toast
+import androidx.activity.result.ActivityResult
+import androidx.activity.result.IntentSenderRequest
+import androidx.activity.result.contract.ActivityResultContracts.StartIntentSenderForResult
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Observer
-import com.google.android.gms.samples.wallet.util.PaymentsUtil
+import com.google.android.gms.common.api.ApiException
+import com.google.android.gms.common.api.CommonStatusCodes
+import com.google.android.gms.common.api.ResolvableApiException
 import com.google.android.gms.samples.wallet.R
 import com.google.android.gms.samples.wallet.databinding.ActivityCheckoutBinding
 import com.google.android.gms.samples.wallet.viewmodel.CheckoutViewModel
@@ -45,6 +49,21 @@ class CheckoutActivity : AppCompatActivity() {
 
     private lateinit var layoutBinding: ActivityCheckoutBinding
     private lateinit var googlePayButton: View
+
+    // Handle potential conflict from calling loadPaymentData.
+    private val resolvePaymentForResult = registerForActivityResult(StartIntentSenderForResult()) {
+        result: ActivityResult ->
+        when (result.resultCode) {
+            RESULT_OK ->
+                result.data?.let { intent ->
+                    PaymentData.getFromIntent(intent)?.let(::handlePaymentSuccess)
+                }
+
+            RESULT_CANCELED -> {
+                // The user cancelled the payment attempt
+            }
+        }
+    }
 
     /**
      * Initialize the Google Pay API on creation of the activity
@@ -93,44 +112,27 @@ class CheckoutActivity : AppCompatActivity() {
         val shippingCostCents = 900L
         val task = model.getLoadPaymentDataTask(dummyPriceCents + shippingCostCents)
 
-        // Shows the payment sheet and forwards the result to the onActivityResult method.
-        AutoResolveHelper.resolveTask(task, this, loadPaymentDataRequestCode)
-    }
-
-    /**
-     * Handle a resolved activity from the Google Pay payment sheet.
-     *
-     * @param requestCode Request code originally supplied to AutoResolveHelper in requestPayment().
-     * @param resultCode Result code returned by the Google Pay API.
-     * @param data Intent from the Google Pay API containing payment or error data.
-     * @see [Getting a result
-     * from an Activity](https://developer.android.com/training/basics/intents/result)
-     */
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-        when (requestCode) {
-            // Value passed in AutoResolveHelper
-            loadPaymentDataRequestCode -> {
-                when (resultCode) {
-                    RESULT_OK ->
-                        data?.let { intent ->
-                            PaymentData.getFromIntent(intent)?.let(::handlePaymentSuccess)
-                        }
-
-                    RESULT_CANCELED -> {
-                        // The user cancelled the payment attempt
+        task.addOnCompleteListener { completedTask ->
+            if (completedTask.isSuccessful) {
+                completedTask.result.let(::handlePaymentSuccess)
+            } else {
+                when (val exception = completedTask.exception) {
+                    is ResolvableApiException -> {
+                        resolvePaymentForResult.launch(
+                                IntentSenderRequest.Builder(exception.resolution).build())
                     }
-
-                    AutoResolveHelper.RESULT_ERROR -> {
-                        AutoResolveHelper.getStatusFromIntent(data)?.let {
-                            handleError(it.statusCode)
-                        }
+                    is ApiException -> {
+                        handleError(exception.statusCode, exception.message)
+                    }
+                    else -> {
+                        handleError(CommonStatusCodes.INTERNAL_ERROR, "Unexpected non API" +
+                                " exception when trying to deliver the task result to an activity!")
                     }
                 }
-
-                // Re-enables the Google Pay payment button.
-                googlePayButton.isClickable = true
             }
+
+            // Re-enables the Google Pay payment button.
+            googlePayButton.isClickable = true
         }
     }
 
@@ -174,7 +176,7 @@ class CheckoutActivity : AppCompatActivity() {
      * @see [
      * Wallet Constants Library](https://developers.google.com/android/reference/com/google/android/gms/wallet/WalletConstants.constant-summary)
      */
-    private fun handleError(statusCode: Int) {
-        Log.w("loadPaymentData failed", String.format("Error code: %d", statusCode))
+    private fun handleError(statusCode: Int, message: String?) {
+        Log.w("loadPaymentData failed", "Error code: $statusCode, Message: $message")
     }
 }
