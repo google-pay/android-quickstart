@@ -2,4 +2,5 @@
 <resources>
     <string name="googlepay_button_content_description">Google Pay</string>
     <string name="buy_with_googlepay_button_content_description">Buy with Google Pay</string>
+    <string name="save_to_googlepay_button_content_description">Save to Google Pay</string>
 </resources>

@@ -79,9 +79,32 @@
             android:id="@+id/googlePayButton"
             layout="@layout/buy_with_googlepay_button"
             android:layout_width="match_parent"
-            android:layout_height="@dimen/buy_button_height"
+            android:layout_height="@dimen/pay_button_height"
             android:layout_marginBottom="20dp"
             android:visibility="gone"/>
+
+        <LinearLayout
+            android:id="@+id/giftCardContainer"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_marginBottom="20dp"
+            android:visibility="gone">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="?android:textColorSecondary"
+                android:text="Or, optionally, create a gift card for this item:"/>
+
+            <include
+                android:id="@+id/saveToGooglePayButton"
+                layout="@layout/save_to_googlepay_button"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/pay_button_height"
+                android:layout_marginTop="10dp"/>
+
+        </LinearLayout>
 
     </LinearLayout>
 
