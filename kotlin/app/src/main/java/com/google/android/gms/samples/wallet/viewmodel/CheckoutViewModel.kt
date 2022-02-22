@@ -1,11 +1,15 @@
 package com.google.android.gms.samples.wallet.viewmodel
 
+import android.app.Activity
 import android.app.Application
 import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.google.android.gms.common.api.ApiException
+import com.google.android.gms.pay.Pay
+import com.google.android.gms.pay.PayApiAvailabilityStatus
+import com.google.android.gms.pay.PayClient
 import com.google.android.gms.samples.wallet.util.PaymentsUtil
 import com.google.android.gms.tasks.Task
 import com.google.android.gms.wallet.IsReadyToPayRequest
@@ -15,12 +19,11 @@ import com.google.android.gms.wallet.PaymentsClient
 
 class CheckoutViewModel(application: Application) : AndroidViewModel(application) {
 
-    /**
-     * A client for interacting with the Google Pay API.
-     *
-     * @see [PaymentsClient](https://developers.google.com/android/reference/com/google/android/gms/wallet/PaymentsClient)
-     */
+    // A client for interacting with the Google Pay API.
     private val paymentsClient: PaymentsClient = PaymentsUtil.createPaymentsClient(application)
+
+    // A client to interact with the Google Pay Passes API
+    private val passesPayClient: PayClient = Pay.getClient(application)
 
     // LiveData with the result of whether the user can pay using Google Pay
     private val _canUseGooglePay: MutableLiveData<Boolean> by lazy {
@@ -29,7 +32,15 @@ class CheckoutViewModel(application: Application) : AndroidViewModel(application
         }
     }
 
+    // LiveData with the result of whether the user can save passes to Google Pay
+    private val _canSavePasses: MutableLiveData<Boolean> by lazy {
+        MutableLiveData<Boolean>().also {
+            fetchCanSavePassesToGooglePay()
+        }
+    }
+
     val canUseGooglePay: LiveData<Boolean> = _canUseGooglePay
+    val canSavePasses: LiveData<Boolean> = _canSavePasses
 
     /**
      * Determine the user's ability to pay with a payment method supported by your app and display
@@ -66,4 +77,31 @@ class CheckoutViewModel(application: Application) : AndroidViewModel(application
         val request = PaymentDataRequest.fromJson(paymentDataRequestJson.toString())
         return paymentsClient.loadPaymentData(request)
     }
+
+    /**
+     * Determine whether the API to save passes to Google Pay is available on the device.
+     *
+     * @return a [LiveData] object that holds the future result of the call.
+    ) */
+    private fun fetchCanSavePassesToGooglePay() {
+        passesPayClient
+            .getPayApiAvailabilityStatus(PayClient.RequestType.SAVE_PASSES)
+            .addOnSuccessListener { status ->
+                if (status == PayApiAvailabilityStatus.AVAILABLE) _canSavePasses.value = true
+                // } else {
+                // We recommend to either:
+                // 1) Hide the save button
+                // 2) Fall back to a different Save Passes integration (e.g. JWT link)
+                // A user might become eligible in the future.
+            }
+            .addOnFailureListener {
+                // Google Play Services is too old. API availability can't be verified.
+                _canUseGooglePay.value = false
+            }
+    }
+
+    /**
+     * Exposes the `savePasses` method in the passes pay client
+     */
+    val savePasses: (String, Activity, Int) -> Unit = passesPayClient::savePasses
 }

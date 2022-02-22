@@ -16,6 +16,7 @@
 
 package com.google.android.gms.samples.wallet.activity
 
+import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.view.View
@@ -29,6 +30,7 @@ import androidx.lifecycle.Observer
 import com.google.android.gms.common.api.ApiException
 import com.google.android.gms.common.api.CommonStatusCodes
 import com.google.android.gms.common.api.ResolvableApiException
+import com.google.android.gms.pay.PayClient
 import com.google.android.gms.samples.wallet.R
 import com.google.android.gms.samples.wallet.databinding.ActivityCheckoutBinding
 import com.google.android.gms.samples.wallet.viewmodel.CheckoutViewModel
@@ -36,48 +38,35 @@ import com.google.android.gms.wallet.*
 import org.json.JSONException
 import org.json.JSONObject
 
-
 /**
  * Checkout implementation for the app
  */
 class CheckoutActivity : AppCompatActivity() {
 
+    private val SAVE_TO_GOOGLE_PAY_REQUEST_CODE = 1000
+
     private val model: CheckoutViewModel by viewModels()
 
-    private lateinit var layoutBinding: ActivityCheckoutBinding
+    private lateinit var layout: ActivityCheckoutBinding
     private lateinit var googlePayButton: View
+    private lateinit var saveToGooglePayButton: View
 
-    // Handle potential conflict from calling loadPaymentData.
-    private val resolvePaymentForResult = registerForActivityResult(StartIntentSenderForResult()) {
-        result: ActivityResult ->
-        when (result.resultCode) {
-            RESULT_OK ->
-                result.data?.let { intent ->
-                    PaymentData.getFromIntent(intent)?.let(::handlePaymentSuccess)
-                }
-
-            RESULT_CANCELED -> {
-                // The user cancelled the payment attempt
-            }
-        }
-    }
-
-    /**
-     * Initialize the Google Pay API on creation of the activity
-     *
-     * @see AppCompatActivity.onCreate
-     */
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         // Use view binding to access the UI elements
-        layoutBinding = ActivityCheckoutBinding.inflate(layoutInflater)
-        setContentView(layoutBinding.root)
-        googlePayButton = layoutBinding.googlePayButton.root
-        googlePayButton.setOnClickListener { requestPayment() }
+        layout = ActivityCheckoutBinding.inflate(layoutInflater)
+        setContentView(layout.root)
 
-        // Check whether Google Pay can be used to complete a payment
+        // Setup buttons
+        googlePayButton = layout.googlePayButton.root
+        saveToGooglePayButton = layout.saveToGooglePayButton.root
+        googlePayButton.setOnClickListener { requestPayment() }
+        saveToGooglePayButton.setOnClickListener { requestSaveGiftCard() }
+
+        // Check Google Pay availability
         model.canUseGooglePay.observe(this, Observer(::setGooglePayAvailable))
+        model.canSavePasses.observe(this, Observer(::setSaveToGooglePayAvailable))
     }
 
     /**
@@ -95,6 +84,23 @@ class CheckoutActivity : AppCompatActivity() {
                     this,
                     R.string.googlepay_status_unavailable,
                     Toast.LENGTH_LONG).show()
+        }
+    }
+
+    /**
+     * If the passes API is available, show the button to save to Google Pay. Please adjust to fit
+     * in with your current user flow.
+     *
+     * @param available
+     */
+    private fun setSaveToGooglePayAvailable(available: Boolean) {
+        if (available) {
+            layout.giftCardContainer.visibility = View.VISIBLE
+        } else {
+            Toast.makeText(
+                this,
+                R.string.googlepay_status_unavailable,
+                Toast.LENGTH_LONG).show()
         }
     }
     
@@ -116,20 +122,38 @@ class CheckoutActivity : AppCompatActivity() {
                 when (val exception = completedTask.exception) {
                     is ResolvableApiException -> {
                         resolvePaymentForResult.launch(
-                                IntentSenderRequest.Builder(exception.resolution).build())
+                            IntentSenderRequest.Builder(exception.resolution).build()
+                        )
                     }
                     is ApiException -> {
                         handleError(exception.statusCode, exception.message)
                     }
                     else -> {
-                        handleError(CommonStatusCodes.INTERNAL_ERROR, "Unexpected non API" +
-                                " exception when trying to deliver the task result to an activity!")
+                        handleError(
+                            CommonStatusCodes.INTERNAL_ERROR, "Unexpected non API" +
+                                    " exception when trying to deliver the task result to an activity!"
+                        )
                     }
                 }
             }
 
             // Re-enables the Google Pay payment button.
             googlePayButton.isClickable = true
+        }
+    }
+
+    // Handle potential conflict from calling loadPaymentData
+    private val resolvePaymentForResult = registerForActivityResult(StartIntentSenderForResult()) {
+            result: ActivityResult ->
+        when (result.resultCode) {
+            RESULT_OK ->
+                result.data?.let { intent ->
+                    PaymentData.getFromIntent(intent)?.let(::handlePaymentSuccess)
+                }
+
+            RESULT_CANCELED -> {
+                // The user cancelled the payment attempt
+            }
         }
     }
 
@@ -161,7 +185,6 @@ class CheckoutActivity : AppCompatActivity() {
         } catch (error: JSONException) {
             Log.e("handlePaymentSuccess", "Error: $error")
         }
-
     }
 
     /**
@@ -174,6 +197,47 @@ class CheckoutActivity : AppCompatActivity() {
      * Wallet Constants Library](https://developers.google.com/android/reference/com/google/android/gms/wallet/WalletConstants.constant-summary)
      */
     private fun handleError(statusCode: Int, message: String?) {
-        Log.w("loadPaymentData failed", "Error code: $statusCode, Message: $message")
+        Log.e("Google Pay API error", "Error code: $statusCode, Message: $message")
+    }
+
+    private fun requestSaveGiftCard() {
+
+        // Disables the button to prevent multiple clicks.
+        saveToGooglePayButton.isClickable = false
+
+        val jsonString = ""
+        model.savePasses(jsonString, this, SAVE_TO_GOOGLE_PAY_REQUEST_CODE)
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+
+        if (requestCode == SAVE_TO_GOOGLE_PAY_REQUEST_CODE) {
+            when (resultCode) {
+                RESULT_OK -> Toast
+                    .makeText(this, getString(R.string.save_google_pay_success), Toast.LENGTH_LONG)
+                    .show()
+
+                RESULT_CANCELED -> {
+                    // Save canceled
+                }
+
+                PayClient.SavePassesResult.SAVE_ERROR -> data?.let { intentData ->
+                    val apiErrorMessage = intentData.getStringExtra(PayClient.EXTRA_API_ERROR_MESSAGE)
+                    handleError(resultCode, apiErrorMessage)
+                }
+
+                else -> {
+                    handleError(
+                        CommonStatusCodes.INTERNAL_ERROR, "Unexpected non API" +
+                                " exception when trying to deliver the task result to an activity!"
+                    )
+                }
+            }
+
+            // Re-enables the Google Pay payment button.
+            saveToGooglePayButton.isClickable = true
+
+        }
     }
 }
