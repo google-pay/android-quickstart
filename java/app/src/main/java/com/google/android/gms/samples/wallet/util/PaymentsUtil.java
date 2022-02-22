@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Google Inc.
+ * Copyright 2021 Google Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,7 @@
 
 package com.google.android.gms.samples.wallet.util;
 
-import android.app.Activity;
+import android.content.Context;
 
 import com.google.android.gms.samples.wallet.Constants;
 import com.google.android.gms.wallet.PaymentsClient;
@@ -24,7 +24,6 @@ import com.google.android.gms.wallet.Wallet;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.util.Optional;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -39,28 +38,28 @@ import org.json.JSONObject;
  */
 public class PaymentsUtil {
 
-  public static final BigDecimal CENTS_IN_A_UNIT = new BigDecimal(100d);
+  public static final BigDecimal CENTS_IN_A_UNIT = new BigDecimal(100);
 
   /**
    * Create a Google Pay API base request object with properties used in all requests.
    *
    * @return Google Pay API base request object.
-   * @throws JSONException
+   * @throws JSONException if the object is malformed.
    */
   private static JSONObject getBaseRequest() throws JSONException {
     return new JSONObject().put("apiVersion", 2).put("apiVersionMinor", 0);
   }
 
   /**
-   * Creates an instance of {@link PaymentsClient} for use in an {@link Activity} using the
+   * Creates an instance of {@link PaymentsClient} for use in an {@link Context} using the
    * environment and theme set in {@link Constants}.
    *
-   * @param activity is the caller's activity.
+   * @param context is the caller's context.
    */
-  public static PaymentsClient createPaymentsClient(Activity activity) {
+  public static PaymentsClient createPaymentsClient(Context context) {
     Wallet.WalletOptions walletOptions =
         new Wallet.WalletOptions.Builder().setEnvironment(Constants.PAYMENTS_ENVIRONMENT).build();
-    return Wallet.getPaymentsClient(activity, walletOptions);
+    return Wallet.getPaymentsClient(context, walletOptions);
   }
 
   /**
@@ -72,7 +71,7 @@ public class PaymentsUtil {
    * <p>TODO: Check with your gateway on the parameters to pass and modify them in Constants.java.
    *
    * @return Payment data tokenization for the CARD payment method.
-   * @throws JSONException
+   * @throws JSONException if the object is malformed.
    * @see <a href=
    * "https://developers.google.com/pay/api/android/reference/object#PaymentMethodTokenizationSpecification">PaymentMethodTokenizationSpecification</a>
    */
@@ -94,19 +93,12 @@ public class PaymentsUtil {
    * type of integration you use depends on your payment processor.
    *
    * @return Payment data tokenization for the CARD payment method.
-   * @throws JSONException
+   * @throws JSONException if the object is malformed.
    * @see <a
    * href="https://developers.google.com/pay/api/android/reference/object#PaymentMethodTokenizationSpecification">PaymentMethodTokenizationSpecification</a>
    */
   private static JSONObject getDirectTokenizationSpecification()
       throws JSONException, RuntimeException {
-    if (Constants.DIRECT_TOKENIZATION_PARAMETERS.isEmpty()
-        || Constants.DIRECT_TOKENIZATION_PUBLIC_KEY.isEmpty()
-        || Constants.DIRECT_TOKENIZATION_PUBLIC_KEY == null
-        || Constants.DIRECT_TOKENIZATION_PUBLIC_KEY == "REPLACE_ME") {
-      throw new RuntimeException(
-          "Please edit the Constants.java file to add protocol version & public key.");
-    }
     JSONObject tokenizationSpecification = new JSONObject();
 
     tokenizationSpecification.put("type", "DIRECT");
@@ -150,7 +142,7 @@ public class PaymentsUtil {
    * PaymentDataRequest.
    *
    * @return A CARD PaymentMethod object describing accepted cards.
-   * @throws JSONException
+   * @throws JSONException if the object is malformed.
    * @see <a
    * href="https://developers.google.com/pay/api/android/reference/object#PaymentMethod">PaymentMethod</a>
    */
@@ -178,7 +170,7 @@ public class PaymentsUtil {
    * Describe the expected returned payment data for the CARD payment method
    *
    * @return A CARD PaymentMethod describing accepted cards and optional fields.
-   * @throws JSONException
+   * @throws JSONException if the object is malformed.
    * @see <a
    * href="https://developers.google.com/pay/api/android/reference/object#PaymentMethod">PaymentMethod</a>
    */
@@ -197,16 +189,16 @@ public class PaymentsUtil {
    * @see <a
    * href="https://developers.google.com/pay/api/android/reference/object#IsReadyToPayRequest">IsReadyToPayRequest</a>
    */
-  public static Optional<JSONObject> getIsReadyToPayRequest() {
+  public static JSONObject getIsReadyToPayRequest() {
     try {
       JSONObject isReadyToPayRequest = getBaseRequest();
       isReadyToPayRequest.put(
           "allowedPaymentMethods", new JSONArray().put(getBaseCardPaymentMethod()));
 
-      return Optional.of(isReadyToPayRequest);
+      return isReadyToPayRequest;
 
     } catch (JSONException e) {
-      return Optional.empty();
+      return null;
     }
   }
 
@@ -214,7 +206,7 @@ public class PaymentsUtil {
    * Provide Google Pay API with a payment amount, currency, and amount status.
    *
    * @return information about the requested payment.
-   * @throws JSONException
+   * @throws JSONException if the object is malformed.
    * @see <a
    * href="https://developers.google.com/pay/api/android/reference/object#TransactionInfo">TransactionInfo</a>
    */
@@ -233,7 +225,7 @@ public class PaymentsUtil {
    * Information about the merchant requesting payment information
    *
    * @return Information about the merchant.
-   * @throws JSONException
+   * @throws JSONException if the object is malformed.
    * @see <a
    * href="https://developers.google.com/pay/api/android/reference/object#MerchantInfo">MerchantInfo</a>
    */
@@ -248,7 +240,7 @@ public class PaymentsUtil {
    * @see <a
    * href="https://developers.google.com/pay/api/android/reference/object#PaymentDataRequest">PaymentDataRequest</a>
    */
-  public static Optional<JSONObject> getPaymentDataRequest(long priceCents) {
+  public static JSONObject getPaymentDataRequest(long priceCents) {
 
     final String price = PaymentsUtil.centsToString(priceCents);
 
@@ -270,10 +262,10 @@ public class PaymentsUtil {
 
       shippingAddressParameters.put("allowedCountryCodes", allowedCountryCodes);
       paymentDataRequest.put("shippingAddressParameters", shippingAddressParameters);
-      return Optional.of(paymentDataRequest);
+      return paymentDataRequest;
 
     } catch (JSONException e) {
-      return Optional.empty();
+      return null;
     }
   }
 

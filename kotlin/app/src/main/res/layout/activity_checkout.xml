@@ -19,9 +19,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#fff"
     android:fillViewport="true"
-    tools:context="com.google.android.gms.samples.wallet.CheckoutActivity">
+    tools:context="com.google.android.gms.samples.wallet.activity.CheckoutActivity">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -43,7 +42,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="15dp"
             android:text="Men's Tech Shell Full-Zip"
-            android:textColor="#333333"
+            android:textColor="?android:textColorPrimary"
             android:textSize="20sp"
             android:textStyle="bold" />
 
@@ -52,7 +51,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="5dp"
-            android:textColor="#777777"
+            android:textColor="?android:textColorSecondary"
             android:text="$50.20"/>
 
         <TextView
@@ -60,7 +59,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="15dp"
             android:text="Description"
-            android:textColor="#333333"
+            android:textColor="?android:textColorPrimary"
             android:textStyle="bold" />
 
         <TextView
@@ -69,9 +68,13 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="5dp"
             android:layout_marginBottom="15dp"
-            android:textColor="#777777"
+            android:textColor="?android:textColorSecondary"
             android:text="A versatile full-zip that you can wear all day long and even..."/>
 
+        <!--
+            TODO Check out Google Pay's brand guidelines to discover all button types and styles:
+            https://developers.google.com/pay/api/android/guides/brand-guidelines#assets
+        -->
         <include
             android:id="@+id/googlePayButton"
             layout="@layout/buy_with_googlepay_button"
