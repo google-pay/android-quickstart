@@ -43,7 +43,7 @@ import org.json.JSONObject
  */
 class CheckoutActivity : AppCompatActivity() {
 
-    private val SAVE_TO_GOOGLE_PAY_REQUEST_CODE = 1000
+    private val saveToGooglePayRequestCode = 1000
 
     private val model: CheckoutViewModel by viewModels()
 
@@ -205,14 +205,14 @@ class CheckoutActivity : AppCompatActivity() {
         // Disables the button to prevent multiple clicks.
         saveToGooglePayButton.isClickable = false
 
-        val jsonString = ""
-        model.savePasses(jsonString, this, SAVE_TO_GOOGLE_PAY_REQUEST_CODE)
+        val jsonString = model.generateGenericClassObject()
+        model.savePasses(jsonString, this, saveToGooglePayRequestCode)
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
 
-        if (requestCode == SAVE_TO_GOOGLE_PAY_REQUEST_CODE) {
+        if (requestCode == saveToGooglePayRequestCode) {
             when (resultCode) {
                 RESULT_OK -> Toast
                     .makeText(this, getString(R.string.save_google_pay_success), Toast.LENGTH_LONG)

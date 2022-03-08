@@ -12,12 +12,14 @@ import com.google.android.gms.pay.PayApiAvailabilityStatus
 import com.google.android.gms.pay.PayClient
 import com.google.android.gms.samples.wallet.util.PaymentsUtil
 import com.google.android.gms.tasks.Task
-import com.google.android.gms.wallet.IsReadyToPayRequest
-import com.google.android.gms.wallet.PaymentData
-import com.google.android.gms.wallet.PaymentDataRequest
-import com.google.android.gms.wallet.PaymentsClient
+import com.google.android.gms.wallet.*
+import com.google.android.gms.wallet.wobs.LoyaltyPoints
+import com.google.android.gms.wallet.wobs.LoyaltyPointsBalance
+import com.google.android.gms.wallet.wobs.WalletObjectsConstants
 
 class CheckoutViewModel(application: Application) : AndroidViewModel(application) {
+
+    private val passesIssuerId = "3388000000022095177"
 
     // A client for interacting with the Google Pay API.
     private val paymentsClient: PaymentsClient = PaymentsUtil.createPaymentsClient(application)
@@ -101,7 +103,25 @@ class CheckoutViewModel(application: Application) : AndroidViewModel(application
     }
 
     /**
-     * Exposes the `savePasses` method in the passes pay client
+     * Creates an object of the pre-created class to save using the API.
+     * TODO: Replace with the backend
      */
-    val savePasses: (String, Activity, Int) -> Unit = passesPayClient::savePasses
+    fun generateGenericClassObject(): String {
+        return """
+            {
+              "iss": "generic-pass-test@gpay-loyaltyapi-codelab.iam.gserviceaccount.com",
+              "aud": "google",
+              "typ": "savetoandroidpay",
+              "iat": 1368029586,
+              "payload": {
+                "genericObjects": [
+                    {
+                      "id" : "$passesIssuerId.generic_pass_sample_object"
+                    }
+                ]
+              },
+              "origins": ["http://baconrista.com", "https://baconrista.com"]
+            }
+        """.trimIndent()
+    }
 }
