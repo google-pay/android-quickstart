@@ -103,25 +103,7 @@ class CheckoutViewModel(application: Application) : AndroidViewModel(application
     }
 
     /**
-     * Creates an object of the pre-created class to save using the API.
-     * TODO: Replace with the backend
+     * Exposes the `savePasses` method in the passes pay client
      */
-    fun generateGenericClassObject(): String {
-        return """
-            {
-              "iss": "generic-pass-test@gpay-loyaltyapi-codelab.iam.gserviceaccount.com",
-              "aud": "google",
-              "typ": "savetoandroidpay",
-              "iat": 1368029586,
-              "payload": {
-                "genericObjects": [
-                    {
-                      "id" : "$passesIssuerId.generic_pass_sample_object"
-                    }
-                ]
-              },
-              "origins": ["http://baconrista.com", "https://baconrista.com"]
-            }
-        """.trimIndent()
-    }
+    val savePassesJwt: (String, Activity, Int) -> Unit = passesPayClient::savePassesJwt
 }

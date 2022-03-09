@@ -205,8 +205,7 @@ class CheckoutActivity : AppCompatActivity() {
         // Disables the button to prevent multiple clicks.
         saveToGooglePayButton.isClickable = false
 
-        val jsonString = model.generateGenericClassObject()
-        model.savePasses(jsonString, this, saveToGooglePayRequestCode)
+        model.savePassesJwt(model.mockObjectJwt, this, saveToGooglePayRequestCode)
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -227,12 +226,10 @@ class CheckoutActivity : AppCompatActivity() {
                     handleError(resultCode, apiErrorMessage)
                 }
 
-                else -> {
-                    handleError(
+                else -> handleError(
                         CommonStatusCodes.INTERNAL_ERROR, "Unexpected non API" +
                                 " exception when trying to deliver the task result to an activity!"
                     )
-                }
             }
 
             // Re-enables the Google Pay payment button.
