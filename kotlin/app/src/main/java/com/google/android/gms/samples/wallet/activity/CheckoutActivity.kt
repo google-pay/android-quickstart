@@ -34,7 +34,7 @@ import com.google.android.gms.pay.PayClient
 import com.google.android.gms.samples.wallet.R
 import com.google.android.gms.samples.wallet.databinding.ActivityCheckoutBinding
 import com.google.android.gms.samples.wallet.viewmodel.CheckoutViewModel
-import com.google.android.gms.wallet.*
+import com.google.android.gms.wallet.PaymentData
 import org.json.JSONException
 import org.json.JSONObject
 
@@ -62,7 +62,7 @@ class CheckoutActivity : AppCompatActivity() {
         googlePayButton = layout.googlePayButton.root
         saveToGooglePayButton = layout.saveToGooglePayButton.root
         googlePayButton.setOnClickListener { requestPayment() }
-        saveToGooglePayButton.setOnClickListener { requestSaveGiftCard() }
+        saveToGooglePayButton.setOnClickListener { requestSavePass() }
 
         // Check Google Pay availability
         model.canUseGooglePay.observe(this, Observer(::setGooglePayAvailable))
@@ -95,7 +95,7 @@ class CheckoutActivity : AppCompatActivity() {
      */
     private fun setSaveToGooglePayAvailable(available: Boolean) {
         if (available) {
-            layout.giftCardContainer.visibility = View.VISIBLE
+            layout.passContainer.visibility = View.VISIBLE
         } else {
             Toast.makeText(
                 this,
@@ -200,7 +200,7 @@ class CheckoutActivity : AppCompatActivity() {
         Log.e("Google Pay API error", "Error code: $statusCode, Message: $message")
     }
 
-    private fun requestSaveGiftCard() {
+    private fun requestSavePass() {
 
         // Disables the button to prevent multiple clicks.
         saveToGooglePayButton.isClickable = false
