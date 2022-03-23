@@ -13,13 +13,9 @@ import com.google.android.gms.pay.PayClient
 import com.google.android.gms.samples.wallet.util.PaymentsUtil
 import com.google.android.gms.tasks.Task
 import com.google.android.gms.wallet.*
-import com.google.android.gms.wallet.wobs.LoyaltyPoints
-import com.google.android.gms.wallet.wobs.LoyaltyPointsBalance
-import com.google.android.gms.wallet.wobs.WalletObjectsConstants
+import java.util.UUID
 
 class CheckoutViewModel(application: Application) : AndroidViewModel(application) {
-
-    private val passesIssuerId = "3388000000022095177"
 
     // A client for interacting with the Google Pay API.
     private val paymentsClient: PaymentsClient = PaymentsUtil.createPaymentsClient(application)
@@ -89,12 +85,12 @@ class CheckoutViewModel(application: Application) : AndroidViewModel(application
         passesPayClient
             .getPayApiAvailabilityStatus(PayClient.RequestType.SAVE_PASSES)
             .addOnSuccessListener { status ->
-                if (status == PayApiAvailabilityStatus.AVAILABLE) _canSavePasses.value = true
+                _canSavePasses.value = status == PayApiAvailabilityStatus.AVAILABLE
                 // } else {
                 // We recommend to either:
                 // 1) Hide the save button
                 // 2) Fall back to a different Save Passes integration (e.g. JWT link)
-                // A user might become eligible in the future.
+                // Note that a user might become eligible in the future.
             }
             .addOnFailureListener {
                 // Google Play Services is too old. API availability can't be verified.
@@ -103,7 +99,65 @@ class CheckoutViewModel(application: Application) : AndroidViewModel(application
     }
 
     /**
-     * Exposes the `savePasses` method in the passes pay client
+     * Exposes the `savePassesJwt` method in the passes pay client
      */
     val savePassesJwt: (String, Activity, Int) -> Unit = passesPayClient::savePassesJwt
+
+    /**
+     * Exposes the `savePasses` method in the passes pay client
+     */
+    val savePasses: (String, Activity, Int) -> Unit = passesPayClient::savePasses
+
+    // Configuration for the issuer and test pass
+    private val issuerId = "3388000000022095177"
+    private val passClass = "ioSmartPassClass"
+    private val passId = UUID.randomUUID()
+
+    // Test generic object used to be created against the API
+    val mockObjectJson = """
+        {
+          "id": "$issuerId.$passId",
+          "classId": "$issuerId.$passClass",
+          "genericType": "GENERIC_TYPE_UNSPECIFIED",
+          "cardTitle": {
+			"defaultValue": {
+				"language": "en",
+				"value": "Google I/O '22"
+			}
+		  },
+          "subheader": {
+			"defaultValue": {
+				"language": "en",
+				"value": "Attendee"
+			}
+		  },
+          "subheader": {
+			"defaultValue": {
+				"language": "en",
+				"value": "Alex McJacobs"
+			}
+		  },
+          "logo": {
+			"sourceUri": {
+				"uri": "https://yt3.ggpht.com/ytc/AKedOLTMa_15AP5qGxqScyox6p0VZBwjuXjzROlTBZ_QgCI=s68-c-k-c0x00ffffff-no-rj"
+			}
+		  },
+          "hexBackgroundColor": "#4285f4",
+          "barcode": {
+            "type": "QR_CODE",
+            "value": "$passId",
+            "alternateText": "$passId"
+          },
+          "heroImage": {
+			"sourceUri": {
+				"uri": "https://www.techadvisor.com/cmsdata/features/3781792/google_io_2022_teaser_thumb800.jpg"
+			}
+		  },
+          "notifications": {
+            "upcomingNotification": {
+              "enableNotification": true
+            }
+          }
+        }
+        """
 }
