@@ -98,7 +98,7 @@
                 android:text="Or, optionally, create a gift card for this item:"/>
 
             <include
-                android:id="@+id/saveToGooglePayButton"
+                android:id="@+id/addToGoogleWalletButton"
                 layout="@layout/save_to_googlepay_button"
                 android:layout_width="match_parent"
                 android:layout_height="@dimen/pay_button_height"

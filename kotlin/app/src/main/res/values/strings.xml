@@ -18,8 +18,9 @@
 <resources>
     <string name="app_name" translatable="false">Auto T-Shirt App</string>
     <string name="store_name" translatable="false">Auto T-Shirt Shop</string>
-    <string name="googlepay_status_unavailable" translatable="false">Unfortunately, Google Pay is not available on this phone.</string>
-    <string name="googlepay_status_checking" translatable="false">Checking if Google Pay is available...</string>
+    <string name="google_pay_status_unavailable" translatable="false">Unfortunately, Google Pay is not available on this phone.</string>
+    <string name="google_wallet_status_unavailable" translatable="false">Unfortunately, Google Wallet is not available on this phone.</string>
+    <string name="google_pay_status_checking" translatable="false">Checking if Google Pay is available...</string>
     <string name="payments_show_name" translatable="false">Successfully received payment data for %s!</string>
-    <string name="save_google_pay_success" translatable="false">Gift card saved successfully!</string>
+    <string name="add_google_wallet_success" translatable="false">The pass saved successfully!</string>
 </resources>

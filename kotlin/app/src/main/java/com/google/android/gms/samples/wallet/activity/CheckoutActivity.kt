@@ -43,13 +43,13 @@ import org.json.JSONObject
  */
 class CheckoutActivity : AppCompatActivity() {
 
-    private val saveToGooglePayRequestCode = 1000
+    private val addToGoogleWalletRequestCode = 1000
 
     private val model: CheckoutViewModel by viewModels()
 
     private lateinit var layout: ActivityCheckoutBinding
     private lateinit var googlePayButton: View
-    private lateinit var saveToGooglePayButton: View
+    private lateinit var addToGoogleWalletButton: View
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -60,13 +60,13 @@ class CheckoutActivity : AppCompatActivity() {
 
         // Setup buttons
         googlePayButton = layout.googlePayButton.root
-        saveToGooglePayButton = layout.saveToGooglePayButton.root
+        addToGoogleWalletButton = layout.addToGoogleWalletButton.root
         googlePayButton.setOnClickListener { requestPayment() }
-        saveToGooglePayButton.setOnClickListener { requestSavePass() }
+        addToGoogleWalletButton.setOnClickListener { requestSavePass() }
 
         // Check Google Pay availability
         model.canUseGooglePay.observe(this, Observer(::setGooglePayAvailable))
-        model.canSavePasses.observe(this, Observer(::setSaveToGooglePayAvailable))
+        model.canSavePasses.observe(this, Observer(::setAddToGoogleWalletAvailable))
     }
 
     /**
@@ -82,24 +82,24 @@ class CheckoutActivity : AppCompatActivity() {
         } else {
             Toast.makeText(
                     this,
-                    R.string.googlepay_status_unavailable,
+                    R.string.google_pay_status_unavailable,
                     Toast.LENGTH_LONG).show()
         }
     }
 
     /**
-     * If the passes API is available, show the button to save to Google Pay. Please adjust to fit
+     * If the passes API is available, show the button to Add to Google Wallet. Please adjust to fit
      * in with your current user flow.
      *
      * @param available
      */
-    private fun setSaveToGooglePayAvailable(available: Boolean) {
+    private fun setAddToGoogleWalletAvailable(available: Boolean) {
         if (available) {
             layout.passContainer.visibility = View.VISIBLE
         } else {
             Toast.makeText(
                 this,
-                R.string.googlepay_status_unavailable,
+                R.string.google_wallet_status_unavailable,
                 Toast.LENGTH_LONG).show()
         }
     }
@@ -203,18 +203,18 @@ class CheckoutActivity : AppCompatActivity() {
     private fun requestSavePass() {
 
         // Disables the button to prevent multiple clicks.
-        saveToGooglePayButton.isClickable = false
+        addToGoogleWalletButton.isClickable = false
 
-        model.savePasses(model.mockObjectJson, this, saveToGooglePayRequestCode)
+        model.savePasses(model.mockObjectJson, this, addToGoogleWalletRequestCode)
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
 
-        if (requestCode == saveToGooglePayRequestCode) {
+        if (requestCode == addToGoogleWalletRequestCode) {
             when (resultCode) {
                 RESULT_OK -> Toast
-                    .makeText(this, getString(R.string.save_google_pay_success), Toast.LENGTH_LONG)
+                    .makeText(this, getString(R.string.add_google_wallet_success), Toast.LENGTH_LONG)
                     .show()
 
                 RESULT_CANCELED -> {
@@ -233,7 +233,7 @@ class CheckoutActivity : AppCompatActivity() {
             }
 
             // Re-enables the Google Pay payment button.
-            saveToGooglePayButton.isClickable = true
+            addToGoogleWalletButton.isClickable = true
 
         }
     }

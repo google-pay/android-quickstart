@@ -33,7 +33,7 @@ class CheckoutViewModel(application: Application) : AndroidViewModel(application
     // LiveData with the result of whether the user can save passes to Google Pay
     private val _canSavePasses: MutableLiveData<Boolean> by lazy {
         MutableLiveData<Boolean>().also {
-            fetchCanSavePassesToGooglePay()
+            fetchCanAddPassesToGoogleWallet()
         }
     }
 
@@ -81,7 +81,7 @@ class CheckoutViewModel(application: Application) : AndroidViewModel(application
      *
      * @return a [LiveData] object that holds the future result of the call.
     ) */
-    private fun fetchCanSavePassesToGooglePay() {
+    private fun fetchCanAddPassesToGoogleWallet() {
         passesPayClient
             .getPayApiAvailabilityStatus(PayClient.RequestType.SAVE_PASSES)
             .addOnSuccessListener { status ->
