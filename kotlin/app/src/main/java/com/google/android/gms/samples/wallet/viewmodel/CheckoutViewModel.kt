@@ -13,6 +13,7 @@ import com.google.android.gms.pay.PayClient
 import com.google.android.gms.samples.wallet.util.PaymentsUtil
 import com.google.android.gms.tasks.Task
 import com.google.android.gms.wallet.*
+import java.util.Date
 import java.util.UUID
 
 class CheckoutViewModel(application: Application) : AndroidViewModel(application) {
@@ -116,48 +117,71 @@ class CheckoutViewModel(application: Application) : AndroidViewModel(application
     // Test generic object used to be created against the API
     val mockObjectJson = """
         {
-          "id": "$issuerId.$passId",
-          "classId": "$issuerId.$passClass",
-          "genericType": "GENERIC_TYPE_UNSPECIFIED",
-          "cardTitle": {
-			"defaultValue": {
-				"language": "en",
-				"value": "Google I/O '22"
-			}
-		  },
-          "subheader": {
-			"defaultValue": {
-				"language": "en",
-				"value": "Attendee"
-			}
-		  },
-          "subheader": {
-			"defaultValue": {
-				"language": "en",
-				"value": "Alex McJacobs"
-			}
-		  },
-          "logo": {
-			"sourceUri": {
-				"uri": "https://yt3.ggpht.com/ytc/AKedOLTMa_15AP5qGxqScyox6p0VZBwjuXjzROlTBZ_QgCI=s68-c-k-c0x00ffffff-no-rj"
-			}
-		  },
-          "hexBackgroundColor": "#4285f4",
-          "barcode": {
-            "type": "QR_CODE",
-            "value": "$passId",
-            "alternateText": "$passId"
+          "iss": "generic-pass-test@gpay-loyaltyapi-codelab.iam.gserviceaccount.com",
+          "aud": "google",
+          "typ": "savetoandroidpay",
+          "iat": ${Date().time / 1000L},
+          "payload": {
+            "genericObjects": [
+              {
+                "id": "$issuerId.$passId",
+                "classId": "$issuerId.$passClass",
+                "genericType": "GENERIC_TYPE_UNSPECIFIED",
+                "hexBackgroundColor": "#4285f4",
+                "logo": {
+                  "sourceUri": {
+                    "uri": "https://yt3.ggpht.com/ytc/AKedOLTMa_15AP5qGxqScyox6p0VZBwjuXjzROlTBZ_QgCI=s68-c-k-c0x00ffffff-no-rj"
+                  }
+                },
+                "cardTitle": {
+                  "defaultValue": {
+                    "language": "en",
+                    "value": "Google I/O '22  [DEMO ONLY]"
+                  }
+                },
+                "subheader": {
+                  "defaultValue": {
+                    "language": "en",
+                    "value": "Attendee"
+                  }
+                },
+                "header": {
+                  "defaultValue": {
+                    "language": "en",
+                    "value": "Alex McJacobs"
+                  }
+                },
+                "barcode": {
+                  "type": "QR_CODE",
+                  "value": "$passId",
+                  "alternateText": "$passId"
+                },
+                "heroImage": {
+                  "sourceUri": {
+                    "uri": "https://storage.googleapis.com/wallet-lab-tools-codelab-artifacts-public/google-io-hero-demo-only-2.png"
+                  }
+                },
+                "notifications": {
+                  "upcomingNotification": {
+                    "enableNotification": true
+                  }
+                },
+                "textModulesData": [
+                  {
+                    "header": "POINTS",
+                    "body": "499",
+                    "id": "points"
+                  },
+                  {
+                    "header": "CONTACTS",
+                    "body": "19",
+                    "id": "contacts"
+                  }
+                ]
+              }
+            ]
           },
-          "heroImage": {
-			"sourceUri": {
-				"uri": "https://www.techadvisor.com/cmsdata/features/3781792/google_io_2022_teaser_thumb800.jpg"
-			}
-		  },
-          "notifications": {
-            "upcomingNotification": {
-              "enableNotification": true
-            }
-          }
+          "origins": [https://gpay-loyaltyapi-codelab.web.app]
         }
         """
 }
