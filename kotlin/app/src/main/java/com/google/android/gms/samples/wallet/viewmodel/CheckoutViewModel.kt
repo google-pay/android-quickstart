@@ -121,6 +121,7 @@ class CheckoutViewModel(application: Application) : AndroidViewModel(application
           "aud": "google",
           "typ": "savetoandroidpay",
           "iat": ${Date().time / 1000L},
+          "origins": [https://gpay-loyaltyapi-codelab.web.app],
           "payload": {
             "genericObjects": [
               {
@@ -180,8 +181,7 @@ class CheckoutViewModel(application: Application) : AndroidViewModel(application
                 ]
               }
             ]
-          },
-          "origins": [https://gpay-loyaltyapi-codelab.web.app]
+          }
         }
         """
 }
