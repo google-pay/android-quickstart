@@ -60,8 +60,9 @@ class CheckoutActivity : AppCompatActivity() {
 
         // Setup buttons
         googlePayButton = layout.googlePayButton.root
-        addToGoogleWalletButton = layout.addToGoogleWalletButton.root
         googlePayButton.setOnClickListener { requestPayment() }
+
+        addToGoogleWalletButton = layout.addToGoogleWalletButton.root
         addToGoogleWalletButton.setOnClickListener { requestSavePass() }
 
         // Check Google Pay availability
