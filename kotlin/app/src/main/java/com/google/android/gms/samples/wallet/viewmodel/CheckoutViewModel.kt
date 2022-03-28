@@ -110,8 +110,8 @@ class CheckoutViewModel(application: Application) : AndroidViewModel(application
     val savePasses: (String, Activity, Int) -> Unit = passesPayClient::savePasses
 
     // Configuration for the issuer and test pass
-    private val issuerId = "3388000000022095177"
-    private val passClass = "ioSmartPassClass"
+    private val issuerId = "3388000000022114540"
+    private val passClass = "3388000000022114540.c0898315-2a7e-4dfa-b7ba-9dc5be4f2496"
     private val passId = UUID.randomUUID()
 
     // Test generic object used to be created against the API
@@ -126,7 +126,7 @@ class CheckoutViewModel(application: Application) : AndroidViewModel(application
             "genericObjects": [
               {
                 "id": "$issuerId.$passId",
-                "classId": "$issuerId.$passClass",
+                "classId": "$passClass",
                 "genericType": "GENERIC_TYPE_UNSPECIFIED",
                 "hexBackgroundColor": "#4285f4",
                 "logo": {
