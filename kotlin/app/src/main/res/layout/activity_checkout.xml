@@ -101,7 +101,7 @@
                 android:id="@+id/addToGoogleWalletButton"
                 layout="@layout/save_to_google_wallet_button"
                 android:layout_width="match_parent"
-                android:layout_height="@dimen/pay_button_height"
+                android:layout_height="@dimen/wallet_button_height"
                 android:layout_marginTop="10dp"/>
 
         </LinearLayout>
