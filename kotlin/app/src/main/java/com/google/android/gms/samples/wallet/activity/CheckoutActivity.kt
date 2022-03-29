@@ -30,6 +30,7 @@ import androidx.lifecycle.Observer
 import com.google.android.gms.common.api.ApiException
 import com.google.android.gms.common.api.CommonStatusCodes
 import com.google.android.gms.common.api.ResolvableApiException
+import com.google.android.gms.pay.Pay
 import com.google.android.gms.pay.PayClient
 import com.google.android.gms.samples.wallet.R
 import com.google.android.gms.samples.wallet.databinding.ActivityCheckoutBinding
@@ -51,6 +52,8 @@ class CheckoutActivity : AppCompatActivity() {
     private lateinit var googlePayButton: View
     private lateinit var addToGoogleWalletButton: View
 
+    // 3. Create a client to interact with the Google Wallet API
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -58,17 +61,19 @@ class CheckoutActivity : AppCompatActivity() {
         layout = ActivityCheckoutBinding.inflate(layoutInflater)
         setContentView(layout.root)
 
+        // 5. Set a click listener on the "Add to Google Wallet" button
+        addToGoogleWalletButton = layout.addToGoogleWalletButton.root
+        addToGoogleWalletButton.setOnClickListener { requestSavePass() }
+
         // Setup buttons
         googlePayButton = layout.googlePayButton.root
         googlePayButton.setOnClickListener { requestPayment() }
 
-        addToGoogleWalletButton = layout.addToGoogleWalletButton.root
-        addToGoogleWalletButton.setOnClickListener { requestSavePass() }
-
         // Check Google Pay availability
         model.canUseGooglePay.observe(this, Observer(::setGooglePayAvailable))
-        model.canSavePasses.observe(this, Observer(::setAddToGoogleWalletAvailable))
     }
+
+    // 4. Create methods to check whether the Google Wallet API is available and respond to the result
 
     /**
      * If isReadyToPay returned `true`, show the button and hide the "checking" text. Otherwise,
@@ -85,23 +90,6 @@ class CheckoutActivity : AppCompatActivity() {
                     this,
                     R.string.google_pay_status_unavailable,
                     Toast.LENGTH_LONG).show()
-        }
-    }
-
-    /**
-     * If the Google Wallet API is available, show the button to Add to Google Wallet. Please adjust to fit
-     * in with your current user flow.
-     *
-     * @param available
-     */
-    private fun setAddToGoogleWalletAvailable(available: Boolean) {
-        if (available) {
-            layout.passContainer.visibility = View.VISIBLE
-        } else {
-            Toast.makeText(
-                this,
-                R.string.google_wallet_status_unavailable,
-                Toast.LENGTH_LONG).show()
         }
     }
     
