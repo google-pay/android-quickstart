@@ -113,7 +113,6 @@ class CheckoutViewModel(application: Application) : AndroidViewModel(application
     // Configuration for the issuer and test pass
     private val issuerId = "3388000000022114540"
     private val passClass = "3388000000022114540.c0898315-2a7e-4dfa-b7ba-9dc5be4f2496"
-    private val passId = UUID.randomUUID()
     private val passId = UUID.randomUUID().toString()
 
     // Test generic object used to be created against the API
