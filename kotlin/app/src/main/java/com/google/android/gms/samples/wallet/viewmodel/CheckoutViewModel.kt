@@ -13,8 +13,9 @@ import com.google.android.gms.pay.PayClient
 import com.google.android.gms.samples.wallet.util.PaymentsUtil
 import com.google.android.gms.tasks.Task
 import com.google.android.gms.wallet.*
-import java.util.Date
-import java.util.UUID
+import java.util.*
+
+import kotlin.random.Random
 
 class CheckoutViewModel(application: Application) : AndroidViewModel(application) {
 
@@ -112,16 +113,16 @@ class CheckoutViewModel(application: Application) : AndroidViewModel(application
     // Configuration for the issuer and test pass
     private val issuerId = "3388000000022114540"
     private val passClass = "3388000000022114540.c0898315-2a7e-4dfa-b7ba-9dc5be4f2496"
-    private val passId = UUID.randomUUID()
+    private val passId = UUID.randomUUID().toString()
 
     // Test generic object used to be created against the API
     val mockObjectJson = """
         {
           "iss": "generic-pass-test@gpay-loyaltyapi-codelab.iam.gserviceaccount.com",
           "aud": "google",
-          "typ": "savetoandroidpay",
+          "typ": "savetowallet",
           "iat": ${Date().time / 1000L},
-          "origins": [https://gpay-loyaltyapi-codelab.web.app],
+          "origins": [],
           "payload": {
             "genericObjects": [
               {
@@ -131,7 +132,7 @@ class CheckoutViewModel(application: Application) : AndroidViewModel(application
                 "hexBackgroundColor": "#4285f4",
                 "logo": {
                   "sourceUri": {
-                    "uri": "https://yt3.ggpht.com/ytc/AKedOLTMa_15AP5qGxqScyox6p0VZBwjuXjzROlTBZ_QgCI=s68-c-k-c0x00ffffff-no-rj"
+                    "uri": "https://storage.googleapis.com/wallet-lab-tools-codelab-artifacts-public/pass_google_logo.jpg"
                   }
                 },
                 "cardTitle": {
@@ -154,8 +155,7 @@ class CheckoutViewModel(application: Application) : AndroidViewModel(application
                 },
                 "barcode": {
                   "type": "QR_CODE",
-                  "value": "$passId",
-                  "alternateText": "$passId"
+                  "value": "$passId"
                 },
                 "heroImage": {
                   "sourceUri": {
@@ -170,12 +170,12 @@ class CheckoutViewModel(application: Application) : AndroidViewModel(application
                 "textModulesData": [
                   {
                     "header": "POINTS",
-                    "body": "499",
+                    "body": "${Random.nextInt(0, 9999)}",
                     "id": "points"
                   },
                   {
                     "header": "CONTACTS",
-                    "body": "19",
+                    "body": "${Random.nextInt(1, 99)}",
                     "id": "contacts"
                   }
                 ]
