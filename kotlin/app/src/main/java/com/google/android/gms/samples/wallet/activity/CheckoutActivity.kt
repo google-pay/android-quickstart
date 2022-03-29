@@ -89,7 +89,7 @@ class CheckoutActivity : AppCompatActivity() {
     }
 
     /**
-     * If the passes API is available, show the button to Add to Google Wallet. Please adjust to fit
+     * If the Google Wallet API is available, show the button to Add to Google Wallet. Please adjust to fit
      * in with your current user flow.
      *
      * @param available

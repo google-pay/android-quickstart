@@ -21,8 +21,8 @@ class CheckoutViewModel(application: Application) : AndroidViewModel(application
     // A client for interacting with the Google Pay API.
     private val paymentsClient: PaymentsClient = PaymentsUtil.createPaymentsClient(application)
 
-    // A client to interact with the Google Pay Passes API
-    private val passesPayClient: PayClient = Pay.getClient(application)
+    // A client to interact with the Google Wallet API
+    private val walletClient: PayClient = Pay.getClient(application)
 
     // LiveData with the result of whether the user can pay using Google Pay
     private val _canUseGooglePay: MutableLiveData<Boolean> by lazy {
@@ -31,7 +31,7 @@ class CheckoutViewModel(application: Application) : AndroidViewModel(application
         }
     }
 
-    // LiveData with the result of whether the user can save passes to Google Pay
+    // LiveData with the result of whether the user can save passes to Google Wallet
     private val _canSavePasses: MutableLiveData<Boolean> by lazy {
         MutableLiveData<Boolean>().also {
             fetchCanAddPassesToGoogleWallet()
@@ -83,7 +83,7 @@ class CheckoutViewModel(application: Application) : AndroidViewModel(application
      * @return a [LiveData] object that holds the future result of the call.
     ) */
     private fun fetchCanAddPassesToGoogleWallet() {
-        passesPayClient
+        walletClient
             .getPayApiAvailabilityStatus(PayClient.RequestType.SAVE_PASSES)
             .addOnSuccessListener { status ->
                 _canSavePasses.value = status == PayApiAvailabilityStatus.AVAILABLE
@@ -100,14 +100,14 @@ class CheckoutViewModel(application: Application) : AndroidViewModel(application
     }
 
     /**
-     * Exposes the `savePassesJwt` method in the passes pay client
+     * Exposes the `savePassesJwt` method in the wallet client
      */
-    val savePassesJwt: (String, Activity, Int) -> Unit = passesPayClient::savePassesJwt
+    val savePassesJwt: (String, Activity, Int) -> Unit = walletClient::savePassesJwt
 
     /**
-     * Exposes the `savePasses` method in the passes pay client
+     * Exposes the `savePasses` method in the wallet client
      */
-    val savePasses: (String, Activity, Int) -> Unit = passesPayClient::savePasses
+    val savePasses: (String, Activity, Int) -> Unit = walletClient::savePasses
 
     // Configuration for the issuer and test pass
     private val issuerId = "3388000000022114540"
