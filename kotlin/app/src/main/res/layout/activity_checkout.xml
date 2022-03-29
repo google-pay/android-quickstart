@@ -95,7 +95,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textColor="?android:textColorSecondary"
-                android:text="Or, optionally, create a gift card for this item:"/>
+                android:text="Or add a pass to your Google Wallet:"/>
 
             <include
                 android:id="@+id/addToGoogleWalletButton"
