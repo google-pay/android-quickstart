@@ -29,7 +29,7 @@ dependencies {
     def lifecycle_version = "2.4.1"
 
     implementation 'androidx.appcompat:appcompat:1.4.1'
-    implementation "com.google.android.gms:play-services-wallet:19.1.0"
+
     // 1. Add the "com.google.android.gms:play-services-pay" dependency to use the Wallet API
 
     implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:$lifecycle_version"

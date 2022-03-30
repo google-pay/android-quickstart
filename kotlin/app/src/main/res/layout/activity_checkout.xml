@@ -95,9 +95,9 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textColor="?android:textColorSecondary"
-                android:text="Or add a pass to your Google Wallet:"/>
+                android:text="Add a pass to your Google Wallet:"/>
 
-            <!-- 2. Include the "Add to Google Wallet button in your user interface -->
+            <!-- 2. Create the button under `save_to_google_wallet_button.xml` and include it in your UI -->
             <!-- Check out the g.co/wallet/button-guidelines to learn more -->
 
         </LinearLayout>
