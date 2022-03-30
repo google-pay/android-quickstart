@@ -159,7 +159,7 @@ class CheckoutViewModel(application: Application) : AndroidViewModel(application
                 },
                 "heroImage": {
                   "sourceUri": {
-                    "uri": "https://storage.googleapis.com/wallet-lab-tools-codelab-artifacts-public/google-io-hero-demo-only-2.png"
+                    "uri": "https://storage.googleapis.com/wallet-lab-tools-codelab-artifacts-public/google-io-hero-demo-only.png"
                   }
                 },
                 "notifications": {
