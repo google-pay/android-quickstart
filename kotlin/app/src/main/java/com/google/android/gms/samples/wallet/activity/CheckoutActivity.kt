@@ -30,7 +30,6 @@ import androidx.lifecycle.Observer
 import com.google.android.gms.common.api.ApiException
 import com.google.android.gms.common.api.CommonStatusCodes
 import com.google.android.gms.common.api.ResolvableApiException
-import com.google.android.gms.pay.Pay
 import com.google.android.gms.pay.PayClient
 import com.google.android.gms.samples.wallet.R
 import com.google.android.gms.samples.wallet.databinding.ActivityCheckoutBinding
