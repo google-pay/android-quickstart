@@ -111,8 +111,8 @@ class CheckoutViewModel(application: Application) : AndroidViewModel(application
     val savePasses: (String, Activity, Int) -> Unit = walletClient::savePasses
 
     // Configuration for the issuer and test pass
-    private val issuerId = "3388000000022114540"
-    private val passClass = "3388000000022114540.c0898315-2a7e-4dfa-b7ba-9dc5be4f2496"
+    private val issuerId = "3388000000022095177"
+    private val passClass = "3388000000022095177.testGenericPass"
     private val passId = UUID.randomUUID().toString()
 
     // Test generic object used to be created against the API
