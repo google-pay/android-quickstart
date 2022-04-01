@@ -162,11 +162,6 @@ class CheckoutViewModel(application: Application) : AndroidViewModel(application
                     "uri": "https://storage.googleapis.com/wallet-lab-tools-codelab-artifacts-public/google-io-hero-demo-only.png"
                   }
                 },
-                "notifications": {
-                  "upcomingNotification": {
-                    "enableNotification": true
-                  }
-                },
                 "textModulesData": [
                   {
                     "header": "POINTS",
