@@ -71,18 +71,6 @@
             android:textColor="?android:textColorSecondary"
             android:text="A versatile full-zip that you can wear all day long and even..."/>
 
-        <!--
-            TODO Check out Google Pay's brand guidelines to discover all button types and styles:
-            https://developers.google.com/pay/api/android/guides/brand-guidelines#assets
-        -->
-        <include
-            android:id="@+id/googlePayButton"
-            layout="@layout/buy_with_googlepay_button"
-            android:layout_width="match_parent"
-            android:layout_height="@dimen/pay_button_height"
-            android:layout_marginBottom="20dp"
-            android:visibility="gone"/>
-
         <LinearLayout
             android:id="@+id/passContainer"
             android:layout_width="match_parent"
