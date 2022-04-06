@@ -35,7 +35,7 @@ import kotlin.random.Random
  */
 class CheckoutActivity : AppCompatActivity() {
 
-    private val addToGoogleWalletRequestCode = 1000
+    // 6.1 Add a request code for the save operation
 
     private lateinit var layout: ActivityCheckoutBinding
     private lateinit var addToGoogleWalletButton: View
@@ -51,7 +51,7 @@ class CheckoutActivity : AppCompatActivity() {
         layout = ActivityCheckoutBinding.inflate(layoutInflater)
         setContentView(layout.root)
 
-        // 6. Set a click listener on the "Add to Google Wallet" button
+        // 6.2 Set a click listener on the "Add to Google Wallet" button
 
         // 4.2. Trigger the API availability request
     }
