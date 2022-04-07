@@ -113,12 +113,13 @@ class CheckoutViewModel(application: Application) : AndroidViewModel(application
     // Configuration for the issuer and test pass
     private val issuerId = "3388000000022095177"
     private val passClass = "3388000000022095177.testGenericPass"
+    private val issuerEmail = "generic-pass-test@gpay-loyaltyapi-codelab.iam.gserviceaccount.com"
     private val passId = UUID.randomUUID().toString()
 
     // Test generic object used to be created against the API
     val mockObjectJson = """
         {
-          "iss": "generic-pass-test@gpay-loyaltyapi-codelab.iam.gserviceaccount.com",
+          "iss": "$issuerEmail",
           "aud": "google",
           "typ": "savetowallet",
           "iat": ${Date().time / 1000L},
