@@ -34,6 +34,7 @@ import androidx.lifecycle.ViewModelProvider;
 import com.google.android.gms.common.api.ApiException;
 import com.google.android.gms.common.api.CommonStatusCodes;
 import com.google.android.gms.common.api.ResolvableApiException;
+import com.google.android.gms.pay.PayClient;
 import com.google.android.gms.samples.wallet.R;
 import com.google.android.gms.samples.wallet.databinding.ActivityCheckoutBinding;
 import com.google.android.gms.samples.wallet.viewmodel.CheckoutViewModel;
@@ -52,7 +53,11 @@ public class CheckoutActivity extends AppCompatActivity {
 
   private CheckoutViewModel model;
 
+  private static final int ADD_TO_GOOGLE_WALLET_REQUEST_CODE = 999;
+
   private View googlePayButton;
+  private View addToGoogleWalletButtonContainer;
+  private View addToGoogleWalletButton;
 
   // Handle potential conflict from calling loadPaymentData.
   ActivityResultLauncher<IntentSenderRequest> resolvePaymentForResult = registerForActivityResult(
@@ -85,8 +90,12 @@ public class CheckoutActivity extends AppCompatActivity {
     super.onCreate(savedInstanceState);
     initializeUi();
 
+    // Check Google Pay availability
     model = new ViewModelProvider(this).get(CheckoutViewModel.class);
     model.canUseGooglePay.observe(this, this::setGooglePayAvailable);
+
+    // Check out Google Wallet availability
+    model.canAddPasses.observe(this, this::setAddToGoogleWalletAvailable);
   }
 
   private void initializeUi() {
@@ -98,6 +107,13 @@ public class CheckoutActivity extends AppCompatActivity {
     // The Google Pay button is a layout file – take the root view
     googlePayButton = layoutBinding.googlePayButton.getRoot();
     googlePayButton.setOnClickListener(this::requestPayment);
+
+    addToGoogleWalletButton = layoutBinding.addToGoogleWalletButton.getRoot();
+    addToGoogleWalletButtonContainer = layoutBinding.passContainer;
+    addToGoogleWalletButton.setOnClickListener(v -> {
+      addToGoogleWalletButton.setClickable(false);
+      model.savePasses(model.genericObjectJwt, this, ADD_TO_GOOGLE_WALLET_REQUEST_CODE);
+    });
   }
 
   /**
@@ -112,7 +128,7 @@ public class CheckoutActivity extends AppCompatActivity {
     if (available) {
       googlePayButton.setVisibility(View.VISIBLE);
     } else {
-      Toast.makeText(this, R.string.googlepay_status_unavailable, Toast.LENGTH_LONG).show();
+      Toast.makeText(this, R.string.google_pay_status_unavailable, Toast.LENGTH_LONG).show();
     }
   }
 
@@ -196,5 +212,60 @@ public class CheckoutActivity extends AppCompatActivity {
   private void handleError(int statusCode, @Nullable String message) {
     Log.e("loadPaymentData failed",
         String.format(Locale.getDefault(), "Error code: %d, Message: %s", statusCode, message));
+  }
+
+  /**
+   * If getPayApiAvailabilityStatus returned {@code true}, show the "Add to Google Wallet" button.
+   * Otherwise, notify the user that Google Wallet is not available. Please adjust to fit in with
+   * your current user flow. You are not required to explicitly let the user know if isReadyToPay
+   * returns {@code false}.
+   *
+   * @param available isReadyToPay API response.
+   */
+  private void setAddToGoogleWalletAvailable(boolean available) {
+    if (available) {
+      addToGoogleWalletButtonContainer.setVisibility(View.VISIBLE);
+    } else {
+      Toast.makeText(
+          this,
+          R.string.google_wallet_status_unavailable,
+          Toast.LENGTH_LONG).show();
+    }
+  }
+
+  @Override
+  protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+    super.onActivityResult(requestCode, resultCode, data);
+
+    if (requestCode == ADD_TO_GOOGLE_WALLET_REQUEST_CODE) {
+      switch (resultCode) {
+        case RESULT_OK: {
+          Toast
+              .makeText(this, getString(R.string.add_google_wallet_success), Toast.LENGTH_LONG)
+              .show();
+          break;
+        }
+
+        case RESULT_CANCELED: {
+          // Save canceled
+          break;
+        }
+
+        case PayClient.SavePassesResult.SAVE_ERROR: {
+          if (data != null) {
+            String apiErrorMessage = data.getStringExtra(PayClient.EXTRA_API_ERROR_MESSAGE);
+            handleError(resultCode, apiErrorMessage);
+          }
+          break;
+        }
+
+        default: handleError(
+            CommonStatusCodes.INTERNAL_ERROR, "Unexpected non API" +
+                " exception when trying to deliver the task result to an activity!"
+        );
+      }
+
+      addToGoogleWalletButton.setClickable(true);
+    }
   }
 }

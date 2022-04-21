@@ -28,8 +28,9 @@ android {
 }
 
 dependencies {
-    implementation 'com.google.android.gms:play-services-wallet:19.1.0'
     implementation 'androidx.appcompat:appcompat:1.4.1'
+    implementation 'com.google.android.gms:play-services-pay:16.0.3'
+    implementation 'com.google.android.gms:play-services-wallet:19.1.0'
 
     def lifecycle_version = "2.4.1"
     implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:$lifecycle_version"
