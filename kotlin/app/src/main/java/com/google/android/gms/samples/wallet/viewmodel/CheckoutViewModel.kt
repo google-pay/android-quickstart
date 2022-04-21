@@ -13,9 +13,6 @@ import com.google.android.gms.pay.PayClient
 import com.google.android.gms.samples.wallet.util.PaymentsUtil
 import com.google.android.gms.tasks.Task
 import com.google.android.gms.wallet.*
-import java.util.*
-
-import kotlin.random.Random
 
 class CheckoutViewModel(application: Application) : AndroidViewModel(application) {
 
@@ -80,9 +77,7 @@ class CheckoutViewModel(application: Application) : AndroidViewModel(application
 
     /**
      * Determine whether the API to save passes to Google Pay is available on the device.
-     *
-     * @return a [LiveData] object that holds the future result of the call.
-    ) */
+     */
     private fun fetchCanAddPassesToGoogleWallet() {
         walletClient
             .getPayApiAvailabilityStatus(PayClient.RequestType.SAVE_PASSES)
@@ -110,74 +105,6 @@ class CheckoutViewModel(application: Application) : AndroidViewModel(application
      */
     val savePasses: (String, Activity, Int) -> Unit = walletClient::savePasses
 
-    // Configuration for the issuer and test pass
-    private val issuerId = "3388000000022095177"
-    private val passClass = "3388000000022095177.testGenericPass"
-    private val issuerEmail = "generic-pass-test@gpay-loyaltyapi-codelab.iam.gserviceaccount.com"
-    private val passId = UUID.randomUUID().toString()
-
     // Test generic object used to be created against the API
-    val mockObjectJson = """
-        {
-          "iss": "$issuerEmail",
-          "aud": "google",
-          "typ": "savetowallet",
-          "iat": ${Date().time / 1000L},
-          "origins": [],
-          "payload": {
-            "genericObjects": [
-              {
-                "id": "$issuerId.$passId",
-                "classId": "$passClass",
-                "genericType": "GENERIC_TYPE_UNSPECIFIED",
-                "hexBackgroundColor": "#4285f4",
-                "logo": {
-                  "sourceUri": {
-                    "uri": "https://storage.googleapis.com/wallet-lab-tools-codelab-artifacts-public/pass_google_logo.jpg"
-                  }
-                },
-                "cardTitle": {
-                  "defaultValue": {
-                    "language": "en",
-                    "value": "Google I/O '22  [DEMO ONLY]"
-                  }
-                },
-                "subheader": {
-                  "defaultValue": {
-                    "language": "en",
-                    "value": "Attendee"
-                  }
-                },
-                "header": {
-                  "defaultValue": {
-                    "language": "en",
-                    "value": "Alex McJacobs"
-                  }
-                },
-                "barcode": {
-                  "type": "QR_CODE",
-                  "value": "$passId"
-                },
-                "heroImage": {
-                  "sourceUri": {
-                    "uri": "https://storage.googleapis.com/wallet-lab-tools-codelab-artifacts-public/google-io-hero-demo-only.jpg"
-                  }
-                },
-                "textModulesData": [
-                  {
-                    "header": "POINTS",
-                    "body": "${Random.nextInt(0, 9999)}",
-                    "id": "points"
-                  },
-                  {
-                    "header": "CONTACTS",
-                    "body": "${Random.nextInt(1, 99)}",
-                    "id": "contacts"
-                  }
-                ]
-              }
-            ]
-          }
-        }
-        """
+    val genericObjectJwt = "eyJ0eXAiOiAiSldUIiwgImFsZyI6ICJSUzI1NiIsICJraWQiOiAiMTY4M2VjZDA1MmU5NTgyZWZhNGU5YTQxNjVmYzE5N2JjNmJlYTJhMCJ9.eyJpc3MiOiAid2FsbGV0LWxhYi10b29sc0BhcHBzcG90LmdzZXJ2aWNlYWNjb3VudC5jb20iLCAiYXVkIjogImdvb2dsZSIsICJ0eXAiOiAic2F2ZXRvd2FsbGV0IiwgImlhdCI6IDE2NTA1MzI2MjMsICJwYXlsb2FkIjogeyJnZW5lcmljT2JqZWN0cyI6IFt7ImlkIjogIjMzODgwMDAwMDAwMjIwOTUxNzcuZjUyZDRhZjYtMjQxMS00ZDU5LWFlNDktNzg2ZDY3N2FkOTJiIn1dfX0.fYKw6fpLfwwNMi5OGr4ybO3ybuCU7RYjQhw-QM_Z71mfOyv2wFUzf6dKgpspJKQmkiaBWBr1L9n8jq8ZMfj6iOA_9_njfUe9GepCwVLC0nZBDd2EqS3UrBYT7tEmk7W2-Cpy5FJFTt_eiqXBZgwa6vMw6e6mMp-GzSD5_ls39fjOPziboLyG-GDmph3f6UhBkjnUjYyY_FoYdlqkTkCWM7AFPcy-FbRyVDpIaHfVk4eYQi4Vzk0fwxaWWTfP3gSXXT6UJ9aFvaPYs0gnlV2WPVgGGKCMtYHFRGYX1t0WRpN2kbxfO5VuMKWJlz3TCnxp-9Axz-enuCgnq2cLvCk6Tw"
 }

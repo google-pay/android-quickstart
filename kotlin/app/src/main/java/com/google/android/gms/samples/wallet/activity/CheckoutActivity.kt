@@ -206,7 +206,7 @@ class CheckoutActivity : AppCompatActivity() {
         // Disables the button to prevent multiple clicks.
         addToGoogleWalletButton.isClickable = false
 
-        model.savePasses(model.mockObjectJson, this, addToGoogleWalletRequestCode)
+        model.savePassesJwt(model.genericObjectJwt, this, addToGoogleWalletRequestCode)
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
