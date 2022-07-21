@@ -2,5 +2,4 @@
 <resources>
     <string name="googlepay_button_content_description">Google Pay</string>
     <string name="buy_with_googlepay_button_content_description">Buy with Google Pay</string>
-    <string name="add_to_google_wallet_button_content_description">Add to Google Wallet</string>
 </resources>
