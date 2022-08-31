@@ -5,12 +5,12 @@
     android:layout_width="match_parent"
     android:minWidth="267dp"
     android:layout_height="48dp"
-    android:background="@drawable/add_to_google_wallet_button_background_shape"
+    android:background="@drawable/add_to_google_wallet_button_background"
     android:contentDescription="@string/add_to_google_wallet_button_content_description">
         <ImageView
             android:layout_width="227dp"
             android:layout_height="26dp"
             android:layout_gravity="center"
             android:duplicateParentState="true"
-            android:src="@drawable/add_to_google_wallet_button_foreground"/>
+            android:src="@drawable/add_to_google_wallet_button_content"/>
 </FrameLayout>

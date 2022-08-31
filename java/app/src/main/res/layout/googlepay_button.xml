@@ -4,7 +4,7 @@
     android:focusable="true"
     android:layout_width="match_parent"
     android:layout_height="48sp"
-    android:background="@drawable/googlepay_button_no_shadow_background"
+    android:background="@drawable/googlepay_button_background"
     android:paddingTop="2sp"
     android:contentDescription="@string/googlepay_button_content_description">
     <LinearLayout
