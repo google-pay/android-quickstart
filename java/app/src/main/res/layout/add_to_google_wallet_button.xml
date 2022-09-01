@@ -6,6 +6,7 @@
     android:minWidth="267dp"
     android:layout_height="48dp"
     android:background="@drawable/add_to_google_wallet_button_background"
+    android:foreground="@drawable/ripple_effect"
     android:contentDescription="@string/add_to_google_wallet_button_content_description">
         <ImageView
             android:layout_width="227dp"

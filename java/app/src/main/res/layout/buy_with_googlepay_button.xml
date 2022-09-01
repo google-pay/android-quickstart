@@ -5,6 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="48sp"
     android:background="@drawable/googlepay_button_background"
+    android:foreground="@drawable/ripple_effect"
     android:padding="2sp"
     android:contentDescription="@string/buy_with_googlepay_button_content_description">
     <LinearLayout
