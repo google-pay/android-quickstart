@@ -3,6 +3,7 @@
     package="com.google.android.gms.samples.wallet">
 
     <application
+        android:theme="@style/AppTheme"
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
@@ -13,7 +14,6 @@
             android:name=".activity.CheckoutActivity"
             android:label="@string/store_name"
             android:screenOrientation="portrait"
-            android:theme="@style/Theme.AppCompat"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
