@@ -112,7 +112,7 @@ public class CheckoutActivity extends AppCompatActivity {
     addToGoogleWalletButtonContainer = layoutBinding.passContainer;
     addToGoogleWalletButton.setOnClickListener(v -> {
       addToGoogleWalletButton.setClickable(false);
-      model.savePasses(model.genericObjectJwt, this, ADD_TO_GOOGLE_WALLET_REQUEST_CODE);
+      model.savePassesJwt(model.genericObjectJwt, this, ADD_TO_GOOGLE_WALLET_REQUEST_CODE);
     });
   }
 

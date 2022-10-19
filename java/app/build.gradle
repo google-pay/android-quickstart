@@ -25,6 +25,7 @@ android {
     viewBinding {
         enabled = true
     }
+    namespace 'com.google.android.gms.samples.wallet'
 }
 
 dependencies {
