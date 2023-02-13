@@ -17,6 +17,9 @@ Make sure you read the comments in `Constants.java` and `PaymentsUtil.java` befo
 you continue. These files **must** be modified prior to running the app, as per
 the instructions provided in the comments.
 
+In Android Studio, you must open the `kotlin` or `java` directory, not the
+top-level directory.
+
 ## Requirements
 
 In order to build and run this sample app, make sure you:
