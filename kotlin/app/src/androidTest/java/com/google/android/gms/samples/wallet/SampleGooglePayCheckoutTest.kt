@@ -1,28 +1,34 @@
 package com.google.android.gms.samples.wallet
 
-import android.util.Log
+import android.os.SystemClock
 import android.view.View
-import androidx.test.core.app.ActivityScenario.ActivityAction
+import android.widget.TextView
 import androidx.test.espresso.*
 import androidx.test.espresso.Espresso.onView
 import androidx.test.espresso.action.ViewActions.click
 import androidx.test.espresso.assertion.ViewAssertions.matches
-import androidx.test.espresso.matcher.RootMatchers.withDecorView
 import androidx.test.espresso.matcher.ViewMatchers.*
+import androidx.test.espresso.util.HumanReadables
+import androidx.test.espresso.util.TreeIterables
 import androidx.test.ext.junit.rules.ActivityScenarioRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.uiautomator.By
 import androidx.test.uiautomator.UiDevice
 import androidx.test.uiautomator.UiObject
+import androidx.test.uiautomator.UiScrollable
 import androidx.test.uiautomator.UiSelector
 import androidx.test.uiautomator.Until
 import com.google.android.gms.samples.wallet.activity.CheckoutActivity
-import org.hamcrest.Matchers.not
+import org.hamcrest.Matchers.*
+import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
+import java.util.concurrent.TimeUnit
+import java.util.concurrent.TimeoutException
+import java.util.regex.Matcher
 
 
 const val GOOGLE_PAY_SHEET_PACKAGE = "com.google.android.gms"
@@ -48,11 +54,15 @@ class SampleGooglePayCheckoutTest {
     fun setUp() {
     }
 
-    @Test fun googlePayButtonIsPresent() {
+    @Test fun testCardDeclineWithStripe() {
 
         // Click on pay with Google Pay
         onView(withId(R.id.googlePayButton)).check(matches(isDisplayed()))
         onView(withId(R.id.googlePayButton)).perform(click())
+
+        SystemClock.sleep(3500) // TODO Find an IdlingResource-based alternative to this
+        onView(withId(R.id.google_pay_button)).check(matches(isDisplayed()))
+        onView(withId(R.id.google_pay_button)).perform(click())
 
         // Wait for payment sheet to come up
         device.waitForWindowUpdate(GOOGLE_PAY_SHEET_PACKAGE, 0);
@@ -68,10 +78,13 @@ class SampleGooglePayCheckoutTest {
 
         // Change the card
         // TODO Consider testing lib created by eng, such that this test could be run without gmsCore installed
-        val newSelectedCard = device.findObject(UiSelector()
+        val targetCardSelector = UiSelector()
             .className("android.widget.TextView")
-            .textContains("0002"))
-        newSelectedCard.click()
+            .textContains("decline")
+
+        val cardList = UiScrollable(UiSelector().className("android.widget.ScrollView"))
+        cardList.scrollIntoView(targetCardSelector)
+        device.findObject(targetCardSelector).click()
 
         // Confirm selection and back to the app
         val continueButton = device.findObject(UiSelector()
@@ -80,7 +93,7 @@ class SampleGooglePayCheckoutTest {
         continueButton.click()
 
         // Wait Stripe's request is sent
-        device.wait(
-            Until.findObject(By.text("Payment completed successfully with Stripe")), 5000)
+        SystemClock.sleep(5500) // TODO Find an IdlingResource-based alternative to this
+        onView(withId(R.id.top_message)).check(matches(isDisplayed()))
     }
 }

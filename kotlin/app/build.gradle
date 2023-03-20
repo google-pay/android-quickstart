@@ -2,14 +2,15 @@ apply plugin: "com.android.application"
 apply plugin: "kotlin-android"
 
 android {
-    compileSdkVersion 32
+    compileSdkVersion 33
 
     defaultConfig {
         applicationId "com.google.android.gms.samples.wallet"
-        minSdkVersion 19
-        targetSdkVersion 32
+        minSdkVersion 21
+        targetSdkVersion 33
         versionCode 1
         versionName "1.0"
+        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
     buildTypes {
@@ -29,6 +30,9 @@ android {
 dependencies {
     def lifecycle_version = "2.4.1"
 
+    implementation 'com.stripe:stripe-android:20.19.2'
+    implementation 'com.squareup.okhttp3:okhttp:3.14.7'
+
     implementation 'androidx.appcompat:appcompat:1.4.1'
     implementation "com.google.android.gms:play-services-wallet:19.1.0"
     implementation "com.google.android.gms:play-services-pay:16.0.3"
@@ -36,4 +40,10 @@ dependencies {
     implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:$lifecycle_version"
     implementation "androidx.lifecycle:lifecycle-livedata-ktx:$lifecycle_version"
     implementation "androidx.activity:activity-ktx:1.4.0"
+
+    androidTestImplementation('androidx.test.espresso:espresso-core:3.5.1')
+    androidTestImplementation('androidx.test:runner:1.5.2')
+    androidTestImplementation 'androidx.test.ext:junit:1.1.5'
+    androidTestImplementation('androidx.test.uiautomator:uiautomator:2.2.0')
+
 }
