@@ -35,6 +35,8 @@ import com.google.android.gms.samples.wallet.R
 import com.google.android.gms.samples.wallet.databinding.ActivityCheckoutBinding
 import com.google.android.gms.samples.wallet.viewmodel.CheckoutViewModel
 import com.google.android.gms.wallet.PaymentData
+import com.google.android.gms.wallet.button.ButtonOptions
+import com.google.android.gms.wallet.button.PayButton
 import org.json.JSONException
 import org.json.JSONObject
 
@@ -48,7 +50,7 @@ class CheckoutActivity : AppCompatActivity() {
     private val model: CheckoutViewModel by viewModels()
 
     private lateinit var layout: ActivityCheckoutBinding
-    private lateinit var googlePayButton: View
+    private lateinit var googlePayButton: PayButton
     private lateinit var addToGoogleWalletButton: View
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -59,7 +61,8 @@ class CheckoutActivity : AppCompatActivity() {
         setContentView(layout.root)
 
         // Setup buttons
-        googlePayButton = layout.googlePayButton.root
+        googlePayButton = layout.googlePayButton
+        googlePayButton.initialize(ButtonOptions.newBuilder().setAllowedPaymentMethods("VISA").build())
         googlePayButton.setOnClickListener { requestPayment() }
 
         addToGoogleWalletButton = layout.addToGoogleWalletButton.root
@@ -209,6 +212,7 @@ class CheckoutActivity : AppCompatActivity() {
         model.savePassesJwt(model.genericObjectJwt, this, addToGoogleWalletRequestCode)
     }
 
+    @Deprecated("Deprecated and in use by Google Pay")
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
 
