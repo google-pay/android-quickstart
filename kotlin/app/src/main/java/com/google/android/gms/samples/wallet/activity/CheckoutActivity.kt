@@ -89,9 +89,10 @@ class CheckoutActivity : AppCompatActivity() {
             googlePayButton.visibility = View.VISIBLE
         } else {
             Toast.makeText(
-                    this,
-                    R.string.google_pay_status_unavailable,
-                    Toast.LENGTH_LONG).show()
+                this,
+                R.string.google_pay_status_unavailable,
+                Toast.LENGTH_LONG
+            ).show()
         }
     }
 
@@ -108,10 +109,11 @@ class CheckoutActivity : AppCompatActivity() {
             Toast.makeText(
                 this,
                 R.string.google_wallet_status_unavailable,
-                Toast.LENGTH_LONG).show()
+                Toast.LENGTH_LONG
+            ).show()
         }
     }
-    
+
     private fun requestPayment() {
 
         // Disables the button to prevent multiple clicks.
@@ -133,9 +135,11 @@ class CheckoutActivity : AppCompatActivity() {
                             IntentSenderRequest.Builder(exception.resolution).build()
                         )
                     }
+
                     is ApiException -> {
                         handleError(exception.statusCode, exception.message)
                     }
+
                     else -> {
                         handleError(
                             CommonStatusCodes.INTERNAL_ERROR, "Unexpected non API" +
@@ -151,19 +155,19 @@ class CheckoutActivity : AppCompatActivity() {
     }
 
     // Handle potential conflict from calling loadPaymentData
-    private val resolvePaymentForResult = registerForActivityResult(StartIntentSenderForResult()) {
-            result: ActivityResult ->
-        when (result.resultCode) {
-            RESULT_OK ->
-                result.data?.let { intent ->
-                    PaymentData.getFromIntent(intent)?.let(::handlePaymentSuccess)
-                }
+    private val resolvePaymentForResult =
+        registerForActivityResult(StartIntentSenderForResult()) { result: ActivityResult ->
+            when (result.resultCode) {
+                RESULT_OK ->
+                    result.data?.let { intent ->
+                        PaymentData.getFromIntent(intent)?.let(::handlePaymentSuccess)
+                    }
 
-            RESULT_CANCELED -> {
-                // The user cancelled the payment attempt
+                RESULT_CANCELED -> {
+                    // The user cancelled the payment attempt
+                }
             }
         }
-    }
 
     /**
      * PaymentData response object contains the payment information, as well as any additional
@@ -178,17 +182,24 @@ class CheckoutActivity : AppCompatActivity() {
 
         try {
             // Token will be null if PaymentDataRequest was not constructed using fromJson(String).
-            val paymentMethodData = JSONObject(paymentInformation).getJSONObject("paymentMethodData")
+            val paymentMethodData =
+                JSONObject(paymentInformation).getJSONObject("paymentMethodData")
             val billingName = paymentMethodData.getJSONObject("info")
-                    .getJSONObject("billingAddress").getString("name")
+                .getJSONObject("billingAddress").getString("name")
             Log.d("BillingName", billingName)
 
-            Toast.makeText(this, getString(R.string.payments_show_name, billingName), Toast.LENGTH_LONG).show()
+            Toast.makeText(
+                this,
+                getString(R.string.payments_show_name, billingName),
+                Toast.LENGTH_LONG
+            ).show()
 
             // Logging token string.
-            Log.d("Google Pay token", paymentMethodData
+            Log.d(
+                "Google Pay token", paymentMethodData
                     .getJSONObject("tokenizationData")
-                    .getString("token"))
+                    .getString("token")
+            )
 
             startActivity(Intent(this, CheckoutSuccessActivity::class.java))
 
@@ -225,7 +236,11 @@ class CheckoutActivity : AppCompatActivity() {
         if (requestCode == addToGoogleWalletRequestCode) {
             when (resultCode) {
                 RESULT_OK -> Toast
-                    .makeText(this, getString(R.string.add_google_wallet_success), Toast.LENGTH_LONG)
+                    .makeText(
+                        this,
+                        getString(R.string.add_google_wallet_success),
+                        Toast.LENGTH_LONG
+                    )
                     .show()
 
                 RESULT_CANCELED -> {
@@ -233,14 +248,15 @@ class CheckoutActivity : AppCompatActivity() {
                 }
 
                 PayClient.SavePassesResult.SAVE_ERROR -> data?.let { intentData ->
-                    val apiErrorMessage = intentData.getStringExtra(PayClient.EXTRA_API_ERROR_MESSAGE)
+                    val apiErrorMessage =
+                        intentData.getStringExtra(PayClient.EXTRA_API_ERROR_MESSAGE)
                     handleError(resultCode, apiErrorMessage)
                 }
 
                 else -> handleError(
-                        CommonStatusCodes.INTERNAL_ERROR, "Unexpected non API" +
-                                " exception when trying to deliver the task result to an activity!"
-                    )
+                    CommonStatusCodes.INTERNAL_ERROR, "Unexpected non API" +
+                            " exception when trying to deliver the task result to an activity!"
+                )
             }
 
             // Re-enables the Google Pay payment button.
