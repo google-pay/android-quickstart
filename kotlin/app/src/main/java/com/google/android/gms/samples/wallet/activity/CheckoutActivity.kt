@@ -31,6 +31,7 @@ import com.google.android.gms.common.api.ApiException
 import com.google.android.gms.common.api.CommonStatusCodes
 import com.google.android.gms.common.api.ResolvableApiException
 import com.google.android.gms.pay.PayClient
+import com.google.android.gms.samples.wallet.Constants
 import com.google.android.gms.samples.wallet.R
 import com.google.android.gms.samples.wallet.databinding.ActivityCheckoutBinding
 import com.google.android.gms.samples.wallet.viewmodel.CheckoutViewModel
@@ -62,7 +63,10 @@ class CheckoutActivity : AppCompatActivity() {
 
         // Setup buttons
         googlePayButton = layout.googlePayButton
-        googlePayButton.initialize(ButtonOptions.newBuilder().setAllowedPaymentMethods("VISA").build())
+        googlePayButton.initialize(
+            ButtonOptions.newBuilder()
+                .setAllowedPaymentMethods(Constants.SUPPORTED_NETWORKS.joinToString(",")).build()
+        )
         googlePayButton.setOnClickListener { requestPayment() }
 
         addToGoogleWalletButton = layout.addToGoogleWalletButton.root
