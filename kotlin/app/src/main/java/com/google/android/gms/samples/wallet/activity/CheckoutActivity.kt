@@ -186,6 +186,8 @@ class CheckoutActivity : AppCompatActivity() {
                     .getJSONObject("tokenizationData")
                     .getString("token"))
 
+            startActivity(Intent(this, CheckoutSuccessActivity::class.java))
+
         } catch (error: JSONException) {
             Log.e("handlePaymentSuccess", "Error: $error")
         }
