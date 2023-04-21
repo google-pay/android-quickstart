@@ -182,6 +182,17 @@ public class PaymentsUtil {
   }
 
   /**
+   * Return a collection of payment methods allowed to complete the operation with Google Pay.
+   * @return A JSONArray object with the list of payment methods.
+   * @throws JSONException
+   */
+  public static JSONArray getAllowedPaymentMethods() throws JSONException {
+    return new JSONArray() {{
+      put(getCardPaymentMethod());
+    }};
+  }
+
+  /**
    * An object describing accepted forms of payment by your app, used to determine a viewer's
    * readiness to pay.
    *

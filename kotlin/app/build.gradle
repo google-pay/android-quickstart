@@ -1,7 +1,10 @@
-apply plugin: "com.android.application"
-apply plugin: "org.jetbrains.kotlin.android"
+plugins {
+    id "com.android.application"
+    id "org.jetbrains.kotlin.android"
+}
 
 android {
+    namespace "com.google.android.gms.samples.wallet"
     compileSdkVersion 33
 
     defaultConfig {
@@ -24,27 +27,22 @@ android {
     buildFeatures {
         viewBinding = true
     }
-    namespace "com.google.android.gms.samples.wallet"
+
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
     }
+
     kotlinOptions {
         jvmTarget = '1.8'
     }
 }
 
 dependencies {
-    implementation "androidx.core:core-ktx:1.10.0"
-
     implementation "androidx.appcompat:appcompat:1.6.1"
+    implementation "androidx.activity:activity-ktx:1.7.1"
     implementation "com.google.android.gms:play-services-wallet:19.2.0-beta01"
     implementation "com.google.android.gms:play-services-pay:16.1.0"
-
-    def lifecycle_version = "2.6.1"
-    implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:$lifecycle_version"
-    implementation "androidx.lifecycle:lifecycle-livedata-ktx:$lifecycle_version"
-    implementation "androidx.activity:activity-ktx:1.7.1"
 
     androidTestImplementation "androidx.test.espresso:espresso-core:3.5.1"
     androidTestImplementation "androidx.test:runner:1.5.2"

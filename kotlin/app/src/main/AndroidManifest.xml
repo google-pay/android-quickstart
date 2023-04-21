@@ -15,7 +15,6 @@
             android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
@@ -24,6 +23,8 @@
             android:exported="false"
             android:label="@string/store_name"
             android:theme="@style/AppTheme.NoActionBar" />
+
+        <!-- Enabling this flag is required in order to use the PaymentsClient -->
         <meta-data
             android:name="com.google.android.gms.wallet.api.enabled"
             android:value="true" />

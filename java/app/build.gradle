@@ -1,17 +1,22 @@
-apply plugin: 'com.android.application'
+plugins {
+    id "com.android.application"
+}
 
 android {
-    compileSdkVersion 31
+    namespace "com.google.android.gms.samples.wallet"
+    compileSdkVersion 33
 
     defaultConfig {
         applicationId "com.google.android.gms.samples.wallet"
 
         /* Google Payment API is not supported in SDK versions lower than 19. This example requires
         this version due to use of newer constructs like Optional. */
-        minSdkVersion 21
-        targetSdkVersion 31
+        minSdk 21
+        targetSdk 33
         versionCode 1
         versionName "1.0"
+
+        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
     buildTypes {
@@ -25,15 +30,21 @@ android {
     viewBinding {
         enabled = true
     }
-    namespace 'com.google.android.gms.samples.wallet'
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
 }
 
 dependencies {
-    implementation 'androidx.appcompat:appcompat:1.4.1'
-    implementation 'com.google.android.gms:play-services-pay:16.0.3'
-    implementation 'com.google.android.gms:play-services-wallet:19.1.0'
+    implementation "androidx.appcompat:appcompat:1.6.1"
+    implementation "androidx.lifecycle:lifecycle-viewmodel:2.5.1"
+    implementation "com.google.android.gms:play-services-pay:16.1.0"
+    implementation "com.google.android.gms:play-services-wallet:19.2.0-beta01"
 
-    def lifecycle_version = "2.4.1"
-    implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:$lifecycle_version"
-    implementation "androidx.lifecycle:lifecycle-livedata-ktx:$lifecycle_version"
+    androidTestImplementation "androidx.test.espresso:espresso-core:3.5.1"
+    androidTestImplementation "androidx.test:runner:1.5.2"
+    androidTestImplementation "androidx.test.ext:junit:1.1.5"
+    androidTestImplementation "androidx.test.uiautomator:uiautomator:2.2.0"
 }
