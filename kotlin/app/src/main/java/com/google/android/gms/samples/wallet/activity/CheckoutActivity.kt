@@ -34,6 +34,7 @@ import com.google.android.gms.pay.PayClient
 import com.google.android.gms.samples.wallet.Constants
 import com.google.android.gms.samples.wallet.R
 import com.google.android.gms.samples.wallet.databinding.ActivityCheckoutBinding
+import com.google.android.gms.samples.wallet.util.PaymentsUtil
 import com.google.android.gms.samples.wallet.viewmodel.CheckoutViewModel
 import com.google.android.gms.wallet.PaymentData
 import com.google.android.gms.wallet.button.ButtonOptions
@@ -65,7 +66,7 @@ class CheckoutActivity : AppCompatActivity() {
         googlePayButton = layout.googlePayButton
         googlePayButton.initialize(
             ButtonOptions.newBuilder()
-                .setAllowedPaymentMethods(Constants.SUPPORTED_NETWORKS.joinToString(",")).build()
+                .setAllowedPaymentMethods(PaymentsUtil.allowedPaymentMethods.toString()).build()
         )
         googlePayButton.setOnClickListener { requestPayment() }
 
