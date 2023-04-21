@@ -19,6 +19,11 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity
+            android:name=".activity.CheckoutSuccessActivity"
+            android:exported="false"
+            android:label="@string/store_name"
+            android:theme="@style/AppTheme.NoActionBar" />
 
         <!-- Enabling this flag is required in order to use the PaymentsClient -->
         <meta-data

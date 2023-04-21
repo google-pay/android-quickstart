@@ -37,9 +37,12 @@ import com.google.android.gms.common.api.ResolvableApiException;
 import com.google.android.gms.pay.PayClient;
 import com.google.android.gms.samples.wallet.R;
 import com.google.android.gms.samples.wallet.databinding.ActivityCheckoutBinding;
+import com.google.android.gms.samples.wallet.util.PaymentsUtil;
 import com.google.android.gms.samples.wallet.viewmodel.CheckoutViewModel;
 import com.google.android.gms.tasks.Task;
 import com.google.android.gms.wallet.PaymentData;
+import com.google.android.gms.wallet.button.ButtonOptions;
+import com.google.android.gms.wallet.button.PayButton;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -55,7 +58,7 @@ public class CheckoutActivity extends AppCompatActivity {
 
   private static final int ADD_TO_GOOGLE_WALLET_REQUEST_CODE = 999;
 
-  private View googlePayButton;
+  private PayButton googlePayButton;
   private View addToGoogleWalletButtonContainer;
   private View addToGoogleWalletButton;
 
@@ -105,8 +108,16 @@ public class CheckoutActivity extends AppCompatActivity {
     setContentView(layoutBinding.getRoot());
 
     // The Google Pay button is a layout file – take the root view
-    googlePayButton = layoutBinding.googlePayButton.getRoot();
-    googlePayButton.setOnClickListener(this::requestPayment);
+    googlePayButton = layoutBinding.googlePayButton;
+    try {
+      googlePayButton.initialize(
+          ButtonOptions.newBuilder()
+              .setAllowedPaymentMethods(PaymentsUtil.getAllowedPaymentMethods().toString()).build()
+      );
+      googlePayButton.setOnClickListener(this::requestPayment);
+    } catch (JSONException e) {
+      // Keep Google Pay button hidden (consider logging this to your app analytics service)
+    }
 
     addToGoogleWalletButton = layoutBinding.addToGoogleWalletButton.getRoot();
     addToGoogleWalletButtonContainer = layoutBinding.passContainer;
@@ -194,6 +205,8 @@ public class CheckoutActivity extends AppCompatActivity {
       Log.d("Google Pay token", paymentMethodData
           .getJSONObject("tokenizationData")
           .getString("token"));
+
+      startActivity(new Intent(this, CheckoutSuccessActivity.class));
 
     } catch (JSONException e) {
       Log.e("handlePaymentSuccess", "Error: " + e);
