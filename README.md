@@ -13,12 +13,11 @@ https://developers.google.com/pay/api/android/overview
 
 ## Instructions
 
+In Android Studio, open the `kotlin` or `java` directory to get started.
+
 Make sure you read the comments in `Constants.java` and `PaymentsUtil.java` before
 you continue. These files **must** be modified prior to running the app, as per
 the instructions provided in the comments.
-
-In Android Studio, you must open the `kotlin` or `java` directory, not the
-top-level directory.
 
 ## Requirements
 
