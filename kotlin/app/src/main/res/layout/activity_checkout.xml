@@ -71,27 +71,8 @@
             android:textColor="?android:textColorSecondary"
             android:text="A versatile full-zip that you can wear all day long and even..."/>
 
-        <com.google.android.gms.wallet.button.PayButton
-            android:id="@+id/googlePayButton"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="20dp"/>
-
-        <LinearLayout
-            android:id="@+id/passContainer"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:layout_marginBottom="20dp"
-            android:visibility="gone">
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textColor="?android:textColorSecondary"
-                android:text="Or add a pass to your Google Wallet:"/>
-
-        </LinearLayout>
+        <!-- 2. Add the Google Pay button to your layout
+        See com.google.android.gms.wallet.button.PayButton -->
 
     </LinearLayout>
 

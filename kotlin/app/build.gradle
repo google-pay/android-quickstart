@@ -43,5 +43,6 @@ dependencies {
     implementation "androidx.activity:activity-ktx:$activity_version"
     implementation 'androidx.appcompat:appcompat:1.6.1'
 
-    implementation 'com.google.android.gms:play-services-wallet:19.2.0-beta01'
+    // 1. Add the latest version of the Google Pay library
+    // See https://mvnrepository.com/artifact/com.google.android.gms/play-services-wallet
 }
