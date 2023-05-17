@@ -64,8 +64,45 @@ class CheckoutActivity : AppCompatActivity() {
         // button depending on the result
     }
 
-    // 7. Create a method to start the payment facilitation and associate to the
-    // click event on the Google Pay button
+    private fun requestPayment() {
+
+        // Disables the button to prevent multiple clicks.
+        //googlePayButton.isClickable = false
+
+        // The price provided to the API should include taxes and shipping.
+        // This price is not displayed to the user.
+        val dummyPriceCents = 100L
+        val shippingCostCents = 900L
+        val task = model.getLoadPaymentDataTask(dummyPriceCents + shippingCostCents)
+
+        task.addOnCompleteListener { completedTask ->
+            if (completedTask.isSuccessful) {
+                completedTask.result.let(::handlePaymentSuccess)
+            } else {
+                when (val exception = completedTask.exception) {
+                    is ResolvableApiException -> {
+                        resolvePaymentForResult.launch(
+                            IntentSenderRequest.Builder(exception.resolution).build()
+                        )
+                    }
+
+                    is ApiException -> {
+                        handleError(exception.statusCode, exception.message)
+                    }
+
+                    else -> {
+                        handleError(
+                            CommonStatusCodes.INTERNAL_ERROR, "Unexpected non API" +
+                                    " exception when trying to deliver the task result to an activity!"
+                        )
+                    }
+                }
+            }
+
+            // Re-enables the Google Pay payment button.
+            //googlePayButton.isClickable = true
+        }
+    }
 
     // Handle potential conflict from calling loadPaymentData
     private val resolvePaymentForResult =
