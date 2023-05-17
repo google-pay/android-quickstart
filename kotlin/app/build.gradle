@@ -1,31 +1,26 @@
 plugins {
-    id "com.android.application"
-    id "org.jetbrains.kotlin.android"
+    id 'com.android.application'
+    id 'org.jetbrains.kotlin.android'
 }
 
 android {
-    namespace "com.google.android.gms.samples.wallet"
-    compileSdkVersion 33
+    namespace 'com.google.android.gms.samples.wallet'
+    compileSdk 33
 
     defaultConfig {
-        applicationId "com.google.android.gms.samples.wallet"
-        minSdkVersion 19
-        targetSdkVersion 33
+        applicationId 'com.google.android.gms.samples.wallet'
+        minSdk 19
+        targetSdk 33
         versionCode 1
-        versionName "1.0"
-        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        versionName '1.0'
     }
 
     buildTypes {
         release {
             shrinkResources true
             minifyEnabled true
-            proguardFiles getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro"
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
-    }
-
-    buildFeatures {
-        viewBinding = true
     }
 
     compileOptions {
@@ -34,18 +29,19 @@ android {
     }
 
     kotlinOptions {
-        jvmTarget = '1.8'
+        jvmTarget = 1.8
+    }
+
+    buildFeatures {
+        viewBinding = true
     }
 }
 
 dependencies {
-    implementation "androidx.appcompat:appcompat:1.6.1"
-    implementation "androidx.activity:activity-ktx:1.7.1"
-    implementation "com.google.android.gms:play-services-wallet:19.2.0-beta01"
-    implementation "com.google.android.gms:play-services-pay:16.1.0"
+    def activity_version = '1.7.1'
 
-    androidTestImplementation "androidx.test.espresso:espresso-core:3.5.1"
-    androidTestImplementation "androidx.test:runner:1.5.2"
-    androidTestImplementation "androidx.test.ext:junit:1.1.5"
-    androidTestImplementation "androidx.test.uiautomator:uiautomator:2.2.0"
+    implementation "androidx.activity:activity-ktx:$activity_version"
+    implementation 'androidx.appcompat:appcompat:1.6.1'
+
+    implementation 'com.google.android.gms:play-services-wallet:19.2.0-beta01'
 }

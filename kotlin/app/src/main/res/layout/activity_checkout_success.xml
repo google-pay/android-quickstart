@@ -4,7 +4,7 @@
     android:id="@+id/success_activity"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".activity.CheckoutSuccessActivity">
+    tools:context="com.google.android.gms.samples.wallet.activity.CheckoutSuccessActivity">
 
     <LinearLayout
         android:layout_width="wrap_content"

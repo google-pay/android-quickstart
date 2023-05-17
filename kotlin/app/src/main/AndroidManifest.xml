@@ -10,8 +10,8 @@
         android:theme="@style/AppTheme">
         <activity
             android:name=".activity.CheckoutActivity"
-            android:exported="true"
             android:label="@string/store_name"
+            android:exported="true"
             android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
