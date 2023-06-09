@@ -19,36 +19,34 @@ package com.google.android.gms.samples.wallet.activity
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
-import android.view.View
-import android.widget.Toast
-import androidx.activity.result.ActivityResult
-import androidx.activity.result.IntentSenderRequest
-import androidx.activity.result.contract.ActivityResultContracts.StartIntentSenderForResult
-import androidx.activity.viewModels
+import android.widget.Button
 import androidx.appcompat.app.AppCompatActivity
-import androidx.lifecycle.Observer
-import com.google.android.gms.common.api.ApiException
+import com.github.kittinunf.fuel.httpGet
+import com.github.kittinunf.fuel.json.responseJson
+import com.github.kittinunf.result.Result
 import com.google.android.gms.common.api.CommonStatusCodes
-import com.google.android.gms.common.api.ResolvableApiException
-import com.google.android.gms.samples.wallet.util.PaymentsUtil
-import com.google.android.gms.samples.wallet.viewmodel.CheckoutViewModel
-import com.google.android.gms.wallet.PaymentData
-import com.google.android.gms.samples.wallet.R
-import com.google.android.gms.wallet.button.ButtonOptions
-import com.google.android.gms.wallet.button.PayButton
+import com.google.android.gms.samples.wallet.BuildConfig
 import com.google.android.gms.samples.wallet.databinding.ActivityCheckoutBinding
-import org.json.JSONException
-import org.json.JSONObject
+import com.stripe.android.PaymentConfiguration
+import com.stripe.android.paymentsheet.PaymentSheet
+import com.stripe.android.paymentsheet.PaymentSheetResult
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 
 /**
  * Checkout implementation for the app
  */
 class CheckoutActivity : AppCompatActivity() {
 
-    private val model: CheckoutViewModel by viewModels()
+    private val TAG = this::class.java.simpleName
 
     private lateinit var layout: ActivityCheckoutBinding
-    private lateinit var googlePayButton: PayButton
+
+    private lateinit var payButton: Button
+    private lateinit var paymentSheet: PaymentSheet
+    private lateinit var customerConfig: PaymentSheet.CustomerConfiguration
+    private lateinit var paymentIntentClientSecret: String
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -57,129 +55,73 @@ class CheckoutActivity : AppCompatActivity() {
         layout = ActivityCheckoutBinding.inflate(layoutInflater)
         setContentView(layout.root)
 
-        // Setup buttons
-        googlePayButton = layout.googlePayButton
-        googlePayButton.initialize(
-            ButtonOptions.newBuilder()
-                .setAllowedPaymentMethods(PaymentsUtil.allowedPaymentMethods.toString()).build()
-        )
-        googlePayButton.setOnClickListener { requestPayment() }
+        paymentSheet = PaymentSheet(this, ::onPaymentSheetResult)
 
-        // Check Google Pay availability
-        model.canUseGooglePay.observe(this, Observer(::setGooglePayAvailable))
+        payButton = layout.payButton;
+        payButton.setOnClickListener { pay() }
     }
 
-    /**
-     * If isReadyToPay returned `true`, show the button and hide the "checking" text. Otherwise,
-     * notify the user that Google Pay is not available. Please adjust to fit in with your current
-     * user flow. You are not required to explicitly let the user know if isReadyToPay returns `false`.
-     *
-     * @param available isReadyToPay API response.
-     */
-    private fun setGooglePayAvailable(available: Boolean) {
-        if (available) {
-            googlePayButton.visibility = View.VISIBLE
-        } else {
-            Toast.makeText(
-                this,
-                R.string.google_pay_status_unavailable,
-                Toast.LENGTH_LONG
-            ).show()
-        }
-    }
+    private fun initializePayment() {
+        runBlocking {
+            launch(Dispatchers.IO) {
+                val (_, _, result) = BuildConfig.BACKEND_API_URL.plus("/payment_sheet")
+                    .httpGet()
+                    .responseJson()
 
-    private fun requestPayment() {
-
-        // Disables the button to prevent multiple clicks.
-        googlePayButton.isClickable = false
-
-        // The price provided to the API should include taxes and shipping.
-        // This price is not displayed to the user.
-        val dummyPriceCents = 100L
-        val shippingCostCents = 900L
-        val task = model.getLoadPaymentDataTask(dummyPriceCents + shippingCostCents)
-
-        task.addOnCompleteListener { completedTask ->
-            if (completedTask.isSuccessful) {
-                completedTask.result.let(::handlePaymentSuccess)
-            } else {
-                when (val exception = completedTask.exception) {
-                    is ResolvableApiException -> {
-                        resolvePaymentForResult.launch(
-                            IntentSenderRequest.Builder(exception.resolution).build()
-                        )
-                    }
-
-                    is ApiException -> {
-                        handleError(exception.statusCode, exception.message)
-                    }
-
-                    else -> {
-                        handleError(
-                            CommonStatusCodes.INTERNAL_ERROR, "Unexpected non API" +
-                                    " exception when trying to deliver the task result to an activity!"
-                        )
-                    }
-                }
-            }
-
-            // Re-enables the Google Pay payment button.
-            googlePayButton.isClickable = true
-        }
-    }
-
-    // Handle potential conflict from calling loadPaymentData
-    private val resolvePaymentForResult =
-        registerForActivityResult(StartIntentSenderForResult()) { result: ActivityResult ->
-            when (result.resultCode) {
-                RESULT_OK ->
-                    result.data?.let { intent ->
-                        PaymentData.getFromIntent(intent)?.let(::handlePaymentSuccess)
-                    }
-
-                RESULT_CANCELED -> {
-                    // The user cancelled the payment attempt
+                if (result is Result.Success) {
+                    val responseJson = result.get().obj()
+                    paymentIntentClientSecret = responseJson.getString("paymentIntent")
+                    customerConfig = PaymentSheet.CustomerConfiguration(
+                        responseJson.getString("customer"),
+                        responseJson.getString("ephemeralKey")
+                    )
+                    val publishableKey = responseJson.getString("publishableKey")
+                    PaymentConfiguration.init(applicationContext, publishableKey)
                 }
             }
         }
+    }
 
-    /**
-     * PaymentData response object contains the payment information, as well as any additional
-     * requested information, such as billing and shipping address.
-     *
-     * @param paymentData A response object returned by Google after a payer approves payment.
-     * @see [Payment
-     * Data](https://developers.google.com/pay/api/android/reference/object.PaymentData)
-     */
-    private fun handlePaymentSuccess(paymentData: PaymentData) {
-        val paymentInformation = paymentData.toJson()
+    private fun pay() {
+        initializePayment()
 
-        try {
-            // Token will be null if PaymentDataRequest was not constructed using fromJson(String).
-            val paymentMethodData =
-                JSONObject(paymentInformation).getJSONObject("paymentMethodData")
-            val billingName = paymentMethodData.getJSONObject("info")
-                .getJSONObject("billingAddress").getString("name")
-            Log.d("BillingName", billingName)
-
-            Toast.makeText(
-                this,
-                getString(R.string.payments_show_name, billingName),
-                Toast.LENGTH_LONG
-            ).show()
-
-            // Logging token string.
-            Log.d(
-                "Google Pay token", paymentMethodData
-                    .getJSONObject("tokenizationData")
-                    .getString("token")
+        val configuration = PaymentSheet.Configuration(
+            merchantDisplayName = "Domi's T-Shirt shop",
+            customer = customerConfig,
+            // Set `allowsDelayedPaymentMethods` to true if your business
+            // can handle payment methods that complete payment after a delay, like SEPA Debit and Sofort.
+            allowsDelayedPaymentMethods = true,
+            googlePay = PaymentSheet.GooglePayConfiguration(
+                environment = PaymentSheet.GooglePayConfiguration.Environment.Test,
+                countryCode = "US",
+                currencyCode = "USD" // Required for Setup Intents, optional for Payment Intents
             )
+        )
 
-            startActivity(Intent(this, CheckoutSuccessActivity::class.java))
+        paymentSheet.presentWithPaymentIntent(
+            paymentIntentClientSecret,
+            configuration
+        )
 
-        } catch (error: JSONException) {
-            Log.e("handlePaymentSuccess", "Error: $error")
+    }
+
+    private fun onPaymentSheetResult(paymentSheetResult: PaymentSheetResult) {
+        when (paymentSheetResult) {
+            is PaymentSheetResult.Canceled -> {
+                handleError(CommonStatusCodes.CANCELED, "Google Pay canceled")
+            }
+
+            is PaymentSheetResult.Failed -> {
+                handleError(CommonStatusCodes.ERROR, paymentSheetResult.error.message)
+            }
+
+            is PaymentSheetResult.Completed -> {
+                // Display for example, an order confirmation screen
+                startActivity(Intent(this, CheckoutSuccessActivity::class.java))
+            }
+
         }
+
     }
 
     /**
@@ -192,6 +134,6 @@ class CheckoutActivity : AppCompatActivity() {
      * Wallet Constants Library](https://developers.google.com/android/reference/com/google/android/gms/wallet/WalletConstants.constant-summary)
      */
     private fun handleError(statusCode: Int, message: String?) {
-        Log.e("Google Pay API error", "Error code: $statusCode, Message: $message")
+        Log.e(TAG, "Error code: $statusCode, Message: $message")
     }
 }
