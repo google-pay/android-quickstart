@@ -20,35 +20,34 @@ import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.view.View
-import android.widget.Toast
-import androidx.activity.result.ActivityResult
-import androidx.activity.result.IntentSenderRequest
-import androidx.activity.result.contract.ActivityResultContracts.StartIntentSenderForResult
-import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
-import androidx.lifecycle.Observer
-import com.google.android.gms.common.api.ApiException
+import com.github.kittinunf.fuel.httpGet
+import com.github.kittinunf.fuel.json.responseJson
+import com.github.kittinunf.result.Result
 import com.google.android.gms.common.api.CommonStatusCodes
-import com.google.android.gms.common.api.ResolvableApiException
+import com.google.android.gms.samples.wallet.BuildConfig
+import com.google.android.gms.samples.wallet.databinding.ActivityCheckoutBinding
 import com.google.android.gms.samples.wallet.util.PaymentsUtil
-import com.google.android.gms.samples.wallet.viewmodel.CheckoutViewModel
-import com.google.android.gms.wallet.PaymentData
-import com.google.android.gms.samples.wallet.R
+import com.google.android.gms.wallet.button.ButtonConstants.ButtonType
 import com.google.android.gms.wallet.button.ButtonOptions
 import com.google.android.gms.wallet.button.PayButton
-import com.google.android.gms.samples.wallet.databinding.ActivityCheckoutBinding
-import org.json.JSONException
-import org.json.JSONObject
+import com.stripe.android.PaymentConfiguration
+import com.stripe.android.googlepaylauncher.GooglePayEnvironment
+import com.stripe.android.googlepaylauncher.GooglePayLauncher
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 
 /**
  * Checkout implementation for the app
  */
 class CheckoutActivity : AppCompatActivity() {
 
-    private val model: CheckoutViewModel by viewModels()
+    private val TAG = this::class.java.simpleName
 
     private lateinit var layout: ActivityCheckoutBinding
     private lateinit var googlePayButton: PayButton
+    private lateinit var paymentIntentClientSecret: String
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -57,128 +56,71 @@ class CheckoutActivity : AppCompatActivity() {
         layout = ActivityCheckoutBinding.inflate(layoutInflater)
         setContentView(layout.root)
 
-        // Setup buttons
         googlePayButton = layout.googlePayButton
+
         googlePayButton.initialize(
             ButtonOptions.newBuilder()
+                .setButtonType(ButtonType.BUY)
                 .setAllowedPaymentMethods(PaymentsUtil.allowedPaymentMethods.toString()).build()
         )
-        googlePayButton.setOnClickListener { requestPayment() }
 
-        // Check Google Pay availability
-        model.canUseGooglePay.observe(this, Observer(::setGooglePayAvailable))
+        val googlePayLauncher = GooglePayLauncher(
+            activity = this,
+            config = GooglePayLauncher.Config(
+                environment = GooglePayEnvironment.Test,
+                merchantCountryCode = "US",
+                merchantName = "Google Pay showcase"
+            ),
+            readyCallback = ::onGooglePayReady,
+            resultCallback = ::onGooglePayResult
+        )
+
+        googlePayButton.setOnClickListener {pay(googlePayLauncher)  }
+
     }
 
-    /**
-     * If isReadyToPay returned `true`, show the button and hide the "checking" text. Otherwise,
-     * notify the user that Google Pay is not available. Please adjust to fit in with your current
-     * user flow. You are not required to explicitly let the user know if isReadyToPay returns `false`.
-     *
-     * @param available isReadyToPay API response.
-     */
-    private fun setGooglePayAvailable(available: Boolean) {
-        if (available) {
-            googlePayButton.visibility = View.VISIBLE
-        } else {
-            Toast.makeText(
-                this,
-                R.string.google_pay_status_unavailable,
-                Toast.LENGTH_LONG
-            ).show()
+    private fun initializePayment() {
+        runBlocking {
+            launch(Dispatchers.IO) {
+                val (_, _, result) = BuildConfig.BACKEND_API_URL.plus("/payment_intent")
+                    .httpGet()
+                    .responseJson()
+
+                if (result is Result.Success) {
+                    val responseJson = result.get().obj()
+                    paymentIntentClientSecret = responseJson.getString("paymentIntent")
+                    val publishableKey = responseJson.getString("publishableKey")
+                    PaymentConfiguration.init(applicationContext, publishableKey)
+                }
+            }
         }
     }
 
-    private fun requestPayment() {
+    private fun pay(googlePayLauncher: GooglePayLauncher) {
+        initializePayment()
+        googlePayLauncher.presentForPaymentIntent(paymentIntentClientSecret)
+    }
 
-        // Disables the button to prevent multiple clicks.
-        googlePayButton.isClickable = false
-
-        // The price provided to the API should include taxes and shipping.
-        // This price is not displayed to the user.
-        val dummyPriceCents = 100L
-        val shippingCostCents = 900L
-        val task = model.getLoadPaymentDataTask(dummyPriceCents + shippingCostCents)
-
-        task.addOnCompleteListener { completedTask ->
-            if (completedTask.isSuccessful) {
-                completedTask.result.let(::handlePaymentSuccess)
-            } else {
-                when (val exception = completedTask.exception) {
-                    is ResolvableApiException -> {
-                        resolvePaymentForResult.launch(
-                            IntentSenderRequest.Builder(exception.resolution).build()
-                        )
-                    }
-
-                    is ApiException -> {
-                        handleError(exception.statusCode, exception.message)
-                    }
-
-                    else -> {
-                        handleError(
-                            CommonStatusCodes.INTERNAL_ERROR, "Unexpected non API" +
-                                    " exception when trying to deliver the task result to an activity!"
-                        )
-                    }
-                }
-            }
-
-            // Re-enables the Google Pay payment button.
+    private fun onGooglePayReady(isReady: Boolean) {
+        if(isReady) {
+            googlePayButton.visibility = View.VISIBLE
             googlePayButton.isClickable = true
         }
+
     }
 
-    // Handle potential conflict from calling loadPaymentData
-    private val resolvePaymentForResult =
-        registerForActivityResult(StartIntentSenderForResult()) { result: ActivityResult ->
-            when (result.resultCode) {
-                RESULT_OK ->
-                    result.data?.let { intent ->
-                        PaymentData.getFromIntent(intent)?.let(::handlePaymentSuccess)
-                    }
-
-                RESULT_CANCELED -> {
-                    // The user cancelled the payment attempt
-                }
+    private fun onGooglePayResult(result: GooglePayLauncher.Result) {
+        when (result) {
+            GooglePayLauncher.Result.Completed -> {
+                startActivity(Intent(this, CheckoutSuccessActivity::class.java))
             }
-        }
-
-    /**
-     * PaymentData response object contains the payment information, as well as any additional
-     * requested information, such as billing and shipping address.
-     *
-     * @param paymentData A response object returned by Google after a payer approves payment.
-     * @see [Payment
-     * Data](https://developers.google.com/pay/api/android/reference/object.PaymentData)
-     */
-    private fun handlePaymentSuccess(paymentData: PaymentData) {
-        val paymentInformation = paymentData.toJson()
-
-        try {
-            // Token will be null if PaymentDataRequest was not constructed using fromJson(String).
-            val paymentMethodData =
-                JSONObject(paymentInformation).getJSONObject("paymentMethodData")
-            val billingName = paymentMethodData.getJSONObject("info")
-                .getJSONObject("billingAddress").getString("name")
-            Log.d("BillingName", billingName)
-
-            Toast.makeText(
-                this,
-                getString(R.string.payments_show_name, billingName),
-                Toast.LENGTH_LONG
-            ).show()
-
-            // Logging token string.
-            Log.d(
-                "Google Pay token", paymentMethodData
-                    .getJSONObject("tokenizationData")
-                    .getString("token")
-            )
-
-            startActivity(Intent(this, CheckoutSuccessActivity::class.java))
-
-        } catch (error: JSONException) {
-            Log.e("handlePaymentSuccess", "Error: $error")
+            GooglePayLauncher.Result.Canceled -> {
+                handleError(CommonStatusCodes.CANCELED, "Google Pay canceled")
+            }
+            is GooglePayLauncher.Result.Failed -> {
+                // Operation failed; inspect `result.error` for the exception
+                handleError(CommonStatusCodes.ERROR, result.error.message)
+            }
         }
     }
 
@@ -192,6 +134,6 @@ class CheckoutActivity : AppCompatActivity() {
      * Wallet Constants Library](https://developers.google.com/android/reference/com/google/android/gms/wallet/WalletConstants.constant-summary)
      */
     private fun handleError(statusCode: Int, message: String?) {
-        Log.e("Google Pay API error", "Error code: $statusCode, Message: $message")
+        Log.e(TAG, "Error code: $statusCode, Message: $message")
     }
 }

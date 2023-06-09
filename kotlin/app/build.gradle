@@ -9,13 +9,21 @@ android {
 
     defaultConfig {
         applicationId 'com.google.android.gms.samples.wallet'
-        minSdk 19
+        minSdk 23
         targetSdk 33
         versionCode 1
         versionName '1.0'
     }
 
+    buildFeatures {
+        buildConfig = true
+    }
+
     buildTypes {
+        debug {
+            buildConfigField "String", "BACKEND_API_URL", "\"http://<your-backend-url>:<port>\""
+        }
+
         release {
             shrinkResources true
             minifyEnabled true
@@ -38,10 +46,14 @@ android {
 }
 
 dependencies {
-    def activity_version = '1.7.1'
+    def activity_version = '1.7.2'
 
     implementation "androidx.activity:activity-ktx:$activity_version"
     implementation 'androidx.appcompat:appcompat:1.6.1'
 
     implementation 'com.google.android.gms:play-services-wallet:19.2.0-beta01'
+    implementation 'com.stripe:stripe-android:20.25.6'
+
+    implementation 'com.github.kittinunf.fuel:fuel:2.3.1'
+    implementation 'com.github.kittinunf.fuel:fuel-json:2.3.1'
 }
