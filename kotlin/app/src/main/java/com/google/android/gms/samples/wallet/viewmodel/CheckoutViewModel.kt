@@ -1,20 +1,52 @@
+/*
+ * Copyright 2023 Google Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package com.google.android.gms.samples.wallet.viewmodel
 
 import android.app.Activity
 import android.app.Application
 import android.util.Log
 import androidx.lifecycle.AndroidViewModel
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import com.google.android.gms.common.api.ApiException
 import com.google.android.gms.pay.Pay
 import com.google.android.gms.pay.PayApiAvailabilityStatus
 import com.google.android.gms.pay.PayClient
 import com.google.android.gms.samples.wallet.util.PaymentsUtil
 import com.google.android.gms.tasks.Task
-import com.google.android.gms.wallet.*
+import com.google.android.gms.wallet.IsReadyToPayRequest
+import com.google.android.gms.wallet.PaymentData
+import com.google.android.gms.wallet.PaymentDataRequest
+import com.google.android.gms.wallet.PaymentsClient
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 
 class CheckoutViewModel(application: Application) : AndroidViewModel(application) {
+
+    data class State(
+        val googlePayAvailable: Boolean? = false,
+        val googleWalletAvailable: Boolean? = false,
+        val googlePayButtonClickable: Boolean = true,
+        val googleWalletButtonClickable: Boolean = true,
+        val checkoutSuccess: Boolean = false,
+    )
+
+    private val _state = MutableStateFlow(State())
+    val state: StateFlow<State> = _state.asStateFlow()
 
     // A client for interacting with the Google Pay API.
     private val paymentsClient: PaymentsClient = PaymentsUtil.createPaymentsClient(application)
@@ -22,42 +54,27 @@ class CheckoutViewModel(application: Application) : AndroidViewModel(application
     // A client to interact with the Google Wallet API
     private val walletClient: PayClient = Pay.getClient(application)
 
-    // LiveData with the result of whether the user can pay using Google Pay
-    private val _canUseGooglePay: MutableLiveData<Boolean> by lazy {
-        MutableLiveData<Boolean>().also {
-            fetchCanUseGooglePay()
-        }
+    init {
+        fetchCanUseGooglePay()
+        fetchCanAddPassesToGoogleWallet()
     }
-
-    // LiveData with the result of whether the user can save passes to Google Wallet
-    private val _canSavePasses: MutableLiveData<Boolean> by lazy {
-        MutableLiveData<Boolean>().also {
-            fetchCanAddPassesToGoogleWallet()
-        }
-    }
-
-    val canUseGooglePay: LiveData<Boolean> = _canUseGooglePay
-    val canSavePasses: LiveData<Boolean> = _canSavePasses
 
     /**
      * Determine the user's ability to pay with a payment method supported by your app and display
      * a Google Pay payment button.
-     *
-     * @return a [LiveData] object that holds the future result of the call.
-     * @see [](https://developers.google.com/android/reference/com/google/android/gms/wallet/PaymentsClient.html.isReadyToPay)
     ) */
     private fun fetchCanUseGooglePay() {
         val isReadyToPayJson = PaymentsUtil.isReadyToPayRequest()
-        if (isReadyToPayJson == null) _canUseGooglePay.value = false
-
         val request = IsReadyToPayRequest.fromJson(isReadyToPayJson.toString())
         val task = paymentsClient.isReadyToPay(request)
+
         task.addOnCompleteListener { completedTask ->
             try {
-                _canUseGooglePay.value = completedTask.getResult(ApiException::class.java)
+                _state.update { currentState ->
+                    currentState.copy(googlePayAvailable = completedTask.getResult(ApiException::class.java))
+                }
             } catch (exception: ApiException) {
                 Log.w("isReadyToPay failed", exception)
-                _canUseGooglePay.value = false
             }
         }
     }
@@ -82,8 +99,9 @@ class CheckoutViewModel(application: Application) : AndroidViewModel(application
         walletClient
             .getPayApiAvailabilityStatus(PayClient.RequestType.SAVE_PASSES)
             .addOnSuccessListener { status ->
-                _canSavePasses.value = status == PayApiAvailabilityStatus.AVAILABLE
-                // } else {
+                _state.update { currentState ->
+                    currentState.copy(googleWalletAvailable = status == PayApiAvailabilityStatus.AVAILABLE)
+                }
                 // We recommend to either:
                 // 1) Hide the save button
                 // 2) Fall back to a different Save Passes integration (e.g. JWT link)
@@ -91,8 +109,28 @@ class CheckoutViewModel(application: Application) : AndroidViewModel(application
             }
             .addOnFailureListener {
                 // Google Play Services is too old. API availability can't be verified.
-                _canUseGooglePay.value = false
+                _state.update { currentState ->
+                    currentState.copy(googlePayAvailable = false)
+                }
             }
+    }
+
+    fun setGooglePayButtonClickable(clickable:Boolean) {
+        _state.update { currentState ->
+            currentState.copy(googlePayButtonClickable = clickable)
+        }
+    }
+
+    fun setGoogleWalletButtonClickable(clickable:Boolean) {
+        _state.update { currentState ->
+            currentState.copy(googleWalletButtonClickable = clickable)
+        }
+    }
+
+    fun checkoutSuccess() {
+        _state.update { currentState ->
+            currentState.copy(checkoutSuccess = true)
+        }
     }
 
     /**
