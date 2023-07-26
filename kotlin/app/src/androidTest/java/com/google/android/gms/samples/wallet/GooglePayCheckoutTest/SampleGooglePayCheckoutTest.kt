@@ -43,37 +43,42 @@ class SampleGooglePayCheckoutTest {
     fun setUp() {
     }
 
-    @Test fun testDummyVisaCardPayment() {
+    @Test
+    fun testDummyVisaCardPayment() {
 
         // [Compose] Click on pay with Google Pay
-        composeTestRule.onNodeWithTag("payButton").performClick();
+        composeTestRule.onNodeWithTag("payButton").performClick()
         composeTestRule.waitForIdle()
 
         // [UIAutomator] Wait for payment sheet to come up
-        device.waitForWindowUpdate(GOOGLE_PAY_SHEET_PACKAGE, 0);
+        device.waitForWindowUpdate(GOOGLE_PAY_SHEET_PACKAGE, 0)
 
         // [UIAutomator] Click on the card chooser
-        val paymentMethodSelectorArrow = device.findObject(UiSelector()
+        val paymentMethodSelectorArrow = device.findObject(
+            UiSelector()
                 .className("android.widget.ImageView")
-                .descriptionContains("Show list of payment methods"))
+                .descriptionContains("Show list of payment methods")
+        )
         paymentMethodSelectorArrow.click()
 
         // [UIAutomator] Change the card
         val targetCardSelector = UiSelector()
-                .className("android.widget.TextView")
-                .textContains("Visa")
+            .className("android.widget.TextView")
+            .textContains("Visa")
 
         val cardList = UiScrollable(UiSelector().className("android.widget.ScrollView"))
         cardList.scrollIntoView(targetCardSelector)
         device.findObject(targetCardSelector).click()
 
         // [UIAutomator] Confirm selection and back to the app
-        val continueButton = device.findObject(UiSelector()
+        val continueButton = device.findObject(
+            UiSelector()
                 .className("android.widget.Button")
-                .text("Continue"))
+                .text("Continue")
+        )
         continueButton.click()
 
         // [Compose] Confirm that the success screen is visible
-        composeTestRule.onNodeWithTag("successScreen").assertIsDisplayed();
+        composeTestRule.onNodeWithTag("successScreen").assertIsDisplayed()
     }
 }
