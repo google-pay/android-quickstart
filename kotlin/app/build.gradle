@@ -65,14 +65,9 @@ dependencies {
     implementation "com.google.pay.button:compose-pay-button:0.1.0-beta02"
     implementation "com.google.wallet.button:compose-wallet-button:0.1.0-beta01"
 
-    androidTestImplementation "androidx.test.espresso:espresso-core:3.5.1"
-    androidTestImplementation "androidx.test:runner:1.5.2"
-    androidTestImplementation "androidx.test.ext:junit:1.1.5"
     androidTestImplementation "androidx.test.uiautomator:uiautomator:2.2.0"
     androidTestImplementation "androidx.compose.ui:ui-test-junit4:1.4.3"
 
-//    androidTestImplementation platform('androidx.compose:compose-bom:2022.10.00')
-//    debugImplementation 'androidx.compose.ui:ui-tooling'
     debugImplementation "androidx.compose.ui:ui-test-manifest:1.4.3"
 }
 
