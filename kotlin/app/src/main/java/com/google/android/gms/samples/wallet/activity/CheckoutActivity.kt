@@ -19,105 +19,48 @@ package com.google.android.gms.samples.wallet.activity
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
-import android.view.View
 import android.widget.Toast
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.setContent
 import androidx.activity.result.ActivityResult
 import androidx.activity.result.IntentSenderRequest
 import androidx.activity.result.contract.ActivityResultContracts.StartIntentSenderForResult
 import androidx.activity.viewModels
-import androidx.appcompat.app.AppCompatActivity
-import androidx.lifecycle.Observer
 import com.google.android.gms.common.api.ApiException
 import com.google.android.gms.common.api.CommonStatusCodes
 import com.google.android.gms.common.api.ResolvableApiException
 import com.google.android.gms.pay.PayClient
 import com.google.android.gms.samples.wallet.R
-import com.google.android.gms.samples.wallet.databinding.ActivityCheckoutBinding
-import com.google.android.gms.samples.wallet.util.PaymentsUtil
+import com.google.android.gms.samples.wallet.ui.ProductScreen
 import com.google.android.gms.samples.wallet.viewmodel.CheckoutViewModel
 import com.google.android.gms.wallet.PaymentData
-import com.google.android.gms.wallet.button.ButtonOptions
-import com.google.android.gms.wallet.button.PayButton
 import org.json.JSONException
 import org.json.JSONObject
 
-/**
- * Checkout implementation for the app
- */
-class CheckoutActivity : AppCompatActivity() {
+class CheckoutActivity : ComponentActivity() {
 
     private val addToGoogleWalletRequestCode = 1000
-
     private val model: CheckoutViewModel by viewModels()
-
-    private lateinit var layout: ActivityCheckoutBinding
-    private lateinit var googlePayButton: PayButton
-    private lateinit var addToGoogleWalletButton: View
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // Use view binding to access the UI elements
-        layout = ActivityCheckoutBinding.inflate(layoutInflater)
-        setContentView(layout.root)
-
-        // Setup buttons
-        googlePayButton = layout.googlePayButton
-        googlePayButton.initialize(
-            ButtonOptions.newBuilder()
-                .setAllowedPaymentMethods(PaymentsUtil.allowedPaymentMethods.toString()).build()
-        )
-        googlePayButton.setOnClickListener { requestPayment() }
-
-        addToGoogleWalletButton = layout.addToGoogleWalletButton.root
-        addToGoogleWalletButton.setOnClickListener { requestSavePass() }
-
-        // Check Google Pay availability
-        model.canUseGooglePay.observe(this, Observer(::setGooglePayAvailable))
-        model.canSavePasses.observe(this, Observer(::setAddToGoogleWalletAvailable))
-    }
-
-    /**
-     * If isReadyToPay returned `true`, show the button and hide the "checking" text. Otherwise,
-     * notify the user that Google Pay is not available. Please adjust to fit in with your current
-     * user flow. You are not required to explicitly let the user know if isReadyToPay returns `false`.
-     *
-     * @param available isReadyToPay API response.
-     */
-    private fun setGooglePayAvailable(available: Boolean) {
-        if (available) {
-            googlePayButton.visibility = View.VISIBLE
-        } else {
-            Toast.makeText(
-                this,
-                R.string.google_pay_status_unavailable,
-                Toast.LENGTH_LONG
-            ).show()
-        }
-    }
-
-    /**
-     * If the Google Wallet API is available, show the button to Add to Google Wallet. Please adjust to fit
-     * in with your current user flow.
-     *
-     * @param available
-     */
-    private fun setAddToGoogleWalletAvailable(available: Boolean) {
-        if (available) {
-            layout.passContainer.visibility = View.VISIBLE
-        } else {
-            Toast.makeText(
-                this,
-                R.string.google_wallet_status_unavailable,
-                Toast.LENGTH_LONG
-            ).show()
+        setContent {
+            ProductScreen(
+                title = "Men's Tech Shell Full-Zip",
+                description = "A versatile full-zip that you can wear all day long and even...",
+                price = "$50.20",
+                image = R.drawable.ts_10_11019a,
+                viewModel = model,
+                googlePayButtonOnClick = { requestPayment() },
+                googleWalletButtonOnClick = { requestSavePass() },
+            )
         }
     }
 
     private fun requestPayment() {
-
         // Disables the button to prevent multiple clicks.
-        googlePayButton.isClickable = false
+        model.setGooglePayButtonClickable(false)
 
         // The price provided to the API should include taxes and shipping.
         // This price is not displayed to the user.
@@ -150,7 +93,7 @@ class CheckoutActivity : AppCompatActivity() {
             }
 
             // Re-enables the Google Pay payment button.
-            googlePayButton.isClickable = true
+            model.setGooglePayButtonClickable(true)
         }
     }
 
@@ -201,7 +144,7 @@ class CheckoutActivity : AppCompatActivity() {
                     .getString("token")
             )
 
-            startActivity(Intent(this, CheckoutSuccessActivity::class.java))
+            model.checkoutSuccess()
 
         } catch (error: JSONException) {
             Log.e("handlePaymentSuccess", "Error: $error")
@@ -224,7 +167,7 @@ class CheckoutActivity : AppCompatActivity() {
     private fun requestSavePass() {
 
         // Disables the button to prevent multiple clicks.
-        addToGoogleWalletButton.isClickable = false
+        model.setGoogleWalletButtonClickable(false)
 
         model.savePassesJwt(model.genericObjectJwt, this, addToGoogleWalletRequestCode)
     }
@@ -260,7 +203,7 @@ class CheckoutActivity : AppCompatActivity() {
             }
 
             // Re-enables the Google Pay payment button.
-            addToGoogleWalletButton.isClickable = true
+            model.setGoogleWalletButtonClickable(true)
 
         }
     }
