@@ -33,6 +33,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -61,6 +62,7 @@ fun ProductScreen(
     if (state.checkoutSuccess) {
         Column(
             modifier = Modifier
+                .testTag("successScreen")
                 .background(grey)
                 .padding(padding)
                 .fillMaxWidth()
@@ -111,7 +113,9 @@ fun ProductScreen(
             )
             if (state.googlePayAvailable == true) {
                 PayButton(
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier
+                        .testTag("payButton")
+                        .fillMaxWidth(),
                     onClick = { if (state.googlePayButtonClickable) googlePayButtonOnClick() },
                     allowedPaymentMethods = PaymentsUtil.allowedPaymentMethods.toString()
                 )
