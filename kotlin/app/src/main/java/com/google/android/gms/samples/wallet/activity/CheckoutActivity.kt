@@ -33,7 +33,9 @@ import com.google.android.gms.pay.PayClient
 import com.google.android.gms.samples.wallet.R
 import com.google.android.gms.samples.wallet.ui.ProductScreen
 import com.google.android.gms.samples.wallet.viewmodel.CheckoutViewModel
+import com.google.android.gms.wallet.AutoResolveHelper
 import com.google.android.gms.wallet.PaymentData
+import com.google.android.gms.wallet.WalletConstants
 import org.json.JSONException
 import org.json.JSONObject
 
@@ -105,6 +107,26 @@ class CheckoutActivity : ComponentActivity() {
                     result.data?.let { intent ->
                         PaymentData.getFromIntent(intent)?.let(::handlePaymentSuccess)
                     }
+
+                WalletConstants.RESULT_ERROR -> {
+                    val status = AutoResolveHelper.getStatusFromIntent(result.data)
+                    /**
+                     * Use the information in the intent to react to the error appropriately.
+                     * Learn more at: https://developers.google.com/pay/api/android/support/troubleshooting
+                     * For example:
+                     * when (status?.statusCode) {
+                     *     WalletConstants.ERROR_CODE_DEVELOPER_ERROR -> {
+                     *         // Handle DEVELOPER_ERROR. Not expected on production. Consider
+                     *         // informing the user and reporting the issue to your error services.
+                     *     }
+                     *     else -> {
+                     *         // Transient or internal error. Inspect the message and report the issue
+                     *         // to your error reporting or telemetry services. Inform the user and
+                     *         // provide an alternative payment method.
+                     *     }
+                     * }
+                     */
+                }
 
                 RESULT_CANCELED -> {
                     // The user cancelled the payment attempt
