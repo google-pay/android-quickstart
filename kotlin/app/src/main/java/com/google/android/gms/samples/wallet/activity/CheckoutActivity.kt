@@ -40,24 +40,11 @@ class CheckoutActivity : ComponentActivity() {
                 price = "$50.20",
                 image = R.drawable.ts_10_11019a,
                 viewModel = model,
-                googlePayButtonOnClick = { requestPayment() },
+                googlePayButtonOnClick = { model.requestPayment() },
                 googleWalletButtonOnClick = { requestSavePass() },
             )
         }
     }
-
-    private fun requestPayment() {
-        // Disables the button to prevent multiple clicks.
-        model.setGooglePayButtonClickable(false)
-
-        // The price provided to the API should include taxes and shipping.
-        // This price is not displayed to the user.
-        val dummyPriceCents = 100L
-        val shippingCostCents = 900L
-        val task = model.getLoadPaymentDataTask(dummyPriceCents + shippingCostCents)
-
-    }
-
 
     /**
      * PaymentData response object contains the payment information, as well as any additional

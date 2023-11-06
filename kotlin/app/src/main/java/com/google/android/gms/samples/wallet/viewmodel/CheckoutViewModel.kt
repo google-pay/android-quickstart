@@ -97,10 +97,38 @@ class CheckoutViewModel(application: Application) : AndroidViewModel(application
      * @return a [Task] with the payment information.
      * @see [](https://developers.google.com/android/reference/com/google/android/gms/wallet/PaymentsClient#loadPaymentData(com.google.android.gms.wallet.PaymentDataRequest)
     ) */
-    fun getLoadPaymentDataTask(priceCents: Long): Task<PaymentData> {
-        val paymentDataRequestJson = PaymentsUtil.getPaymentDataRequest(priceCents)
+    fun requestPayment() {
+
+        // Disable pay button
+        _state.update { it.copy(googlePayButtonClickable = false) }
+
+        // Create a payment request task using a dummy price
+        val paymentDataRequestJson = PaymentsUtil.getPaymentDataRequest(priceCemts = 100L)
         val request = PaymentDataRequest.fromJson(paymentDataRequestJson.toString())
-        return paymentsClient.loadPaymentData(request)
+
+        viewModelScope.launch {
+            val task = paymentsClient.loadPaymentData(request)
+
+            try {
+                val paymentData = task.await()
+                _state.update {
+                    it.copy(paymentResult = paymentData)
+                }
+            } catch (rae: ResolvableApiException) {
+                _state.update { it.copy(paymentDataResolution = rae.resolution) }
+            } catch (ae: ApiException) {
+                handleError(ae.statusCode, ae.message)
+            } catch (e: Exception) {
+                handleError(
+                    CommonStatusCodes.INTERNAL_ERROR, "Unexpected non API" +
+                            " exception when trying to deliver the task result to an activity!"
+                )
+            }
+
+            // Re-enables the Google Pay payment button.
+            _state.update { it.copy(googlePayButtonClickable = true) }
+        }
+    }
     }
 
     /**
