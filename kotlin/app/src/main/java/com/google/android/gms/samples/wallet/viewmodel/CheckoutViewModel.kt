@@ -129,6 +129,54 @@ class CheckoutViewModel(application: Application) : AndroidViewModel(application
             _state.update { it.copy(googlePayButtonClickable = true) }
         }
     }
+
+    /**
+     * At this stage, the user has already seen a popup informing them an error occurred. Normally,
+     * only logging is required.
+     *
+     * @param statusCode will hold the value of any constant from CommonStatusCode or one of the
+     * WalletConstants.ERROR_CODE_* constants.
+     * @see [
+     * Wallet Constants Library](https://developers.google.com/android/reference/com/google/android/gms/wallet/WalletConstants.constant-summary)
+     */
+    private fun handleError(statusCode: Int, message: String?) {
+        Log.e("Google Pay API error", "Error code: $statusCode, Message: $message")
+    }
+
+    /**
+     * PaymentData response object contains the payment information, as well as any additional
+     * requested information, such as billing and shipping address.
+     *
+     * @param paymentData A response object returned by Google after a payer approves payment.
+     * @see [Payment
+     * Data](https://developers.google.com/pay/api/android/reference/object.PaymentData)
+     */
+    fun extractPaymentBillingName(): String? {
+        return _state.value.paymentResult?.let { paymentData: PaymentData ->
+            val paymentInformation = paymentData.toJson()
+
+            try {
+                // Token will be null if PaymentDataRequest was not constructed using fromJson(String).
+                val paymentMethodData =
+                    JSONObject(paymentInformation).getJSONObject("paymentMethodData")
+                val billingName = paymentMethodData.getJSONObject("info")
+                    .getJSONObject("billingAddress").getString("name")
+                Log.d("BillingName", billingName)
+
+                // Logging token string.
+                Log.d(
+                    "Google Pay token", paymentMethodData
+                        .getJSONObject("tokenizationData")
+                        .getString("token")
+                )
+
+                return billingName
+            } catch (error: JSONException) {
+                Log.e("handlePaymentSuccess", "Error: $error")
+            }
+
+            return null
+        }
     }
 
     /**
