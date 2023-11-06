@@ -18,12 +18,19 @@ package com.google.android.gms.samples.wallet.viewmodel
 
 import android.app.Activity
 import android.app.Application
+import android.app.PendingIntent
 import android.util.Log
+import android.widget.Toast
+import androidx.activity.result.IntentSenderRequest
 import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.viewModelScope
 import com.google.android.gms.common.api.ApiException
+import com.google.android.gms.common.api.CommonStatusCodes
+import com.google.android.gms.common.api.ResolvableApiException
 import com.google.android.gms.pay.Pay
 import com.google.android.gms.pay.PayApiAvailabilityStatus
 import com.google.android.gms.pay.PayClient
+import com.google.android.gms.samples.wallet.R
 import com.google.android.gms.samples.wallet.util.PaymentsUtil
 import com.google.android.gms.tasks.Task
 import com.google.android.gms.wallet.IsReadyToPayRequest
@@ -34,6 +41,10 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
+import org.json.JSONException
+import org.json.JSONObject
 
 class CheckoutViewModel(application: Application) : AndroidViewModel(application) {
 

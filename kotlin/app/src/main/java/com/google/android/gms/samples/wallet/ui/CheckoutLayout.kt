@@ -16,6 +16,12 @@
 
 package com.google.android.gms.samples.wallet.ui
 
+import android.widget.Toast
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.ActivityResult
+import androidx.activity.result.IntentSenderRequest
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -28,28 +34,32 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.google.android.gms.samples.wallet.R
 import com.google.android.gms.samples.wallet.util.PaymentsUtil
 import com.google.android.gms.samples.wallet.viewmodel.CheckoutViewModel
+import com.google.android.gms.wallet.PaymentData
 import com.google.pay.button.PayButton
 import com.google.wallet.button.WalletButton
 
 @Composable
 fun ProductScreen(
-    title:String,
-    description:String,
-    price:String,
-    image:Int,
+    title: String,
+    description: String,
+    price: String,
+    image: Int,
     viewModel: CheckoutViewModel,
     googlePayButtonOnClick: () -> Unit,
     googleWalletButtonOnClick: () -> Unit,
@@ -59,7 +69,25 @@ fun ProductScreen(
     val black = Color(0xff000000.toInt())
     val grey = Color(0xffeeeeee.toInt())
 
-    if (state.checkoutSuccess) {
+    val resolvePaymentForResult = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.StartIntentSenderForResult()
+    ) { result: ActivityResult ->
+        when (result.resultCode) {
+            ComponentActivity.RESULT_OK -> result.data?.let { intent ->
+                viewModel.setPaymentDataResult(PaymentData.getFromIntent(intent))
+            }
+            /* Handle other result scenarios
+             * Learn more at: https://developers.google.com/pay/api/android/support/troubleshooting
+             */
+            else -> { // Other uncaught errors }
+            }
+        }
+    }
+
+    // Start the resolution of the task if needed
+    state.paymentDataResolution?.let {
+        resolvePaymentForResult.launch(IntentSenderRequest.Builder(it).build())
+    }
         Column(
             modifier = Modifier
                 .testTag("successScreen")
