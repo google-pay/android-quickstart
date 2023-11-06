@@ -20,8 +20,6 @@ import android.app.Activity
 import android.app.Application
 import android.app.PendingIntent
 import android.util.Log
-import android.widget.Toast
-import androidx.activity.result.IntentSenderRequest
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.android.gms.common.api.ApiException
@@ -30,7 +28,6 @@ import com.google.android.gms.common.api.ResolvableApiException
 import com.google.android.gms.pay.Pay
 import com.google.android.gms.pay.PayApiAvailabilityStatus
 import com.google.android.gms.pay.PayClient
-import com.google.android.gms.samples.wallet.R
 import com.google.android.gms.samples.wallet.util.PaymentsUtil
 import com.google.android.gms.tasks.Task
 import com.google.android.gms.wallet.IsReadyToPayRequest
@@ -67,27 +64,27 @@ class CheckoutViewModel(application: Application) : AndroidViewModel(application
     private val walletClient: PayClient = Pay.getClient(application)
 
     init {
-        fetchCanUseGooglePay()
-        fetchCanAddPassesToGoogleWallet()
+        viewModelScope.launch {
+            fetchCanUseGooglePay()
+            fetchCanAddPassesToGoogleWallet()
+        }
     }
 
     /**
      * Determine the user's ability to pay with a payment method supported by your app and display
      * a Google Pay payment button.
     ) */
-    private fun fetchCanUseGooglePay() {
+    private suspend fun fetchCanUseGooglePay() {
         val isReadyToPayJson = PaymentsUtil.isReadyToPayRequest()
         val request = IsReadyToPayRequest.fromJson(isReadyToPayJson.toString())
         val task = paymentsClient.isReadyToPay(request)
 
-        task.addOnCompleteListener { completedTask ->
-            try {
-                _state.update { currentState ->
-                    currentState.copy(googlePayAvailable = completedTask.getResult(ApiException::class.java))
-                }
-            } catch (exception: ApiException) {
-                Log.w("isReadyToPay failed", exception)
+        try {
+            _state.update { currentState ->
+                currentState.copy(googlePayAvailable = task.await())
             }
+        } catch (exception: ApiException) {
+            handleError(exception.statusCode, exception.message)
         }
     }
 
@@ -183,24 +180,17 @@ class CheckoutViewModel(application: Application) : AndroidViewModel(application
     /**
      * Determine whether the API to save passes to Google Pay is available on the device.
      */
-    private fun fetchCanAddPassesToGoogleWallet() {
-        walletClient
-            .getPayApiAvailabilityStatus(PayClient.RequestType.SAVE_PASSES)
-            .addOnSuccessListener { status ->
-                _state.update { currentState ->
-                    currentState.copy(googleWalletAvailable = status == PayApiAvailabilityStatus.AVAILABLE)
-                }
-                // We recommend to either:
-                // 1) Hide the save button
-                // 2) Fall back to a different Save Passes integration (e.g. JWT link)
-                // Note that a user might become eligible in the future.
+    private suspend fun fetchCanAddPassesToGoogleWallet() {
+        val status = walletClient
+            .getPayApiAvailabilityStatus(PayClient.RequestType.SAVE_PASSES).await()
+
+        try {
+            _state.update { currentState ->
+                currentState.copy(googleWalletAvailable = status == PayApiAvailabilityStatus.AVAILABLE)
             }
-            .addOnFailureListener {
-                // Google Play Services is too old. API availability can't be verified.
-                _state.update { currentState ->
-                    currentState.copy(googlePayAvailable = false)
-                }
-            }
+        } catch (exception: ApiException) {
+            handleError(exception.statusCode, exception.message)
+        }
     }
 
     fun setPaymentDataResult(paymentData: PaymentData?) {
@@ -209,7 +199,7 @@ class CheckoutViewModel(application: Application) : AndroidViewModel(application
         }
     }
 
-    fun setGoogleWalletButtonClickable(clickable:Boolean) {
+    fun setGoogleWalletButtonClickable(clickable: Boolean) {
         _state.update { currentState ->
             currentState.copy(googleWalletButtonClickable = clickable)
         }
