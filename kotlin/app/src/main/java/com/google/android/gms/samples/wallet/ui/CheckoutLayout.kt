@@ -88,6 +88,18 @@ fun ProductScreen(
     state.paymentDataResolution?.let {
         resolvePaymentForResult.launch(IntentSenderRequest.Builder(it).build())
     }
+
+    if (state.paymentResult != null) {
+        val toastNotice = viewModel.extractPaymentBillingName()
+            ?.let { stringResource(R.string.payments_show_name, it) }
+        val context = LocalContext.current
+
+        toastNotice.let {
+            LaunchedEffect(state.paymentResult) {
+                Toast.makeText(context, it, Toast.LENGTH_LONG).show()
+            }
+        }
+
         Column(
             modifier = Modifier
                 .testTag("successScreen")
@@ -107,6 +119,7 @@ fun ProductScreen(
             )
             Text(text = "The payment completed successfully.\nWe are preparing your order.")
         }
+
     } else {
         Column(
             modifier = Modifier

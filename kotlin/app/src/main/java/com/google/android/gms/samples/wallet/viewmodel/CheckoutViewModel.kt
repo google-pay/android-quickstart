@@ -53,7 +53,8 @@ class CheckoutViewModel(application: Application) : AndroidViewModel(application
         val googleWalletAvailable: Boolean? = false,
         val googlePayButtonClickable: Boolean = true,
         val googleWalletButtonClickable: Boolean = true,
-        val checkoutSuccess: Boolean = false,
+        val paymentResult: PaymentData? = null,
+        val paymentDataResolution: PendingIntent? = null,
     )
 
     private val _state = MutableStateFlow(State())
@@ -202,21 +203,15 @@ class CheckoutViewModel(application: Application) : AndroidViewModel(application
             }
     }
 
-    fun setGooglePayButtonClickable(clickable:Boolean) {
-        _state.update { currentState ->
-            currentState.copy(googlePayButtonClickable = clickable)
+    fun setPaymentDataResult(paymentData: PaymentData?) {
+        _state.update {
+            it.copy(paymentResult = paymentData)
         }
     }
 
     fun setGoogleWalletButtonClickable(clickable:Boolean) {
         _state.update { currentState ->
             currentState.copy(googleWalletButtonClickable = clickable)
-        }
-    }
-
-    fun checkoutSuccess() {
-        _state.update { currentState ->
-            currentState.copy(checkoutSuccess = true)
         }
     }
 
