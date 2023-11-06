@@ -60,7 +60,7 @@ dependencies {
 
     implementation("com.google.android.gms:play-services-wallet:19.2.1")
     implementation("com.google.android.gms:play-services-pay:16.3.0")
-    implementation("com.google.pay.button:compose-pay-button:0.1.0-beta03")
+    implementation("com.google.pay.button:compose-pay-button:0.1.1")
     implementation("com.google.wallet.button:compose-wallet-button:0.1.0-beta01")
 
     implementation("androidx.appcompat:appcompat:1.6.1")
