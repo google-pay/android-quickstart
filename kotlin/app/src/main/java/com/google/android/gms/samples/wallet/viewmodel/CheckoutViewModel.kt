@@ -93,37 +93,13 @@ class CheckoutViewModel(application: Application) : AndroidViewModel(application
     /**
      * Creates a [Task] that starts the payment process with the transaction details included.
      *
-     * @param priceCents the price to show on the payment sheet.
      * @return a [Task] with the payment information.
      * @see [](https://developers.google.com/android/reference/com/google/android/gms/wallet/PaymentsClient#loadPaymentData(com.google.android.gms.wallet.PaymentDataRequest)
     ) */
-    fun requestPayment() {
-
-        // Disable pay button
-        _state.update { it.copy(googlePayButtonClickable = false) }
-
-        // Create a payment request task using a dummy price
+    fun getLoadPaymentDataTask(): Task<PaymentData> {
         val paymentDataRequestJson = PaymentsUtil.getPaymentDataRequest(priceCemts = 100L)
         val request = PaymentDataRequest.fromJson(paymentDataRequestJson.toString())
-
-        viewModelScope.launch {
-            val task = paymentsClient.loadPaymentData(request)
-            try {
-                setPaymentDataResult(task.await())
-            } catch (rae: ResolvableApiException) {
-                _state.update { it.copy(paymentDataResolution = rae.resolution) }
-            } catch (ae: ApiException) {
-                handleError(ae.statusCode, ae.message)
-            } catch (e: Exception) {
-                handleError(
-                    CommonStatusCodes.INTERNAL_ERROR, "Unexpected non API" +
-                            " exception when trying to deliver the task result to an activity!"
-                )
-            }
-
-            // Re-enables the Google Pay payment button.
-            _state.update { it.copy(googlePayButtonClickable = true) }
-        }
+        return paymentsClient.loadPaymentData(request)
     }
 
     /**
@@ -139,7 +115,7 @@ class CheckoutViewModel(application: Application) : AndroidViewModel(application
         Log.e("Google Pay API error", "Error code: $statusCode, Message: $message")
     }
 
-    fun setPaymentDataResult(paymentData: PaymentData) {
+    fun setPaymentData(paymentData: PaymentData) {
         val payResult = extractPaymentBillingName(paymentData)?.let {
             PaymentResult(billingName = it)
         }

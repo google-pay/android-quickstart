@@ -25,10 +25,14 @@ import androidx.activity.viewModels
 import com.google.android.gms.samples.wallet.R
 import com.google.android.gms.samples.wallet.ui.ProductScreen
 import com.google.android.gms.samples.wallet.viewmodel.CheckoutViewModel
+import com.google.android.gms.wallet.AutoResolveHelper
+import com.google.android.gms.wallet.PaymentData
 
 class CheckoutActivity : ComponentActivity() {
 
     private val addToGoogleWalletRequestCode = 1000
+    private val googlePayRequestCode = 1001
+
     private val model: CheckoutViewModel by viewModels()
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -40,7 +44,11 @@ class CheckoutActivity : ComponentActivity() {
                 price = "$50.20",
                 image = R.drawable.ts_10_11019a,
                 viewModel = model,
-                googleWalletButtonOnClick = { requestSavePass() },
+                onGoogleWalletButtonOnClick = { requestSavePass() },
+                onGooglePayButtonClick = {
+                    AutoResolveHelper.resolveTask(
+                        model.getLoadPaymentDataTask(), this, googlePayRequestCode)
+                },
             )
         }
     }
@@ -54,6 +62,19 @@ class CheckoutActivity : ComponentActivity() {
     @Deprecated("Deprecated and in use by Google Pay")
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
+
+        if (requestCode == googlePayRequestCode) {
+            when (resultCode) {
+                RESULT_OK -> data?.let { intent ->
+                    PaymentData.getFromIntent(intent)?.let(model::setPaymentData)
+                }
+                /* Handle other result scenarios
+                 * Learn more at: https://developers.google.com/pay/api/android/support/troubleshooting
+                 */
+                else -> { // Other uncaught errors }
+                }
+            }
+        }
 
         if (requestCode == addToGoogleWalletRequestCode) {
             when (resultCode) {
