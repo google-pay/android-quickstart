@@ -40,7 +40,6 @@ class CheckoutActivity : ComponentActivity() {
                 price = "$50.20",
                 image = R.drawable.ts_10_11019a,
                 viewModel = model,
-                googlePayButtonOnClick = { model.requestPayment() },
                 googleWalletButtonOnClick = { requestSavePass() },
             )
         }

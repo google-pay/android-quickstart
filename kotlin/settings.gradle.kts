@@ -13,4 +13,4 @@ dependencyResolutionManagement {
     }
 }
 rootProject.name = "Google Pay sample application"
-include ':app'
+include(":app")

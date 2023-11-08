@@ -16,7 +16,6 @@
 
 package com.google.android.gms.samples.wallet.ui
 
-import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.ActivityResult
@@ -34,19 +33,17 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.google.android.gms.samples.wallet.R
 import com.google.android.gms.samples.wallet.util.PaymentsUtil
 import com.google.android.gms.samples.wallet.viewmodel.CheckoutViewModel
@@ -61,10 +58,9 @@ fun ProductScreen(
     price: String,
     image: Int,
     viewModel: CheckoutViewModel,
-    googlePayButtonOnClick: () -> Unit,
     googleWalletButtonOnClick: () -> Unit,
 ) {
-    val state by viewModel.state.collectAsState()
+    val state by viewModel.state.collectAsStateWithLifecycle()
     val padding = 20.dp
     val black = Color(0xff000000.toInt())
     val grey = Color(0xffeeeeee.toInt())
@@ -74,7 +70,7 @@ fun ProductScreen(
     ) { result: ActivityResult ->
         when (result.resultCode) {
             ComponentActivity.RESULT_OK -> result.data?.let { intent ->
-                viewModel.setPaymentDataResult(PaymentData.getFromIntent(intent))
+                PaymentData.getFromIntent(intent)?.let(viewModel::setPaymentDataResult)
             }
             /* Handle other result scenarios
              * Learn more at: https://developers.google.com/pay/api/android/support/troubleshooting
@@ -89,17 +85,8 @@ fun ProductScreen(
         resolvePaymentForResult.launch(IntentSenderRequest.Builder(it).build())
     }
 
-    if (state.paymentResult != null) {
-        val toastNotice = viewModel.extractPaymentBillingName()
-            ?.let { stringResource(R.string.payments_show_name, it) }
-        val context = LocalContext.current
-
-        toastNotice.let {
-            LaunchedEffect(state.paymentResult) {
-                Toast.makeText(context, it, Toast.LENGTH_LONG).show()
-            }
-        }
-
+    val payResult = state.paymentResult
+    if (payResult != null) {
         Column(
             modifier = Modifier
                 .testTag("successScreen")
@@ -117,7 +104,7 @@ fun ProductScreen(
                     .width(200.dp)
                     .height(200.dp)
             )
-            Text(text = "The payment completed successfully.\nWe are preparing your order.")
+            Text(text = "${payResult.billingName} completed the payment.\nWe are preparing your order.")
         }
 
     } else {
@@ -157,7 +144,7 @@ fun ProductScreen(
                     modifier = Modifier
                         .testTag("payButton")
                         .fillMaxWidth(),
-                    onClick = { if (state.googlePayButtonClickable) googlePayButtonOnClick() },
+                    onClick = { if (state.googlePayButtonClickable) viewModel.requestPayment() },
                     allowedPaymentMethods = PaymentsUtil.allowedPaymentMethods.toString()
                 )
             }

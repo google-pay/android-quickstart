@@ -45,12 +45,14 @@ import org.json.JSONObject
 
 class CheckoutViewModel(application: Application) : AndroidViewModel(application) {
 
+    data class PaymentResult(val billingName: String)
+
     data class State(
         val googlePayAvailable: Boolean? = false,
         val googleWalletAvailable: Boolean? = false,
         val googlePayButtonClickable: Boolean = true,
         val googleWalletButtonClickable: Boolean = true,
-        val paymentResult: PaymentData? = null,
+        val paymentResult: PaymentResult? = null,
         val paymentDataResolution: PendingIntent? = null,
     )
 
@@ -106,12 +108,8 @@ class CheckoutViewModel(application: Application) : AndroidViewModel(application
 
         viewModelScope.launch {
             val task = paymentsClient.loadPaymentData(request)
-
             try {
-                val paymentData = task.await()
-                _state.update {
-                    it.copy(paymentResult = paymentData)
-                }
+                setPaymentDataResult(task.await())
             } catch (rae: ResolvableApiException) {
                 _state.update { it.copy(paymentDataResolution = rae.resolution) }
             } catch (ae: ApiException) {
@@ -141,16 +139,14 @@ class CheckoutViewModel(application: Application) : AndroidViewModel(application
         Log.e("Google Pay API error", "Error code: $statusCode, Message: $message")
     }
 
-    /**
-     * PaymentData response object contains the payment information, as well as any additional
-     * requested information, such as billing and shipping address.
-     *
-     * @param paymentData A response object returned by Google after a payer approves payment.
-     * @see [Payment
-     * Data](https://developers.google.com/pay/api/android/reference/object.PaymentData)
-     */
-    fun extractPaymentBillingName(): String? {
-        return _state.value.paymentResult?.let { paymentData: PaymentData ->
+    fun setPaymentDataResult(paymentData: PaymentData) {
+        val payResult = extractPaymentBillingName(paymentData)?.let {
+            PaymentResult(billingName = it)
+        }
+        _state.update { it.copy(paymentResult = payResult, paymentDataResolution = null) }
+    }
+
+    private fun extractPaymentBillingName(paymentData: PaymentData): String? {
             val paymentInformation = paymentData.toJson()
 
             try {
@@ -175,7 +171,6 @@ class CheckoutViewModel(application: Application) : AndroidViewModel(application
 
             return null
         }
-    }
 
     /**
      * Determine whether the API to save passes to Google Pay is available on the device.
@@ -190,12 +185,6 @@ class CheckoutViewModel(application: Application) : AndroidViewModel(application
             }
         } catch (exception: ApiException) {
             handleError(exception.statusCode, exception.message)
-        }
-    }
-
-    fun setPaymentDataResult(paymentData: PaymentData?) {
-        _state.update {
-            it.copy(paymentResult = paymentData)
         }
     }
 
