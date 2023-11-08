@@ -16,11 +16,6 @@
 
 package com.google.android.gms.samples.wallet.ui
 
-import androidx.activity.ComponentActivity
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.ActivityResult
-import androidx.activity.result.IntentSenderRequest
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -33,7 +28,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -45,10 +39,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.google.android.gms.samples.wallet.R
-import com.google.android.gms.samples.wallet.util.PaymentsUtil
 import com.google.android.gms.samples.wallet.viewmodel.CheckoutViewModel
-import com.google.android.gms.wallet.PaymentData
-import com.google.pay.button.PayButton
 import com.google.wallet.button.WalletButton
 
 @Composable
@@ -65,28 +56,11 @@ fun ProductScreen(
     val black = Color(0xff000000.toInt())
     val grey = Color(0xffeeeeee.toInt())
 
-    val resolvePaymentForResult = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.StartIntentSenderForResult()
-    ) { result: ActivityResult ->
-        when (result.resultCode) {
-            ComponentActivity.RESULT_OK -> result.data?.let { intent ->
-                PaymentData.getFromIntent(intent)?.let(viewModel::setPaymentDataResult)
-            }
-            /* Handle other result scenarios
-             * Learn more at: https://developers.google.com/pay/api/android/support/troubleshooting
-             */
-            else -> { // Other uncaught errors }
-            }
-        }
-    }
+    // 4. Define an activity result contract to handle the resolution of the pay task
 
-    // Start the resolution of the task if needed
-    state.paymentDataResolution?.let {
-        resolvePaymentForResult.launch(IntentSenderRequest.Builder(it).build())
-    }
+    // 4. b Launch the resolution launcher if the exception of the payment is resolvable
 
-    val payResult = state.paymentResult
-    if (payResult != null) {
+    if (state.paymentResult) {
         Column(
             modifier = Modifier
                 .testTag("successScreen")
@@ -104,7 +78,7 @@ fun ProductScreen(
                     .width(200.dp)
                     .height(200.dp)
             )
-            Text(text = "${payResult.billingName} completed the payment.\nWe are preparing your order.")
+            Text(text = "Successfully completed the payment.\nWe are preparing your order.")
         }
 
     } else {
@@ -139,15 +113,7 @@ fun ProductScreen(
                 text = description,
                 color = black
             )
-            if (state.googlePayAvailable == true) {
-                PayButton(
-                    modifier = Modifier
-                        .testTag("payButton")
-                        .fillMaxWidth(),
-                    onClick = { if (state.googlePayButtonClickable) viewModel.requestPayment() },
-                    allowedPaymentMethods = PaymentsUtil.allowedPaymentMethods.toString()
-                )
-            }
+            // 3. Show the Google Pay button
             if (state.googleWalletAvailable == true) {
                 Spacer(Modifier)
                 Text(

@@ -18,22 +18,14 @@ package com.google.android.gms.samples.wallet.viewmodel
 
 import android.app.Activity
 import android.app.Application
-import android.app.PendingIntent
 import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.android.gms.common.api.ApiException
-import com.google.android.gms.common.api.CommonStatusCodes
-import com.google.android.gms.common.api.ResolvableApiException
 import com.google.android.gms.pay.Pay
 import com.google.android.gms.pay.PayApiAvailabilityStatus
 import com.google.android.gms.pay.PayClient
-import com.google.android.gms.samples.wallet.util.PaymentsUtil
-import com.google.android.gms.tasks.Task
-import com.google.android.gms.wallet.IsReadyToPayRequest
 import com.google.android.gms.wallet.PaymentData
-import com.google.android.gms.wallet.PaymentDataRequest
-import com.google.android.gms.wallet.PaymentsClient
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -45,86 +37,30 @@ import org.json.JSONObject
 
 class CheckoutViewModel(application: Application) : AndroidViewModel(application) {
 
-    data class PaymentResult(val billingName: String)
-
     data class State(
-        val googlePayAvailable: Boolean? = false,
         val googleWalletAvailable: Boolean? = false,
-        val googlePayButtonClickable: Boolean = true,
         val googleWalletButtonClickable: Boolean = true,
-        val paymentResult: PaymentResult? = null,
-        val paymentDataResolution: PendingIntent? = null,
+        val paymentResult: Boolean = false,
     )
 
     private val _state = MutableStateFlow(State())
     val state: StateFlow<State> = _state.asStateFlow()
 
-    // A client for interacting with the Google Pay API.
-    private val paymentsClient: PaymentsClient = PaymentsUtil.createPaymentsClient(application)
+    // 1. Create the client to manage Google Pay requests
 
     // A client to interact with the Google Wallet API
     private val walletClient: PayClient = Pay.getClient(application)
 
     init {
         viewModelScope.launch {
-            fetchCanUseGooglePay()
+            // 2. Define and call a method to determine whether Google Pay is available
             fetchCanAddPassesToGoogleWallet()
         }
     }
 
-    /**
-     * Determine the user's ability to pay with a payment method supported by your app and display
-     * a Google Pay payment button.
-    ) */
-    private suspend fun fetchCanUseGooglePay() {
-        val isReadyToPayJson = PaymentsUtil.isReadyToPayRequest()
-        val request = IsReadyToPayRequest.fromJson(isReadyToPayJson.toString())
-        val task = paymentsClient.isReadyToPay(request)
+    // 2.b Define the method to call `isReadyToPay` on the client
 
-        try {
-            _state.update { currentState ->
-                currentState.copy(googlePayAvailable = task.await())
-            }
-        } catch (exception: ApiException) {
-            handleError(exception.statusCode, exception.message)
-        }
-    }
-
-    /**
-     * Creates a [Task] that starts the payment process with the transaction details included.
-     *
-     * @param priceCents the price to show on the payment sheet.
-     * @return a [Task] with the payment information.
-     * @see [](https://developers.google.com/android/reference/com/google/android/gms/wallet/PaymentsClient#loadPaymentData(com.google.android.gms.wallet.PaymentDataRequest)
-    ) */
-    fun requestPayment() {
-
-        // Disable pay button
-        _state.update { it.copy(googlePayButtonClickable = false) }
-
-        // Create a payment request task using a dummy price
-        val paymentDataRequestJson = PaymentsUtil.getPaymentDataRequest(priceCemts = 100L)
-        val request = PaymentDataRequest.fromJson(paymentDataRequestJson.toString())
-
-        viewModelScope.launch {
-            val task = paymentsClient.loadPaymentData(request)
-            try {
-                setPaymentDataResult(task.await())
-            } catch (rae: ResolvableApiException) {
-                _state.update { it.copy(paymentDataResolution = rae.resolution) }
-            } catch (ae: ApiException) {
-                handleError(ae.statusCode, ae.message)
-            } catch (e: Exception) {
-                handleError(
-                    CommonStatusCodes.INTERNAL_ERROR, "Unexpected non API" +
-                            " exception when trying to deliver the task result to an activity!"
-                )
-            }
-
-            // Re-enables the Google Pay payment button.
-            _state.update { it.copy(googlePayButtonClickable = true) }
-        }
-    }
+    // 3.b Define a method to initiate the payment operation
 
     /**
      * At this stage, the user has already seen a popup informing them an error occurred. Normally,
@@ -137,13 +73,6 @@ class CheckoutViewModel(application: Application) : AndroidViewModel(application
      */
     private fun handleError(statusCode: Int, message: String?) {
         Log.e("Google Pay API error", "Error code: $statusCode, Message: $message")
-    }
-
-    fun setPaymentDataResult(paymentData: PaymentData) {
-        val payResult = extractPaymentBillingName(paymentData)?.let {
-            PaymentResult(billingName = it)
-        }
-        _state.update { it.copy(paymentResult = payResult, paymentDataResolution = null) }
     }
 
     private fun extractPaymentBillingName(paymentData: PaymentData): String? {
