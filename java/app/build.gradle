@@ -4,13 +4,10 @@ plugins {
 
 android {
     namespace "com.google.android.gms.samples.wallet"
-    compileSdkVersion 33
+    compileSdk 34
 
     defaultConfig {
         applicationId "com.google.android.gms.samples.wallet"
-
-        /* Google Payment API is not supported in SDK versions lower than 19. This example requires
-        this version due to use of newer constructs like Optional. */
         minSdk 21
         targetSdk 33
         versionCode 1
@@ -40,8 +37,8 @@ android {
 dependencies {
     implementation "androidx.appcompat:appcompat:1.6.1"
     implementation "androidx.lifecycle:lifecycle-viewmodel:2.5.1"
-    implementation "com.google.android.gms:play-services-pay:16.1.0"
-    implementation "com.google.android.gms:play-services-wallet:19.2.0-beta01"
+    implementation "com.google.android.gms:play-services-pay:16.3.0"
+    implementation "com.google.android.gms:play-services-wallet:19.2.1"
 
     androidTestImplementation "androidx.test.espresso:espresso-core:3.5.1"
     androidTestImplementation "androidx.test:runner:1.5.2"
