@@ -58,7 +58,7 @@ class CheckoutActivity : ComponentActivity() {
         if (requestCode == addToGoogleWalletRequestCode) {
             when (resultCode) {
                 RESULT_OK -> Toast.makeText(
-                        this, getString(R.string.add_google_wallet_success), Toast.LENGTH_LONG
+                        this, "The pass was successfully added!", Toast.LENGTH_LONG
                     ).show()
 
                 /* Handle other result scenarios
