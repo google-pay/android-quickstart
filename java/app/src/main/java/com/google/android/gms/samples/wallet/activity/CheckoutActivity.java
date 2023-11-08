@@ -34,13 +34,16 @@ import androidx.lifecycle.ViewModelProvider;
 import com.google.android.gms.common.api.ApiException;
 import com.google.android.gms.common.api.CommonStatusCodes;
 import com.google.android.gms.common.api.ResolvableApiException;
+import com.google.android.gms.common.api.Status;
 import com.google.android.gms.pay.PayClient;
 import com.google.android.gms.samples.wallet.R;
 import com.google.android.gms.samples.wallet.databinding.ActivityCheckoutBinding;
 import com.google.android.gms.samples.wallet.util.PaymentsUtil;
 import com.google.android.gms.samples.wallet.viewmodel.CheckoutViewModel;
 import com.google.android.gms.tasks.Task;
+import com.google.android.gms.wallet.AutoResolveHelper;
 import com.google.android.gms.wallet.PaymentData;
+import com.google.android.gms.wallet.WalletConstants;
 import com.google.android.gms.wallet.button.ButtonOptions;
 import com.google.android.gms.wallet.button.PayButton;
 
@@ -256,6 +259,29 @@ public class CheckoutActivity extends AppCompatActivity {
           Toast
               .makeText(this, getString(R.string.add_google_wallet_success), Toast.LENGTH_LONG)
               .show();
+          break;
+        }
+
+        case WalletConstants.RESULT_ERROR: {
+          Status status = AutoResolveHelper.getStatusFromIntent(data);
+          /**
+           * Use the information in the intent to react to the error appropriately.
+           * Learn more at: https://developers.google.com/pay/api/android/support/troubleshooting
+           * For example:
+           * if (status != null) {
+           *   switch (status.getStatusCode()) {
+           *     case WalletConstants.ERROR_CODE_DEVELOPER_ERROR: {
+           *       // Handle DEVELOPER_ERROR. Not expected on production. Consider
+           *       // informing the user and reporting the issue to your error services.
+           *       return;
+           *     }
+           *   }
+           * }
+           *
+           * // Transient or internal error. Inspect the message and report the issue
+           * // to your error reporting or telemetry services. Inform the user and
+           * // provide an alternative payment method.
+           */
           break;
         }
 
