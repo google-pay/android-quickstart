@@ -18,58 +18,57 @@ package com.google.android.gms.samples.wallet.activity
 
 import android.content.Intent
 import android.os.Bundle
-import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import com.google.android.gms.samples.wallet.viewmodel.CheckoutViewModel
 import com.google.android.gms.samples.wallet.R
 import com.google.android.gms.samples.wallet.ui.ProductScreen
+import androidx.compose.runtime.getValue
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.google.android.gms.samples.wallet.viewmodel.PaymentUiState
+import com.google.android.gms.wallet.AutoResolveHelper
+import com.google.android.gms.wallet.PaymentData
 
 class CheckoutActivity : ComponentActivity() {
 
-    private val addToGoogleWalletRequestCode = 1000
+    private val googlePayRequestCode = 1001
+
     private val model: CheckoutViewModel by viewModels()
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         setContent {
+            val payState: PaymentUiState by model.paymentUiState.collectAsStateWithLifecycle()
             ProductScreen(
                 title = "Men's Tech Shell Full-Zip",
                 description = "A versatile full-zip that you can wear all day long and even...",
                 price = "$50.20",
                 image = R.drawable.ts_10_11019a,
-                viewModel = model,
-                googleWalletButtonOnClick = { requestSavePass() },
+                payUiState = payState,
+                onGooglePayButtonClick = {
+                    AutoResolveHelper.resolveTask(
+                        model.getLoadPaymentDataTask(), this, googlePayRequestCode)
+                },
             )
         }
-    }
-
-    private fun requestSavePass() {
-        // Disables the button to prevent multiple clicks.
-        model.setGoogleWalletButtonClickable(false)
-        model.savePassesJwt(model.genericObjectJwt, this, addToGoogleWalletRequestCode)
     }
 
     @Deprecated("Deprecated and in use by Google Pay")
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
 
-        if (requestCode == addToGoogleWalletRequestCode) {
+        if (requestCode == googlePayRequestCode) {
             when (resultCode) {
-                RESULT_OK -> Toast.makeText(
-                        this, "The pass was successfully added!", Toast.LENGTH_LONG
-                    ).show()
-
+                RESULT_OK -> data?.let { intent ->
+                    PaymentData.getFromIntent(intent)?.let(model::setPaymentData)
+                }
                 /* Handle other result scenarios
-                 * Learn more at: https://developers.google.com/wallet/generic/android#5_add_the_object_to
+                 * Learn more at: https://developers.google.com/pay/api/android/support/troubleshooting
                  */
                 else -> { // Other uncaught errors }
                 }
             }
-
-            // Re-enables the Google Pay payment button.
-            model.setGoogleWalletButtonClickable(true)
         }
     }
 }

@@ -16,45 +16,29 @@
 
 package com.google.android.gms.samples.wallet.viewmodel
 
-import android.app.Activity
 import android.app.Application
+import android.app.PendingIntent
 import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
-import com.google.android.gms.common.api.ApiException
-import com.google.android.gms.pay.Pay
-import com.google.android.gms.pay.PayApiAvailabilityStatus
-import com.google.android.gms.pay.PayClient
 import com.google.android.gms.wallet.PaymentData
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.tasks.await
 import org.json.JSONException
 import org.json.JSONObject
 
 class CheckoutViewModel(application: Application) : AndroidViewModel(application) {
 
-    data class State(
-        val googleWalletAvailable: Boolean? = false,
-        val googleWalletButtonClickable: Boolean = true,
-        val paymentResult: Boolean = false,
-    )
-
-    private val _state = MutableStateFlow(State())
-    val state: StateFlow<State> = _state.asStateFlow()
+    private val _paymentUiState: MutableStateFlow<PaymentUiState> = MutableStateFlow(PaymentUiState.NotStarted)
+    val paymentUiState: StateFlow<PaymentUiState> = _paymentUiState.asStateFlow()
 
     // 1. Create the client to manage Google Pay requests
-
-    // A client to interact with the Google Wallet API
-    private val walletClient: PayClient = Pay.getClient(application)
 
     init {
         viewModelScope.launch {
             // 2. Define and call a method to determine whether Google Pay is available
-            fetchCanAddPassesToGoogleWallet()
         }
     }
 
@@ -100,40 +84,14 @@ class CheckoutViewModel(application: Application) : AndroidViewModel(application
 
             return null
         }
-
-    /**
-     * Determine whether the API to save passes to Google Pay is available on the device.
-     */
-    private suspend fun fetchCanAddPassesToGoogleWallet() {
-        val status = walletClient
-            .getPayApiAvailabilityStatus(PayClient.RequestType.SAVE_PASSES).await()
-
-        try {
-            _state.update { currentState ->
-                currentState.copy(googleWalletAvailable = status == PayApiAvailabilityStatus.AVAILABLE)
-            }
-        } catch (exception: ApiException) {
-            handleError(exception.statusCode, exception.message)
-        }
-    }
-
-    fun setGoogleWalletButtonClickable(clickable: Boolean) {
-        _state.update { currentState ->
-            currentState.copy(googleWalletButtonClickable = clickable)
-        }
-    }
-
-    /**
-     * Exposes the `savePassesJwt` method in the wallet client
-     */
-    val savePassesJwt: (String, Activity, Int) -> Unit = walletClient::savePassesJwt
-
-    /**
-     * Exposes the `savePasses` method in the wallet client
-     */
-    val savePasses: (String, Activity, Int) -> Unit = walletClient::savePasses
-
-    // Test generic object used to be created against the API
-    // See https://developers.google.com/wallet/tickets/boarding-passes/web#json_web_token_jwt for more details
-    val genericObjectJwt = "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJhdWQiOiJnb29nbGUiLCJwYXlsb2FkIjp7ImdlbmVyaWNPYmplY3RzIjpbeyJpZCI6IjMzODgwMDAwMDAwMjIwOTUxNzcuZjUyZDRhZjYtMjQxMS00ZDU5LWFlNDktNzg2ZDY3N2FkOTJiIn1dfSwiaXNzIjoid2FsbGV0LWxhYi10b29sc0BhcHBzcG90LmdzZXJ2aWNlYWNjb3VudC5jb20iLCJ0eXAiOiJzYXZldG93YWxsZXQiLCJpYXQiOjE2NTA1MzI2MjN9.ZURFHaSiVe3DfgXghYKBrkPhnQy21wMR9vNp84azBSjJxENxbRBjqh3F1D9agKLOhrrflNtIicShLkH4LrFOYdnP6bvHm6IMFjqpUur0JK17ZQ3KUwQpejCgzuH4u7VJOP_LcBEnRtzZm0PyIvL3j5-eMRyRAo5Z3thGOsKjqCPotCAk4Z622XHPq5iMNVTvcQJaBVhmpmjRLGJs7qRp87sLIpYOYOkK8BD7OxLmBw9geqDJX-Y1zwxmQbzNjd9z2fuwXX66zMm7pn6GAEBmJiqollFBussu-QFEopml51_5nf4JQgSdXmlfPrVrwa6zjksctIXmJSiVpxL7awKN2w"
 }
+
+sealed interface PaymentUiState {
+    object NotStarted : PaymentUiState
+    object Available : PaymentUiState
+    data class PaymentCompleted(val paymentData: PaymentResult) : PaymentUiState
+    data class ResolvableError(val resolution: PendingIntent) : PaymentUiState
+    data class Error(val code: Int, val message: String? = null) : PaymentUiState
+}
+
+data class PaymentResult(val billingName: String)

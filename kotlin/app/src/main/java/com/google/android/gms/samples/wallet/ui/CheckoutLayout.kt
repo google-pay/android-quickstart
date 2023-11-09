@@ -28,19 +28,19 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.google.android.gms.samples.wallet.R
-import com.google.android.gms.samples.wallet.viewmodel.CheckoutViewModel
-import com.google.wallet.button.WalletButton
+import com.google.android.gms.samples.wallet.util.PaymentsUtil
+import com.google.android.gms.samples.wallet.viewmodel.PaymentUiState
+import com.google.pay.button.PayButton
 
 @Composable
 fun ProductScreen(
@@ -48,10 +48,9 @@ fun ProductScreen(
     description: String,
     price: String,
     image: Int,
-    viewModel: CheckoutViewModel,
-    googleWalletButtonOnClick: () -> Unit,
+    onGooglePayButtonClick: () -> Unit,
+    payUiState: PaymentUiState = PaymentUiState.NotStarted,
 ) {
-    val state by viewModel.state.collectAsStateWithLifecycle()
     val padding = 20.dp
     val black = Color(0xff000000.toInt())
     val grey = Color(0xffeeeeee.toInt())
@@ -60,7 +59,7 @@ fun ProductScreen(
 
     // 4. b Launch the resolution launcher if the exception of the payment is resolvable
 
-    if (state.paymentResult) {
+    if (payUiState is PaymentUiState.PaymentCompleted) {
         Column(
             modifier = Modifier
                 .testTag("successScreen")
@@ -79,6 +78,12 @@ fun ProductScreen(
                     .height(200.dp)
             )
             Text(text = "Successfully completed the payment.\nWe are preparing your order.")
+            Spacer(modifier = Modifier.height(10.dp))
+            Text(
+                text = "${payUiState.paymentData.billingName} completed the payment.\nWe are preparing your order.",
+                fontSize = 17.sp,
+                color = Color.DarkGray,
+                textAlign = TextAlign.Center)
         }
 
     } else {
@@ -113,16 +118,13 @@ fun ProductScreen(
                 text = description,
                 color = black
             )
-            // 3. Show the Google Pay button
-            if (state.googleWalletAvailable == true) {
-                Spacer(Modifier)
-                Text(
-                    text = "Or add a pass to your Google Wallet:",
-                    color = black
-                )
-                WalletButton(
-                    modifier = Modifier.fillMaxWidth(),
-                    onClick = { if (state.googleWalletButtonClickable) googleWalletButtonOnClick() },
+            if (payUiState is PaymentUiState.Available) {
+                PayButton(
+                    modifier = Modifier
+                        .testTag("payButton")
+                        .fillMaxWidth(),
+                    onClick = onGooglePayButtonClick,
+                    allowedPaymentMethods = PaymentsUtil.allowedPaymentMethods.toString()
                 )
             }
         }
