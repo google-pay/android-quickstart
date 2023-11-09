@@ -58,7 +58,7 @@ class CheckoutViewModel(application: Application) : AndroidViewModel(application
     private fun handleError(statusCode: Int, message: String?) {
         Log.e("Google Pay API error", "Error code: $statusCode, Message: $message")
     }
-    
+
     // 4.c Define a method that receives a payment data object
 
     private fun extractPaymentBillingName(paymentData: PaymentData): String? {
