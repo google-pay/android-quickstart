@@ -43,7 +43,7 @@ class CheckoutActivity : ComponentActivity() {
                 image = R.drawable.ts_10_11019a,
                 payUiState = payState,
                 onGooglePayButtonClick = {
-                    // 4. Launch the AutoResolver to issue the payment facilitation
+                    // 5. Launch the AutoResolver to issue the payment facilitation
                 },
             )
         }
@@ -55,6 +55,6 @@ class CheckoutActivity : ComponentActivity() {
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
 
-        // 4.b Parse the result through onActivityResult
+        // 5.b Parse the result through onActivityResult
     }
 }

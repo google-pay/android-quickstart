@@ -55,10 +55,6 @@ fun ProductScreen(
     val black = Color(0xff000000.toInt())
     val grey = Color(0xffeeeeee.toInt())
 
-    // 4. Define an activity result contract to handle the resolution of the pay task
-
-    // 4. b Launch the resolution launcher if the exception of the payment is resolvable
-
     if (payUiState is PaymentUiState.PaymentCompleted) {
         Column(
             modifier = Modifier
@@ -77,7 +73,6 @@ fun ProductScreen(
                     .width(200.dp)
                     .height(200.dp)
             )
-            Text(text = "Successfully completed the payment.\nWe are preparing your order.")
             Spacer(modifier = Modifier.height(10.dp))
             Text(
                 text = "${payUiState.paymentData.billingName} completed the payment.\nWe are preparing your order.",
