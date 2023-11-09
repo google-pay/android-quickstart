@@ -118,15 +118,7 @@ fun ProductScreen(
                 text = description,
                 color = black
             )
-            if (payUiState is PaymentUiState.Available) {
-                PayButton(
-                    modifier = Modifier
-                        .testTag("payButton")
-                        .fillMaxWidth(),
-                    onClick = onGooglePayButtonClick,
-                    allowedPaymentMethods = PaymentsUtil.allowedPaymentMethods.toString()
-                )
-            }
+            // 4. Show the Google Pay button
         }
     }
 }

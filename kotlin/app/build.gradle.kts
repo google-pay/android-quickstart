@@ -58,7 +58,7 @@ android {
 dependencies {
     val lifecycleVersion = "2.6.2"
 
-    implementation("com.google.android.gms:play-services-wallet:19.2.1")
+    // 0. Add play-services-wallet to the list of dependencies
     implementation("com.google.pay.button:compose-pay-button:0.1.1")
 
     implementation("androidx.appcompat:appcompat:1.6.1")

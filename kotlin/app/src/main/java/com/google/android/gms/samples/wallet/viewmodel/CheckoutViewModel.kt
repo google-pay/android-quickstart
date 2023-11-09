@@ -44,7 +44,7 @@ class CheckoutViewModel(application: Application) : AndroidViewModel(application
 
     // 2.b Define the method to call `isReadyToPay` on the client
 
-    // 3.b Define a method to initiate the payment operation
+    // 4.0 Define a method that retrieves the loadPaymentData task
 
     /**
      * At this stage, the user has already seen a popup informing them an error occurred. Normally,
@@ -58,6 +58,8 @@ class CheckoutViewModel(application: Application) : AndroidViewModel(application
     private fun handleError(statusCode: Int, message: String?) {
         Log.e("Google Pay API error", "Error code: $statusCode, Message: $message")
     }
+    
+    // 4.c Define a method that receives a payment data object
 
     private fun extractPaymentBillingName(paymentData: PaymentData): String? {
             val paymentInformation = paymentData.toJson()
@@ -86,11 +88,11 @@ class CheckoutViewModel(application: Application) : AndroidViewModel(application
         }
 }
 
+// 3. Review the payment result class
 sealed interface PaymentUiState {
     object NotStarted : PaymentUiState
     object Available : PaymentUiState
     data class PaymentCompleted(val paymentData: PaymentResult) : PaymentUiState
-    data class ResolvableError(val resolution: PendingIntent) : PaymentUiState
     data class Error(val code: Int, val message: String? = null) : PaymentUiState
 }
 
