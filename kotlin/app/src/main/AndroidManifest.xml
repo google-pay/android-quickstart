@@ -8,7 +8,7 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true">
         <activity
-            android:name=".activity.CheckoutActivity"
+            android:name="com.google.android.gms.samples.pay.activity.CheckoutActivity"
             android:label="@string/store_name"
             android:screenOrientation="portrait"
             android:theme="@style/Theme.AppCompat"

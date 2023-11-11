@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.google.android.gms.samples.wallet
+package com.google.android.gms.samples.pay
 
 import com.google.android.gms.wallet.WalletConstants
 

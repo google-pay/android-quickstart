@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-package com.google.android.gms.samples.wallet.util;
+package com.google.android.gms.samples.pay.util;
 
 import android.content.Context;
 
-import com.google.android.gms.samples.wallet.Constants;
+import com.google.android.gms.samples.pay.Constants;
 import com.google.android.gms.wallet.PaymentsClient;
 import com.google.android.gms.wallet.Wallet;
 

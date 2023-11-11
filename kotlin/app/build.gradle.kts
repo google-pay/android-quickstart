@@ -4,11 +4,11 @@ plugins {
 }
 
 android {
-    namespace = "com.google.android.gms.samples.wallet"
+    namespace = "com.google.android.gms.samples.pay"
     compileSdk = 34
 
     defaultConfig {
-        applicationId = "com.google.android.gms.samples.wallet"
+        applicationId = "com.google.android.gms.samples.pay"
         minSdk = 21
         targetSdk = 34
         versionCode = 1

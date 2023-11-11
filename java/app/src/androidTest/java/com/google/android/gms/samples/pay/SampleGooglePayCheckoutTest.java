@@ -1,4 +1,4 @@
-package com.google.android.gms.samples.wallet;
+package com.google.android.gms.samples.pay;
 
 
 import static androidx.test.espresso.Espresso.onView;
@@ -15,7 +15,7 @@ import androidx.test.uiautomator.UiObjectNotFoundException;
 import androidx.test.uiautomator.UiScrollable;
 import androidx.test.uiautomator.UiSelector;
 
-import com.google.android.gms.samples.wallet.activity.CheckoutActivity;
+import com.google.android.gms.samples.pay.activity.CheckoutActivity;
 
 import org.junit.Before;
 import org.junit.Rule;

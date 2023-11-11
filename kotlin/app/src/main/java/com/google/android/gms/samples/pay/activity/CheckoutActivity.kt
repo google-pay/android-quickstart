@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.google.android.gms.samples.wallet.activity
+package com.google.android.gms.samples.pay.activity
 
 import android.content.Intent
 import android.os.Bundle
@@ -23,10 +23,10 @@ import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.compose.runtime.getValue
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.google.android.gms.samples.wallet.R
-import com.google.android.gms.samples.wallet.ui.ProductScreen
-import com.google.android.gms.samples.wallet.viewmodel.CheckoutViewModel
-import com.google.android.gms.samples.wallet.viewmodel.PaymentUiState
+import com.google.android.gms.samples.pay.R
+import com.google.android.gms.samples.pay.ui.ProductScreen
+import com.google.android.gms.samples.pay.viewmodel.CheckoutViewModel
+import com.google.android.gms.samples.pay.viewmodel.PaymentUiState
 import com.google.android.gms.wallet.AutoResolveHelper
 import com.google.android.gms.wallet.PaymentData
 

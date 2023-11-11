@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.google.android.gms.samples.wallet.viewmodel;
+package com.google.android.gms.samples.pay.viewmodel;
 
 import android.app.Application;
 import android.util.Log;
@@ -24,7 +24,7 @@ import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
-import com.google.android.gms.samples.wallet.util.PaymentsUtil;
+import com.google.android.gms.samples.pay.util.PaymentsUtil;
 import com.google.android.gms.tasks.Task;
 import com.google.android.gms.wallet.IsReadyToPayRequest;
 import com.google.android.gms.wallet.PaymentData;

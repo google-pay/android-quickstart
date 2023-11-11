@@ -14,13 +14,13 @@
  * limitations under the License.
  */
 
-package com.google.android.gms.samples.wallet.activity;
+package com.google.android.gms.samples.pay.activity;
 
 import android.os.Bundle;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.google.android.gms.samples.wallet.databinding.ActivityCheckoutSuccessBinding;
+import com.google.android.gms.samples.pay.databinding.ActivityCheckoutSuccessBinding;
 
 public class CheckoutSuccessActivity extends AppCompatActivity {
 

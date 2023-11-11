@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.google.android.gms.samples.wallet.ui
+package com.google.android.gms.samples.pay.ui
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -37,9 +37,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.google.android.gms.samples.wallet.R
-import com.google.android.gms.samples.wallet.util.PaymentsUtil
-import com.google.android.gms.samples.wallet.viewmodel.PaymentUiState
+import com.google.android.gms.samples.pay.R
+import com.google.android.gms.samples.pay.util.PaymentsUtil
+import com.google.android.gms.samples.pay.viewmodel.PaymentUiState
 import com.google.pay.button.PayButton
 
 @Composable
