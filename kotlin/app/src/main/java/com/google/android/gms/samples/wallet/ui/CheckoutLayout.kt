@@ -75,7 +75,7 @@ fun ProductScreen(
             )
             Spacer(modifier = Modifier.height(10.dp))
             Text(
-                text = "${payUiState.paymentData.billingName} completed the payment.\nWe are preparing your order.",
+                text = "${payUiState.payerName} completed a payment.\nWe are preparing your order.",
                 fontSize = 17.sp,
                 color = Color.DarkGray,
                 textAlign = TextAlign.Center)

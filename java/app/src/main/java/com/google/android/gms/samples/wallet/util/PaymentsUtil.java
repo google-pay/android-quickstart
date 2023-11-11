@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Google Inc.
+ * Copyright 2023 Google Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -184,7 +184,7 @@ public class PaymentsUtil {
   /**
    * Return a collection of payment methods allowed to complete the operation with Google Pay.
    * @return A JSONArray object with the list of payment methods.
-   * @throws JSONException
+   * @throws JSONException if the JSON object is malfored.
    */
   public static JSONArray getAllowedPaymentMethods() throws JSONException {
     return new JSONArray() {{

@@ -134,7 +134,7 @@ object PaymentsUtil {
         return cardPaymentMethod
     }
 
-    val allowedPaymentMethods = JSONArray().put(cardPaymentMethod())
+    val allowedPaymentMethods: JSONArray = JSONArray().put(cardPaymentMethod())
 
     /**
      * An object describing accepted forms of payment by your app, used to determine a viewer's

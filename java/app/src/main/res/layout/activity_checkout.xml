@@ -77,29 +77,6 @@
             android:layout_height="wrap_content"
             android:layout_marginBottom="20dp"/>
 
-        <LinearLayout
-            android:id="@+id/passContainer"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:layout_marginBottom="20dp"
-            android:visibility="gone">
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textColor="?android:textColorSecondary"
-                android:text="Or add a pass to your Google Wallet:"/>
-
-            <include
-                android:id="@+id/addToGoogleWalletButton"
-                layout="@layout/add_to_google_wallet_button"
-                android:layout_width="match_parent"
-                android:layout_height="@dimen/wallet_button_height"
-                android:layout_marginTop="10dp"/>
-
-        </LinearLayout>
-
     </LinearLayout>
 
 </ScrollView>

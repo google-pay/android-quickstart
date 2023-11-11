@@ -17,7 +17,6 @@
 package com.google.android.gms.samples.wallet.viewmodel
 
 import android.app.Application
-import android.app.PendingIntent
 import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
@@ -78,7 +77,7 @@ class CheckoutViewModel(application: Application) : AndroidViewModel(application
      * Creates a [Task] that starts the payment process with the transaction details included.
      *
      * @return a [Task] with the payment information.
-     * @see [](https://developers.google.com/android/reference/com/google/android/gms/wallet/PaymentsClient#loadPaymentData(com.google.android.gms.wallet.PaymentDataRequest)
+     * @see [PaymentDataRequest](https://developers.google.com/android/reference/com/google/android/gms/wallet/PaymentsClient#loadPaymentData(com.google.android.gms.wallet.PaymentDataRequest)
     ) */
     fun getLoadPaymentDataTask(): Task<PaymentData> {
         val paymentDataRequestJson = PaymentsUtil.getPaymentDataRequest(priceCemts = 100L)
@@ -101,7 +100,7 @@ class CheckoutViewModel(application: Application) : AndroidViewModel(application
 
     fun setPaymentData(paymentData: PaymentData) {
         val payState = extractPaymentBillingName(paymentData)?.let {
-            PaymentUiState.PaymentCompleted(PaymentResult(billingName = it))
+            PaymentUiState.PaymentCompleted(payerName = it)
         } ?: PaymentUiState.Error(CommonStatusCodes.INTERNAL_ERROR)
 
         _paymentUiState.update { payState }
@@ -134,12 +133,9 @@ class CheckoutViewModel(application: Application) : AndroidViewModel(application
         }
 }
 
-sealed interface PaymentUiState {
-    object NotStarted : PaymentUiState
-    object Available : PaymentUiState
-    data class PaymentCompleted(val paymentData: PaymentResult) : PaymentUiState
-    data class ResolvableError(val resolution: PendingIntent) : PaymentUiState
-    data class Error(val code: Int, val message: String? = null) : PaymentUiState
+abstract class PaymentUiState internal constructor(){
+    object NotStarted : PaymentUiState()
+    object Available : PaymentUiState()
+    class PaymentCompleted(val payerName: String) : PaymentUiState()
+    class Error(val code: Int, val message: String? = null) : PaymentUiState()
 }
-
-data class PaymentResult(val billingName: String)

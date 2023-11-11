@@ -12,5 +12,5 @@ dependencyResolutionManagement {
         mavenCentral()
     }
 }
-rootProject.name = "Google Pay sample application"
+rootProject.name = "Google Pay sample application (Kotlin)"
 include(":app")
