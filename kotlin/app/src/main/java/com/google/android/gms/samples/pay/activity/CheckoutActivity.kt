@@ -46,29 +46,8 @@ class CheckoutActivity : ComponentActivity() {
                 price = "$50.20",
                 image = R.drawable.ts_10_11019a,
                 payUiState = payState,
-                onGooglePayButtonClick = {
-                    AutoResolveHelper.resolveTask(
-                        model.getLoadPaymentDataTask(), this, googlePayRequestCode)
-                },
+                onGooglePayButtonClick = { model.loadPaymentData() },
             )
-        }
-    }
-
-    @Deprecated("Deprecated and in use by Google Pay")
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-
-        if (requestCode == googlePayRequestCode) {
-            when (resultCode) {
-                RESULT_OK -> data?.let { intent ->
-                    PaymentData.getFromIntent(intent)?.let(model::setPaymentData)
-                }
-                /* Handle other result scenarios
-                 * Learn more at: https://developers.google.com/pay/api/android/support/troubleshooting
-                 */
-                else -> { // Other uncaught errors }
-                }
-            }
         }
     }
 }

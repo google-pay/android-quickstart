@@ -22,6 +22,7 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.android.gms.common.api.ApiException
 import com.google.android.gms.common.api.CommonStatusCodes
+import com.google.android.gms.common.api.ResolvableApiException
 import com.google.android.gms.samples.pay.util.PaymentsUtil
 import com.google.android.gms.tasks.Task
 import com.google.android.gms.wallet.IsReadyToPayRequest
@@ -79,10 +80,25 @@ class CheckoutViewModel(application: Application) : AndroidViewModel(application
      * @return a [Task] with the payment information.
      * @see [PaymentDataRequest](https://developers.google.com/android/reference/com/google/android/gms/wallet/PaymentsClient#loadPaymentData(com.google.android.gms.wallet.PaymentDataRequest)
     ) */
-    fun getLoadPaymentDataTask(): Task<PaymentData> {
-        val paymentDataRequestJson = PaymentsUtil.getPaymentDataRequest(priceCemts = 100L)
+    fun loadPaymentData() {
+        val paymentDataRequestJson = PaymentsUtil.getPaymentDataRequest(priceCents = 100L)
         val request = PaymentDataRequest.fromJson(paymentDataRequestJson.toString())
-        return paymentsClient.loadPaymentData(request)
+
+        viewModelScope.launch {
+            val paymentDataTask = paymentsClient.loadPaymentData(request)
+            val newUiState: PaymentUiState = try {
+                val result = paymentDataTask.await()
+                PaymentUiState.PaymentCompleted(extractPaymentBillingName(result)!!)
+            } catch (e: Exception) {
+                when (e) {
+                    is ResolvableApiException -> PaymentUiState.ResolutionNeeded(paymentDataTask)
+                    is ApiException -> PaymentUiState.Error(e.statusCode, e.status.statusMessage)
+                    else -> throw e
+                }
+            }
+
+            _paymentUiState.update { newUiState }
+        }
     }
 
     /**
@@ -136,6 +152,7 @@ class CheckoutViewModel(application: Application) : AndroidViewModel(application
 abstract class PaymentUiState internal constructor(){
     object NotStarted : PaymentUiState()
     object Available : PaymentUiState()
+    class ResolutionNeeded(val pendingTask: Task<PaymentData>) : PaymentUiState()
     class PaymentCompleted(val payerName: String) : PaymentUiState()
     class Error(val code: Int, val message: String? = null) : PaymentUiState()
 }

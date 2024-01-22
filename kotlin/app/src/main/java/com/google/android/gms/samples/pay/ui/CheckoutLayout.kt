@@ -16,6 +16,8 @@
 
 package com.google.android.gms.samples.pay.ui
 
+import android.util.Log
+import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -37,9 +39,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.google.android.gms.common.api.CommonStatusCodes
 import com.google.android.gms.samples.pay.R
 import com.google.android.gms.samples.pay.util.PaymentsUtil
 import com.google.android.gms.samples.pay.viewmodel.PaymentUiState
+import com.google.android.gms.wallet.contract.TaskResultContracts.GetPaymentDataResult
 import com.google.pay.button.PayButton
 
 @Composable
@@ -54,6 +58,19 @@ fun ProductScreen(
     val padding = 20.dp
     val black = Color(0xff000000.toInt())
     val grey = Color(0xffeeeeee.toInt())
+
+    val paymentDataLauncher = rememberLauncherForActivityResult(contract = GetPaymentDataResult()) {
+        when (it.status.statusCode) {
+            CommonStatusCodes.SUCCESS -> Log.i("Google Pay result:", it.result.toString())
+            //CommonStatusCodes.CANCELED -> The user canceled
+            //AutoResolveHelper.RESULT_ERROR -> The API returned an error (it.status: Status)
+            //CommonStatusCodes.INTERNAL_ERROR -> Handle other unexpected errors
+        }
+    }
+
+    if (payUiState is PaymentUiState.ResolutionNeeded) {
+        paymentDataLauncher.launch(payUiState.pendingTask)
+    }
 
     if (payUiState is PaymentUiState.PaymentCompleted) {
         Column(
@@ -78,7 +95,8 @@ fun ProductScreen(
                 text = "${payUiState.payerName} completed a payment.\nWe are preparing your order.",
                 fontSize = 17.sp,
                 color = Color.DarkGray,
-                textAlign = TextAlign.Center)
+                textAlign = TextAlign.Center
+            )
         }
 
     } else {
@@ -113,7 +131,7 @@ fun ProductScreen(
                 text = description,
                 color = black
             )
-            if (payUiState is PaymentUiState.Available) {
+            if (payUiState !is PaymentUiState.NotStarted) {
                 PayButton(
                     modifier = Modifier
                         .testTag("payButton")
