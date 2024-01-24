@@ -22,21 +22,24 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.android.gms.common.api.ApiException
 import com.google.android.gms.common.api.CommonStatusCodes
-import com.google.android.gms.common.api.ResolvableApiException
 import com.google.android.gms.samples.pay.util.PaymentsUtil
+import com.google.android.gms.tasks.CancellationTokenSource
 import com.google.android.gms.tasks.Task
 import com.google.android.gms.wallet.IsReadyToPayRequest
 import com.google.android.gms.wallet.PaymentData
 import com.google.android.gms.wallet.PaymentDataRequest
 import com.google.android.gms.wallet.PaymentsClient
+import kotlin.coroutines.resume
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.tasks.await
 import org.json.JSONException
 import org.json.JSONObject
+import java.util.concurrent.Executor
 
 class CheckoutViewModel(application: Application) : AndroidViewModel(application) {
 
@@ -80,25 +83,10 @@ class CheckoutViewModel(application: Application) : AndroidViewModel(application
      * @return a [Task] with the payment information.
      * @see [PaymentDataRequest](https://developers.google.com/android/reference/com/google/android/gms/wallet/PaymentsClient#loadPaymentData(com.google.android.gms.wallet.PaymentDataRequest)
     ) */
-    fun loadPaymentData() {
+    fun getLoadPaymentDataTask(): Task<PaymentData> {
         val paymentDataRequestJson = PaymentsUtil.getPaymentDataRequest(priceCents = 100L)
         val request = PaymentDataRequest.fromJson(paymentDataRequestJson.toString())
-
-        viewModelScope.launch {
-            val paymentDataTask = paymentsClient.loadPaymentData(request)
-            val newUiState: PaymentUiState = try {
-                val result = paymentDataTask.await()
-                PaymentUiState.PaymentCompleted(extractPaymentBillingName(result)!!)
-            } catch (e: Exception) {
-                when (e) {
-                    is ResolvableApiException -> PaymentUiState.ResolutionNeeded(paymentDataTask)
-                    is ApiException -> PaymentUiState.Error(e.statusCode, e.status.statusMessage)
-                    else -> throw e
-                }
-            }
-
-            _paymentUiState.update { newUiState }
-        }
+        return paymentsClient.loadPaymentData(request)
     }
 
     /**
@@ -152,7 +140,30 @@ class CheckoutViewModel(application: Application) : AndroidViewModel(application
 abstract class PaymentUiState internal constructor(){
     object NotStarted : PaymentUiState()
     object Available : PaymentUiState()
-    class ResolutionNeeded(val pendingTask: Task<PaymentData>) : PaymentUiState()
     class PaymentCompleted(val payerName: String) : PaymentUiState()
     class Error(val code: Int, val message: String? = null) : PaymentUiState()
+}
+
+suspend fun <T> Task<T>.awaitTask(cancellationTokenSource: CancellationTokenSource? = null): Task<T> {
+    return if (isComplete) this else suspendCancellableCoroutine { cont ->
+        // Run the callback directly to avoid unnecessarily scheduling on the main thread.
+        addOnCompleteListener(DirectExecutor) {
+            cont.resume(it)
+        }
+
+        if (cancellationTokenSource != null) {
+            cont.invokeOnCancellation {
+                cancellationTokenSource.cancel()
+            }
+        }
+    }
+}
+
+/**
+ * An [Executor] that just directly executes the [Runnable].
+ */
+private object DirectExecutor : Executor {
+    override fun execute(r: Runnable) {
+        r.run()
+    }
 }

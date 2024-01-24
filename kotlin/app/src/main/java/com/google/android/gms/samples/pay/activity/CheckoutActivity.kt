@@ -16,23 +16,34 @@
 
 package com.google.android.gms.samples.pay.activity
 
-import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.viewModels
 import androidx.compose.runtime.getValue
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.lifecycleScope
+import com.google.android.gms.common.api.CommonStatusCodes
+import com.google.android.gms.wallet.contract.TaskResultContracts.GetPaymentDataResult
 import com.google.android.gms.samples.pay.R
 import com.google.android.gms.samples.pay.ui.ProductScreen
 import com.google.android.gms.samples.pay.viewmodel.CheckoutViewModel
 import com.google.android.gms.samples.pay.viewmodel.PaymentUiState
-import com.google.android.gms.wallet.AutoResolveHelper
-import com.google.android.gms.wallet.PaymentData
+import com.google.android.gms.samples.pay.viewmodel.awaitTask
+import kotlinx.coroutines.launch
 
 class CheckoutActivity : ComponentActivity() {
 
-    private val googlePayRequestCode = 1001
+    val paymentDataLauncher = registerForActivityResult(GetPaymentDataResult()) {
+        when (it.status.statusCode) {
+            CommonStatusCodes.SUCCESS -> Log.i("Google Pay result:", it.result.toString())
+            //CommonStatusCodes.CANCELED -> The user canceled
+            //AutoResolveHelper.RESULT_ERROR -> The API returned an error (it.status: Status)
+            //CommonStatusCodes.INTERNAL_ERROR -> Handle other unexpected errors
+        }
+    }
 
     private val model: CheckoutViewModel by viewModels()
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -46,7 +57,12 @@ class CheckoutActivity : ComponentActivity() {
                 price = "$50.20",
                 image = R.drawable.ts_10_11019a,
                 payUiState = payState,
-                onGooglePayButtonClick = { model.loadPaymentData() },
+                onGooglePayButtonClick = {
+                    lifecycleScope.launch {
+                        val task = model.getLoadPaymentDataTask().awaitTask()
+                        paymentDataLauncher.launch(task)
+                    }
+                },
             )
         }
     }
