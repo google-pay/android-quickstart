@@ -20,7 +20,6 @@ import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.viewModels
 import androidx.compose.runtime.getValue
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -36,9 +35,12 @@ import kotlinx.coroutines.launch
 
 class CheckoutActivity : ComponentActivity() {
 
-    val paymentDataLauncher = registerForActivityResult(GetPaymentDataResult()) {
+    private val paymentDataLauncher = registerForActivityResult(GetPaymentDataResult()) {
         when (it.status.statusCode) {
-            CommonStatusCodes.SUCCESS -> Log.i("Google Pay result:", it.result.toString())
+            CommonStatusCodes.SUCCESS -> {
+                Log.i("Google Pay result:", it.result.toString())
+                it.result?.let(model::setPaymentData)
+            }
             //CommonStatusCodes.CANCELED -> The user canceled
             //AutoResolveHelper.RESULT_ERROR -> The API returned an error (it.status: Status)
             //CommonStatusCodes.INTERNAL_ERROR -> Handle other unexpected errors
