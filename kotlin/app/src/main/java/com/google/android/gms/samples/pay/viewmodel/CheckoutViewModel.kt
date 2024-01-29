@@ -43,7 +43,8 @@ import java.util.concurrent.Executor
 
 class CheckoutViewModel(application: Application) : AndroidViewModel(application) {
 
-    private val _paymentUiState: MutableStateFlow<PaymentUiState> = MutableStateFlow(PaymentUiState.NotStarted)
+    private val _paymentUiState: MutableStateFlow<PaymentUiState> =
+        MutableStateFlow(PaymentUiState.NotStarted)
     val paymentUiState: StateFlow<PaymentUiState> = _paymentUiState.asStateFlow()
 
     // A client for interacting with the Google Pay API.
@@ -111,33 +112,33 @@ class CheckoutViewModel(application: Application) : AndroidViewModel(application
     }
 
     private fun extractPaymentBillingName(paymentData: PaymentData): String? {
-            val paymentInformation = paymentData.toJson()
+        val paymentInformation = paymentData.toJson()
 
-            try {
-                // Token will be null if PaymentDataRequest was not constructed using fromJson(String).
-                val paymentMethodData =
-                    JSONObject(paymentInformation).getJSONObject("paymentMethodData")
-                val billingName = paymentMethodData.getJSONObject("info")
-                    .getJSONObject("billingAddress").getString("name")
-                Log.d("BillingName", billingName)
+        try {
+            // Token will be null if PaymentDataRequest was not constructed using fromJson(String).
+            val paymentMethodData =
+                JSONObject(paymentInformation).getJSONObject("paymentMethodData")
+            val billingName = paymentMethodData.getJSONObject("info")
+                .getJSONObject("billingAddress").getString("name")
+            Log.d("BillingName", billingName)
 
-                // Logging token string.
-                Log.d(
-                    "Google Pay token", paymentMethodData
-                        .getJSONObject("tokenizationData")
-                        .getString("token")
-                )
+            // Logging token string.
+            Log.d(
+                "Google Pay token", paymentMethodData
+                    .getJSONObject("tokenizationData")
+                    .getString("token")
+            )
 
-                return billingName
-            } catch (error: JSONException) {
-                Log.e("handlePaymentSuccess", "Error: $error")
-            }
-
-            return null
+            return billingName
+        } catch (error: JSONException) {
+            Log.e("handlePaymentSuccess", "Error: $error")
         }
+
+        return null
+    }
 }
 
-abstract class PaymentUiState internal constructor(){
+abstract class PaymentUiState internal constructor() {
     object NotStarted : PaymentUiState()
     object Available : PaymentUiState()
     class PaymentCompleted(val payerName: String) : PaymentUiState()
@@ -149,10 +150,8 @@ suspend fun <T> Task<T>.awaitTask(cancellationTokenSource: CancellationTokenSour
         // Run the callback directly to avoid unnecessarily scheduling on the main thread.
         addOnCompleteListener(DirectExecutor, cont::resume)
 
-        if (cancellationTokenSource != null) {
-            cont.invokeOnCancellation {
-                cancellationTokenSource.cancel()
-            }
+        cancellationTokenSource?.let { cancellationSource ->
+            cont.invokeOnCancellation { cancellationSource.cancel() }
         }
     }
 }
