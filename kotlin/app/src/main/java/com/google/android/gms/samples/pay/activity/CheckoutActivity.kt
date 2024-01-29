@@ -60,10 +60,8 @@ class CheckoutActivity : ComponentActivity() {
                 image = R.drawable.ts_10_11019a,
                 payUiState = payState,
                 onGooglePayButtonClick = {
-                    lifecycleScope.launch {
-                        val task = model.getLoadPaymentDataTask().awaitTask()
-                        paymentDataLauncher.launch(task)
-                    }
+                    val task = model.getLoadPaymentDataTask()
+                    task.addOnCompleteListener(paymentDataLauncher::launch)
                 },
             )
         }
