@@ -147,9 +147,7 @@ abstract class PaymentUiState internal constructor(){
 suspend fun <T> Task<T>.awaitTask(cancellationTokenSource: CancellationTokenSource? = null): Task<T> {
     return if (isComplete) this else suspendCancellableCoroutine { cont ->
         // Run the callback directly to avoid unnecessarily scheduling on the main thread.
-        addOnCompleteListener(DirectExecutor) {
-            cont.resume(it)
-        }
+        addOnCompleteListener(DirectExecutor, cont::resume)
 
         if (cancellationTokenSource != null) {
             cont.invokeOnCancellation {
