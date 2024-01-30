@@ -201,10 +201,10 @@ object PaymentsUtil {
      * @return Payment data expected by your app.
      * See [PaymentDataRequest](https://developers.google.com/pay/api/android/reference/object.PaymentDataRequest)
      */
-    fun getPaymentDataRequest(priceCemts: Long): JSONObject {
+    fun getPaymentDataRequest(priceCents: Long): JSONObject {
         return baseRequest.apply {
                 put("allowedPaymentMethods", JSONArray().put(cardPaymentMethod()))
-                put("transactionInfo", getTransactionInfo(priceCemts.centsToString()))
+                put("transactionInfo", getTransactionInfo(priceCents.centsToString()))
                 put("merchantInfo", merchantInfo)
 
                 // An optional shipping address requirement is a top-level property of the

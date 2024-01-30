@@ -16,23 +16,36 @@
 
 package com.google.android.gms.samples.pay.activity
 
-import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.compose.runtime.getValue
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.lifecycleScope
+import com.google.android.gms.common.api.CommonStatusCodes
+import com.google.android.gms.wallet.contract.TaskResultContracts.GetPaymentDataResult
 import com.google.android.gms.samples.pay.R
 import com.google.android.gms.samples.pay.ui.ProductScreen
 import com.google.android.gms.samples.pay.viewmodel.CheckoutViewModel
 import com.google.android.gms.samples.pay.viewmodel.PaymentUiState
-import com.google.android.gms.wallet.AutoResolveHelper
-import com.google.android.gms.wallet.PaymentData
+import com.google.android.gms.samples.pay.viewmodel.awaitTask
+import kotlinx.coroutines.launch
 
 class CheckoutActivity : ComponentActivity() {
 
-    private val googlePayRequestCode = 1001
+    private val paymentDataLauncher = registerForActivityResult(GetPaymentDataResult()) {
+        when (it.status.statusCode) {
+            CommonStatusCodes.SUCCESS -> {
+                Log.i("Google Pay result:", it.result.toString())
+                it.result?.let(model::setPaymentData)
+            }
+            //CommonStatusCodes.CANCELED -> The user canceled
+            //AutoResolveHelper.RESULT_ERROR -> The API returned an error (it.status: Status)
+            //CommonStatusCodes.INTERNAL_ERROR -> Handle other unexpected errors
+        }
+    }
 
     private val model: CheckoutViewModel by viewModels()
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -47,28 +60,10 @@ class CheckoutActivity : ComponentActivity() {
                 image = R.drawable.ts_10_11019a,
                 payUiState = payState,
                 onGooglePayButtonClick = {
-                    AutoResolveHelper.resolveTask(
-                        model.getLoadPaymentDataTask(), this, googlePayRequestCode)
+                    val task = model.getLoadPaymentDataTask()
+                    task.addOnCompleteListener(paymentDataLauncher::launch)
                 },
             )
-        }
-    }
-
-    @Deprecated("Deprecated and in use by Google Pay")
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-
-        if (requestCode == googlePayRequestCode) {
-            when (resultCode) {
-                RESULT_OK -> data?.let { intent ->
-                    PaymentData.getFromIntent(intent)?.let(model::setPaymentData)
-                }
-                /* Handle other result scenarios
-                 * Learn more at: https://developers.google.com/pay/api/android/support/troubleshooting
-                 */
-                else -> { // Other uncaught errors }
-                }
-            }
         }
     }
 }

@@ -17,7 +17,6 @@
 package com.google.android.gms.samples.pay.activity;
 
 import android.app.Activity;
-import android.app.PendingIntent;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
@@ -25,23 +24,21 @@ import android.view.View;
 import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
-import androidx.activity.result.IntentSenderRequest;
-import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModelProvider;
 
-import com.google.android.gms.common.api.ApiException;
 import com.google.android.gms.common.api.CommonStatusCodes;
-import com.google.android.gms.common.api.ResolvableApiException;
 import com.google.android.gms.samples.pay.R;
 import com.google.android.gms.samples.pay.databinding.ActivityCheckoutBinding;
 import com.google.android.gms.samples.pay.util.PaymentsUtil;
 import com.google.android.gms.samples.pay.viewmodel.CheckoutViewModel;
 import com.google.android.gms.tasks.Task;
+import com.google.android.gms.wallet.AutoResolveHelper;
 import com.google.android.gms.wallet.PaymentData;
 import com.google.android.gms.wallet.button.ButtonOptions;
 import com.google.android.gms.wallet.button.PayButton;
+import com.google.android.gms.wallet.contract.TaskResultContracts.GetPaymentDataResult;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -57,23 +54,20 @@ public class CheckoutActivity extends AppCompatActivity {
 
   private PayButton googlePayButton;
 
-  // Handle potential conflict from calling loadPaymentData.
-  ActivityResultLauncher<IntentSenderRequest> resolvePaymentForResult = registerForActivityResult(
-      new ActivityResultContracts.StartIntentSenderForResult(),
-      result -> {
-        switch (result.getResultCode()) {
-          case Activity.RESULT_OK:
-            Intent resultData = result.getData();
-            if (resultData != null) {
-              PaymentData paymentData = PaymentData.getFromIntent(result.getData());
-              if (paymentData != null) {
-                handlePaymentSuccess(paymentData);
-              }
-            }
+  private final ActivityResultLauncher<Task<PaymentData>> paymentDataLauncher =
+      registerForActivityResult(new GetPaymentDataResult(), result -> {
+        int statusCode = result.getStatus().getStatusCode();
+        switch (statusCode) {
+          case CommonStatusCodes.SUCCESS:
+            handlePaymentSuccess(result.getResult());
             break;
-
-          case Activity.RESULT_CANCELED:
-            // The user cancelled the payment attempt
+          //case CommonStatusCodes.CANCELED: The user canceled
+          case AutoResolveHelper.RESULT_ERROR:
+            handleError(statusCode, result.getStatus().getStatusMessage());
+            break;
+          case CommonStatusCodes.INTERNAL_ERROR:
+            handleError(statusCode, "Unexpected non API" +
+                " exception when trying to deliver the task result to an activity!");
             break;
         }
       });
@@ -130,9 +124,6 @@ public class CheckoutActivity extends AppCompatActivity {
 
   public void requestPayment(View view) {
 
-    // Disables the button to prevent multiple clicks.
-    googlePayButton.setClickable(false);
-
     // The price provided to the API should include taxes and shipping.
     // This price is not displayed to the user.
     long dummyPriceCents = 100;
@@ -140,28 +131,7 @@ public class CheckoutActivity extends AppCompatActivity {
     long totalPriceCents = dummyPriceCents + shippingCostCents;
     final Task<PaymentData> task = model.getLoadPaymentDataTask(totalPriceCents);
 
-    task.addOnCompleteListener(completedTask -> {
-      if (completedTask.isSuccessful()) {
-        handlePaymentSuccess(completedTask.getResult());
-      } else {
-        Exception exception = completedTask.getException();
-        if (exception instanceof ResolvableApiException) {
-          PendingIntent resolution = ((ResolvableApiException) exception).getResolution();
-          resolvePaymentForResult.launch(new IntentSenderRequest.Builder(resolution).build());
-
-        } else if (exception instanceof ApiException) {
-          ApiException apiException = (ApiException) exception;
-          handleError(apiException.getStatusCode(), apiException.getMessage());
-
-        } else {
-          handleError(CommonStatusCodes.INTERNAL_ERROR, "Unexpected non API" +
-              " exception when trying to deliver the task result to an activity!");
-        }
-      }
-
-      // Re-enables the Google Pay payment button.
-      googlePayButton.setClickable(true);
-    });
+    task.addOnCompleteListener(paymentDataLauncher::launch);
   }
 
   /**
@@ -203,7 +173,7 @@ public class CheckoutActivity extends AppCompatActivity {
    * only logging is required.
    *
    * @param statusCode holds the value of any constant from CommonStatusCode or one of the
-   *               WalletConstants.ERROR_CODE_* constants.
+   *                   WalletConstants.ERROR_CODE_* constants.
    * @see <a href="https://developers.google.com/android/reference/com/google/android/gms/wallet/
    * WalletConstants#constant-summary">Wallet Constants Library</a>
    */

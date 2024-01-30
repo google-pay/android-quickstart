@@ -78,7 +78,8 @@ fun ProductScreen(
                 text = "${payUiState.payerName} completed a payment.\nWe are preparing your order.",
                 fontSize = 17.sp,
                 color = Color.DarkGray,
-                textAlign = TextAlign.Center)
+                textAlign = TextAlign.Center
+            )
         }
 
     } else {
@@ -113,7 +114,7 @@ fun ProductScreen(
                 text = description,
                 color = black
             )
-            if (payUiState is PaymentUiState.Available) {
+            if (payUiState !is PaymentUiState.NotStarted) {
                 PayButton(
                     modifier = Modifier
                         .testTag("payButton")
