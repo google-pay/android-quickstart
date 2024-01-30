@@ -59,11 +59,13 @@ class CheckoutActivity : ComponentActivity() {
                 price = "$50.20",
                 image = R.drawable.ts_10_11019a,
                 payUiState = payState,
-                onGooglePayButtonClick = {
-                    val task = model.getLoadPaymentDataTask()
-                    task.addOnCompleteListener(paymentDataLauncher::launch)
-                },
+                onGooglePayButtonClick = this::requestPayment,
             )
         }
+    }
+
+    private fun requestPayment() {
+        val task = model.getLoadPaymentDataTask()
+        task.addOnCompleteListener(paymentDataLauncher::launch)
     }
 }
