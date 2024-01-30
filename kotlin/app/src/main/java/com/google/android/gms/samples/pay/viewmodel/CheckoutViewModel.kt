@@ -52,7 +52,7 @@ class CheckoutViewModel(application: Application) : AndroidViewModel(application
 
     init {
         viewModelScope.launch {
-            fetchCanUseGooglePay()
+            verifyGooglePayReadiness()
         }
     }
 
@@ -60,13 +60,9 @@ class CheckoutViewModel(application: Application) : AndroidViewModel(application
      * Determine the user's ability to pay with a payment method supported by your app and display
      * a Google Pay payment button.
     ) */
-    private suspend fun fetchCanUseGooglePay() {
-        val isReadyToPayJson = PaymentsUtil.isReadyToPayRequest()
-        val request = IsReadyToPayRequest.fromJson(isReadyToPayJson.toString())
-        val task = paymentsClient.isReadyToPay(request)
-
+    private suspend fun verifyGooglePayReadiness() {
         val newUiState: PaymentUiState = try {
-            if (task.await()) {
+            if (fetchCanUseGooglePay()) {
                 PaymentUiState.Available
             } else {
                 PaymentUiState.Error(CommonStatusCodes.ERROR)
@@ -76,6 +72,15 @@ class CheckoutViewModel(application: Application) : AndroidViewModel(application
         }
 
         _paymentUiState.update { newUiState }
+    }
+
+    /**
+     * Determine the user's ability to pay with a payment method supported by your app.
+    ) */
+    private suspend fun fetchCanUseGooglePay(): Boolean {
+        val isReadyToPayJson = PaymentsUtil.isReadyToPayRequest()
+        val request = IsReadyToPayRequest.fromJson(isReadyToPayJson.toString())
+        return paymentsClient.isReadyToPay(request).await()
     }
 
     /**
