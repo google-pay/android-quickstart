@@ -35,11 +35,13 @@ import kotlinx.coroutines.launch
 
 class CheckoutActivity : ComponentActivity() {
 
-    private val paymentDataLauncher = registerForActivityResult(GetPaymentDataResult()) {
-        when (it.status.statusCode) {
+    private val paymentDataLauncher = registerForActivityResult(GetPaymentDataResult()) { taskResult ->
+        when (taskResult.status.statusCode) {
             CommonStatusCodes.SUCCESS -> {
-                Log.i("Google Pay result:", it.result.toString())
-                it.result?.let(model::setPaymentData)
+                taskResult.result!!.let {
+                    Log.i("Google Pay result:", it.toJson())
+                    model.setPaymentData(it)
+                }
             }
             //CommonStatusCodes.CANCELED -> The user canceled
             //AutoResolveHelper.RESULT_ERROR -> The API returned an error (it.status: Status)
