@@ -61,13 +61,13 @@ class CheckoutActivity : ComponentActivity() {
                 price = "$50.20",
                 image = R.drawable.ts_10_11019a,
                 payUiState = payState,
-                onGooglePayButtonClick = this::requestPayment,
+                onGooglePayButtonClick = { lifecycleScope.launch { requestPayment() }} ,
             )
         }
     }
 
-    private fun requestPayment() {
+    private suspend fun requestPayment() {
         val task = model.getLoadPaymentDataTask(priceCents = 1000L)
-        task.addOnCompleteListener(paymentDataLauncher::launch)
+        paymentDataLauncher.launch(task.awaitTask())
     }
 }
