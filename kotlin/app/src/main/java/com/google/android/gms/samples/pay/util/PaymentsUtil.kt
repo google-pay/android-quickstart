@@ -133,7 +133,7 @@ object PaymentsUtil {
      * @return API version and payment methods supported by the app.
      * See [IsReadyToPayRequest](https://developers.google.com/pay/api/android/reference/object.IsReadyToPayRequest)
      */
-    val isReadyToPayRequest: JSONObject? =
+    fun isReadyToPayRequest(): JSONObject? =
         try {
             baseRequest
                 .put("allowedPaymentMethods", JSONArray().put(baseCardPaymentMethod()))

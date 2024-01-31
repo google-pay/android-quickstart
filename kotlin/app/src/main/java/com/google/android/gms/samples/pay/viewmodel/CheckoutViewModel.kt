@@ -78,7 +78,7 @@ class CheckoutViewModel(application: Application) : AndroidViewModel(application
      * Determine the user's ability to pay with a payment method supported by your app.
     ) */
     private suspend fun fetchCanUseGooglePay(): Boolean {
-        val request = IsReadyToPayRequest.fromJson(PaymentsUtil.isReadyToPayRequest.toString())
+        val request = IsReadyToPayRequest.fromJson(PaymentsUtil.isReadyToPayRequest().toString())
         return paymentsClient.isReadyToPay(request).await()
     }
 
