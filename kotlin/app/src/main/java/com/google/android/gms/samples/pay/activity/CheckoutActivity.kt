@@ -67,7 +67,7 @@ class CheckoutActivity : ComponentActivity() {
     }
 
     private fun requestPayment() {
-        val task = model.getLoadPaymentDataTask()
+        val task = model.getLoadPaymentDataTask(priceCents = 1000L)
         task.addOnCompleteListener(paymentDataLauncher::launch)
     }
 }
