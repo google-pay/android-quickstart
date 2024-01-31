@@ -29,7 +29,6 @@ import com.google.android.gms.wallet.IsReadyToPayRequest
 import com.google.android.gms.wallet.PaymentData
 import com.google.android.gms.wallet.PaymentDataRequest
 import com.google.android.gms.wallet.PaymentsClient
-import kotlin.coroutines.resume
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -40,6 +39,7 @@ import kotlinx.coroutines.tasks.await
 import org.json.JSONException
 import org.json.JSONObject
 import java.util.concurrent.Executor
+import kotlin.coroutines.resume
 
 class CheckoutViewModel(application: Application) : AndroidViewModel(application) {
 
@@ -78,8 +78,7 @@ class CheckoutViewModel(application: Application) : AndroidViewModel(application
      * Determine the user's ability to pay with a payment method supported by your app.
     ) */
     private suspend fun fetchCanUseGooglePay(): Boolean {
-        val isReadyToPayJson = PaymentsUtil.isReadyToPayRequest()
-        val request = IsReadyToPayRequest.fromJson(isReadyToPayJson.toString())
+        val request = IsReadyToPayRequest.fromJson(PaymentsUtil.isReadyToPayRequest.toString())
         return paymentsClient.isReadyToPay(request).await()
     }
 
