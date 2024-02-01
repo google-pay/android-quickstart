@@ -94,19 +94,6 @@ class CheckoutViewModel(application: Application) : AndroidViewModel(application
         return paymentsClient.loadPaymentData(request)
     }
 
-    /**
-     * At this stage, the user has already seen a popup informing them an error occurred. Normally,
-     * only logging is required.
-     *
-     * @param statusCode will hold the value of any constant from CommonStatusCode or one of the
-     * WalletConstants.ERROR_CODE_* constants.
-     * @see [
-     * Wallet Constants Library](https://developers.google.com/android/reference/com/google/android/gms/wallet/WalletConstants.constant-summary)
-     */
-    private fun handleError(statusCode: Int, message: String?) {
-        Log.e("Google Pay API error", "Error code: $statusCode, Message: $message")
-    }
-
     fun setPaymentData(paymentData: PaymentData) {
         val payState = extractPaymentBillingName(paymentData)?.let {
             PaymentUiState.PaymentCompleted(payerName = it)

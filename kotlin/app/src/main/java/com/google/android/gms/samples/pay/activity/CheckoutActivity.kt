@@ -21,33 +21,51 @@ import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
+import androidx.compose.material3.Text
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.lifecycleScope
 import com.google.android.gms.common.api.CommonStatusCodes
-import com.google.android.gms.wallet.contract.TaskResultContracts.GetPaymentDataResult
 import com.google.android.gms.samples.pay.R
-import com.google.android.gms.samples.pay.ui.ProductScreen
+import com.google.android.gms.samples.pay.util.PaymentsUtil
 import com.google.android.gms.samples.pay.viewmodel.CheckoutViewModel
 import com.google.android.gms.samples.pay.viewmodel.PaymentUiState
-import com.google.android.gms.samples.pay.viewmodel.awaitTask
-import kotlinx.coroutines.launch
+import com.google.android.gms.wallet.contract.TaskResultContracts.GetPaymentDataResult
+import com.google.pay.button.PayButton
 
 class CheckoutActivity : ComponentActivity() {
 
-    private val paymentDataLauncher = registerForActivityResult(GetPaymentDataResult()) { taskResult ->
-        when (taskResult.status.statusCode) {
-            CommonStatusCodes.SUCCESS -> {
-                taskResult.result!!.let {
-                    Log.i("Google Pay result:", it.toJson())
-                    model.setPaymentData(it)
+    private val paymentDataLauncher =
+        registerForActivityResult(GetPaymentDataResult()) { taskResult ->
+            when (taskResult.status.statusCode) {
+                CommonStatusCodes.SUCCESS -> {
+                    taskResult.result!!.let {
+                        Log.i("Google Pay result:", it.toJson())
+                        model.setPaymentData(it)
+                    }
                 }
+                //CommonStatusCodes.CANCELED -> The user canceled
+                //AutoResolveHelper.RESULT_ERROR -> The API returned an error (it.status: Status)
+                //CommonStatusCodes.INTERNAL_ERROR -> Handle other unexpected errors
             }
-            //CommonStatusCodes.CANCELED -> The user canceled
-            //AutoResolveHelper.RESULT_ERROR -> The API returned an error (it.status: Status)
-            //CommonStatusCodes.INTERNAL_ERROR -> Handle other unexpected errors
         }
-    }
 
     private val model: CheckoutViewModel by viewModels()
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -55,19 +73,43 @@ class CheckoutActivity : ComponentActivity() {
 
         setContent {
             val payState: PaymentUiState by model.paymentUiState.collectAsStateWithLifecycle()
-            ProductScreen(
-                title = "Men's Tech Shell Full-Zip",
-                description = "A versatile full-zip that you can wear all day long and even...",
-                price = "$50.20",
-                image = R.drawable.ts_10_11019a,
-                payUiState = payState,
-                onGooglePayButtonClick = { lifecycleScope.launch { requestPayment() }} ,
-            )
+            val padding = 20.dp
+            val grey = Color(0xffeeeeee.toInt())
+
+            Column(
+                modifier = Modifier
+                    .background(grey)
+                    .padding(padding)
+                    .fillMaxWidth()
+                    .fillMaxHeight(),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally,
+            ) {
+                when (val state = payState) {
+                    is PaymentUiState.PaymentCompleted -> {
+                        Text(
+                            text = "${state.payerName} completed a payment.\nWe are preparing your order.",
+                            fontSize = 17.sp,
+                            color = Color.DarkGray,
+                            textAlign = TextAlign.Center
+                        )
+                    }
+
+                    is PaymentUiState.Available, is PaymentUiState.Error ->
+                        PayButton(
+                            modifier = Modifier
+                                .testTag("payButton")
+                                .fillMaxWidth(),
+                            onClick = ::requestPayment,
+                            allowedPaymentMethods = PaymentsUtil.allowedPaymentMethods.toString()
+                        )
+                }
+            }
         }
     }
 
-    private suspend fun requestPayment() {
+    private fun requestPayment() {
         val task = model.getLoadPaymentDataTask(priceCents = 1000L)
-        paymentDataLauncher.launch(task.awaitTask())
+        task.addOnCompleteListener(paymentDataLauncher::launch)
     }
 }
