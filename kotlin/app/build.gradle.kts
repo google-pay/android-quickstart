@@ -58,7 +58,7 @@ android {
 dependencies {
     val lifecycleVersion = "2.7.0"
 
-    implementation("com.google.android.gms:play-services-wallet:19.3.0-beta01")
+    implementation("com.google.android.gms:play-services-wallet:19.3.0")
     implementation("com.google.pay.button:compose-pay-button:0.1.3")
 
     val composeBom = platform("androidx.compose:compose-bom:2023.10.01")
@@ -73,8 +73,8 @@ dependencies {
     implementation("androidx.lifecycle:lifecycle-runtime-compose:$lifecycleVersion")
     implementation("androidx.activity:activity-ktx:1.8.2")
 
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.7.1")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.7.3")
 
-    androidTestImplementation("androidx.test.uiautomator:uiautomator:2.2.0")
-    androidTestImplementation("androidx.compose.ui:ui-test-junit4:1.6.0")
+    androidTestImplementation("androidx.test.uiautomator:uiautomator:2.3.0")
+    androidTestImplementation("androidx.compose.ui:ui-test-junit4:1.6.2")
 }
