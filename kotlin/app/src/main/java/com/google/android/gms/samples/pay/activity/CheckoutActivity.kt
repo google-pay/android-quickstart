@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 Google Inc.
+ * Copyright 2024 Google Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,11 +35,13 @@ import kotlinx.coroutines.launch
 
 class CheckoutActivity : ComponentActivity() {
 
-    private val paymentDataLauncher = registerForActivityResult(GetPaymentDataResult()) {
-        when (it.status.statusCode) {
+    private val paymentDataLauncher = registerForActivityResult(GetPaymentDataResult()) { taskResult ->
+        when (taskResult.status.statusCode) {
             CommonStatusCodes.SUCCESS -> {
-                Log.i("Google Pay result:", it.result.toString())
-                it.result?.let(model::setPaymentData)
+                taskResult.result!!.let {
+                    Log.i("Google Pay result:", it.toJson())
+                    model.setPaymentData(it)
+                }
             }
             //CommonStatusCodes.CANCELED -> The user canceled
             //AutoResolveHelper.RESULT_ERROR -> The API returned an error (it.status: Status)
@@ -65,7 +67,7 @@ class CheckoutActivity : ComponentActivity() {
     }
 
     private fun requestPayment() {
-        val task = model.getLoadPaymentDataTask()
+        val task = model.getLoadPaymentDataTask(priceCents = 1000L)
         task.addOnCompleteListener(paymentDataLauncher::launch)
     }
 }

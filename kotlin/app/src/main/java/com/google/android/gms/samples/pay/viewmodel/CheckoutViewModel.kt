@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 Google Inc.
+ * Copyright 2024 Google Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,7 +29,6 @@ import com.google.android.gms.wallet.IsReadyToPayRequest
 import com.google.android.gms.wallet.PaymentData
 import com.google.android.gms.wallet.PaymentDataRequest
 import com.google.android.gms.wallet.PaymentsClient
-import kotlin.coroutines.resume
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -40,6 +39,7 @@ import kotlinx.coroutines.tasks.await
 import org.json.JSONException
 import org.json.JSONObject
 import java.util.concurrent.Executor
+import kotlin.coroutines.resume
 
 class CheckoutViewModel(application: Application) : AndroidViewModel(application) {
 
@@ -78,8 +78,7 @@ class CheckoutViewModel(application: Application) : AndroidViewModel(application
      * Determine the user's ability to pay with a payment method supported by your app.
     ) */
     private suspend fun fetchCanUseGooglePay(): Boolean {
-        val isReadyToPayJson = PaymentsUtil.isReadyToPayRequest()
-        val request = IsReadyToPayRequest.fromJson(isReadyToPayJson.toString())
+        val request = IsReadyToPayRequest.fromJson(PaymentsUtil.isReadyToPayRequest().toString())
         return paymentsClient.isReadyToPay(request).await()
     }
 
@@ -89,8 +88,8 @@ class CheckoutViewModel(application: Application) : AndroidViewModel(application
      * @return a [Task] with the payment information.
      * @see [PaymentDataRequest](https://developers.google.com/android/reference/com/google/android/gms/wallet/PaymentsClient#loadPaymentData(com.google.android.gms.wallet.PaymentDataRequest)
     ) */
-    fun getLoadPaymentDataTask(): Task<PaymentData> {
-        val paymentDataRequestJson = PaymentsUtil.getPaymentDataRequest(priceCents = 100L)
+    fun getLoadPaymentDataTask(priceCents: Long): Task<PaymentData> {
+        val paymentDataRequestJson = PaymentsUtil.getPaymentDataRequest(priceCents)
         val request = PaymentDataRequest.fromJson(paymentDataRequestJson.toString())
         return paymentsClient.loadPaymentData(request)
     }

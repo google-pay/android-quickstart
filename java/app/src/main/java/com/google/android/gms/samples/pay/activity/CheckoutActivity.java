@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 Google Inc.
+ * Copyright 2024 Google Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -123,14 +123,8 @@ public class CheckoutActivity extends AppCompatActivity {
   }
 
   public void requestPayment(View view) {
-
     // The price provided to the API should include taxes and shipping.
-    // This price is not displayed to the user.
-    long dummyPriceCents = 100;
-    long shippingCostCents = 900;
-    long totalPriceCents = dummyPriceCents + shippingCostCents;
-    final Task<PaymentData> task = model.getLoadPaymentDataTask(totalPriceCents);
-
+    final Task<PaymentData> task = model.getLoadPaymentDataTask(1000L);
     task.addOnCompleteListener(paymentDataLauncher::launch);
   }
 
