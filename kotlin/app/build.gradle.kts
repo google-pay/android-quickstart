@@ -58,7 +58,7 @@ android {
 dependencies {
     val lifecycleVersion = "2.7.0"
 
-    implementation("com.google.android.gms:play-services-wallet:19.3.0-beta01")
+    implementation("com.google.android.gms:play-services-wallet:19.4.0")
     implementation("com.google.pay.button:compose-pay-button:0.1.3")
 
     val composeBom = platform("androidx.compose:compose-bom:2023.10.01")
