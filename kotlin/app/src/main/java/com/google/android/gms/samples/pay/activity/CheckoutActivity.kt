@@ -44,8 +44,8 @@ class CheckoutActivity : ComponentActivity() {
                 }
             }
             //CommonStatusCodes.CANCELED -> The user canceled
-            //AutoResolveHelper.RESULT_ERROR -> The API returned an error (it.status: Status)
-            //CommonStatusCodes.INTERNAL_ERROR -> Handle other unexpected errors
+            //CommonStatusCodes.DEVELOPER_ERROR -> The API returned an error (it.status: Status)
+            //else -> Handle internal and other unexpected errors
         }
     }
 
