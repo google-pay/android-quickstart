@@ -27,6 +27,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.math.RoundingMode;
 
 /**
@@ -37,8 +38,6 @@ import java.math.RoundingMode;
  * relevant to your implementation.
  */
 public class PaymentsUtil {
-
-  public static final BigDecimal CENTS_IN_A_UNIT = new BigDecimal(100);
 
   /**
    * Create a Google Pay API base request object with properties used in all requests.
@@ -232,12 +231,11 @@ public class PaymentsUtil {
    * @see <a
    * href="https://developers.google.com/pay/api/android/reference/object#PaymentDataRequest">PaymentDataRequest</a>
    */
-  public static JSONObject getPaymentDataRequest(long priceCents) {
+  public static JSONObject getPaymentDataRequest(String priceLabel) {
     try {
-      final String price = PaymentsUtil.centsToString(priceCents);
       return PaymentsUtil.getBaseRequest()
           .put("allowedPaymentMethods", getAllowedPaymentMethods())
-          .put("transactionInfo", getTransactionInfo(price))
+          .put("transactionInfo", getTransactionInfo(priceLabel))
           .put("merchantInfo", getMerchantInfo())
           .put("shippingAddressRequired", true)
           .put("shippingAddressParameters", new JSONObject()
@@ -248,17 +246,5 @@ public class PaymentsUtil {
     } catch (JSONException e) {
       return null;
     }
-  }
-
-  /**
-   * Converts cents to a string format accepted by {@link PaymentsUtil#getPaymentDataRequest}.
-   *
-   * @param cents value of the price in cents.
-   */
-  public static String centsToString(long cents) {
-    return new BigDecimal(cents)
-        .divide(CENTS_IN_A_UNIT, RoundingMode.HALF_EVEN)
-        .setScale(2, RoundingMode.HALF_EVEN)
-        .toString();
   }
 }
