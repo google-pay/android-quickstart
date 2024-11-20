@@ -123,7 +123,7 @@ public class CheckoutActivity extends AppCompatActivity {
 
   public void requestPayment(View view) {
     // The price provided to the API should include taxes and shipping.
-    final Task<PaymentData> task = model.getLoadPaymentDataTask(1000L);
+    final Task<PaymentData> task = model.getLoadPaymentDataTask("50.2");
     task.addOnCompleteListener(paymentDataLauncher::launch);
   }
 
