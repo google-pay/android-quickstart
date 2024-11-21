@@ -185,10 +185,10 @@ object PaymentsUtil {
      * @return Payment data expected by your app.
      * See [PaymentDataRequest](https://developers.google.com/pay/api/android/reference/object.PaymentDataRequest)
      */
-    fun getPaymentDataRequest(priceCents: Long): JSONObject =
+    fun getPaymentDataRequest(priceLabel: String): JSONObject =
         baseRequest
             .put("allowedPaymentMethods", allowedPaymentMethods)
-            .put("transactionInfo", getTransactionInfo(priceCents.centsToString()))
+            .put("transactionInfo", getTransactionInfo(priceLabel))
             .put("merchantInfo", merchantInfo)
             .put("shippingAddressRequired", true)
             .put(
@@ -197,11 +197,3 @@ object PaymentsUtil {
                     .put("allowedCountryCodes", JSONArray(listOf("US", "GB")))
             )
 }
-
-/**
- * Converts cents to a string format accepted by [PaymentsUtil.getPaymentDataRequest].
- */
-fun Long.centsToString() = BigDecimal(this)
-    .divide(PaymentsUtil.CENTS)
-    .setScale(2, RoundingMode.HALF_EVEN)
-    .toString()

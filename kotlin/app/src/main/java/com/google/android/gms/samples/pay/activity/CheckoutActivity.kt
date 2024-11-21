@@ -68,7 +68,7 @@ class CheckoutActivity : ComponentActivity() {
 
     private fun requestPayment() {
         lifecycleScope.launch {
-            val task = model.getLoadPaymentDataTask(priceCents = 1000L)
+            val task = model.getLoadPaymentDataTask("50.2")
             paymentDataLauncher.launch(task.awaitTask())
         }
     }
