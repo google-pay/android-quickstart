@@ -102,13 +102,11 @@ object PaymentsUtil {
     private fun baseCardPaymentMethod(): JSONObject =
         JSONObject()
             .put("type", "CARD")
-            .put(
-                "parameters", JSONObject()
+            .put("parameters", JSONObject()
                     .put("allowedAuthMethods", allowedCardAuthMethods)
                     .put("allowedCardNetworks", allowedCardNetworks)
                     .put("billingAddressRequired", true)
-                    .put(
-                        "billingAddressParameters", JSONObject()
+                    .put("billingAddressParameters", JSONObject()
                             .put("format", "FULL")
                     )
             )
@@ -190,8 +188,7 @@ object PaymentsUtil {
             .put("transactionInfo", getTransactionInfo(priceLabel))
             .put("merchantInfo", merchantInfo)
             .put("shippingAddressRequired", true)
-            .put(
-                "shippingAddressParameters", JSONObject()
+            .put("shippingAddressParameters", JSONObject()
                     .put("phoneNumberRequired", false)
                     .put("allowedCountryCodes", JSONArray(listOf("US", "GB")))
             )
