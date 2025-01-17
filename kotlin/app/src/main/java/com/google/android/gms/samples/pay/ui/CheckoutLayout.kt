@@ -126,3 +126,63 @@ fun ProductScreen(
         }
     }
 }
+
+/**
+ * Wrapper to simplify previews with a provided description.
+ */
+@Composable
+private fun ProductScreenPreviewWithDescription(
+    payUiState: PaymentUiState,
+    @PreviewParameter(LoremIpsum::class) description: String
+) {
+    ProductScreen(
+        title = "Men's Tech Shell Full-Zip",
+        description = description.take(200), // Limit description to 200 characters
+        price = "$49.99",
+        image = R.drawable.ts_10_11019a,
+        onGooglePayButtonClick = {}, // No-op for previews
+        payUiState = payUiState,
+    )
+}
+
+/**
+ * Preview of ProductScreen in the initial state, where payment has not started.
+ */
+@Preview
+@Composable
+private fun ProductScreenPreviewNotStarted(
+    @PreviewParameter(LoremIpsum::class) description: String
+) {
+    ProductScreenPreviewWithDescription(
+        payUiState = PaymentUiState.NotStarted,
+        description = description
+    )
+}
+
+/**
+ * Preview of ProductScreen when Google Pay is available.
+ */
+@Preview
+@Composable
+private fun ProductScreenPreviewAvailable(
+    @PreviewParameter(LoremIpsum::class) description: String
+) {
+    ProductScreenPreviewWithDescription(
+        payUiState = PaymentUiState.Available,
+        description = description
+    )
+}
+
+/**
+ * Preview of ProductScreen after payment has been completed.
+ */
+@Preview
+@Composable
+private fun ProductScreenPreviewPaymentCompleted(
+    @PreviewParameter(LoremIpsum::class) description: String
+) {
+    ProductScreenPreviewWithDescription(
+        payUiState = PaymentUiState.PaymentCompleted(payerName = "John"),
+        description = description
+    )
+}
