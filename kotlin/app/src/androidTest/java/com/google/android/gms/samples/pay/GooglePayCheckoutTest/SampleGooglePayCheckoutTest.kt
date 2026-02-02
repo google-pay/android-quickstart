@@ -1,4 +1,4 @@
-package com.google.android.gms.samples.wallet
+package com.google.android.gms.samples.pay
 
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
@@ -10,12 +10,11 @@ import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.uiautomator.UiDevice
 import androidx.test.uiautomator.UiScrollable
 import androidx.test.uiautomator.UiSelector
-import com.google.android.gms.samples.wallet.activity.CheckoutActivity
+import com.google.android.gms.samples.pay.activity.CheckoutActivity
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
-
 
 const val GOOGLE_PAY_SHEET_PACKAGE = "com.google.android.gms"
 
@@ -26,21 +25,19 @@ const val GOOGLE_PAY_SHEET_PACKAGE = "com.google.android.gms"
  */
 @RunWith(AndroidJUnit4::class)
 class SampleGooglePayCheckoutTest {
+
     @get:Rule
     val activityRule = ActivityScenarioRule(CheckoutActivity::class.java)
 
     @get:Rule
     val composeTestRule = createAndroidComposeRule<CheckoutActivity>()
 
-    private val device: UiDevice
-
-    init {
-        val instrumentation = InstrumentationRegistry.getInstrumentation()
-        device = UiDevice.getInstance(instrumentation)
-    }
+    private lateinit var device: UiDevice
 
     @Before
     fun setUp() {
+        val instrumentation = InstrumentationRegistry.getInstrumentation()
+        device = UiDevice.getInstance(instrumentation)
     }
 
     @Test

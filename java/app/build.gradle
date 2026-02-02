@@ -3,13 +3,13 @@ plugins {
 }
 
 android {
-    namespace "com.google.android.gms.samples.wallet"
+    namespace "com.google.android.gms.samples.pay"
     compileSdk 34
 
     defaultConfig {
-        applicationId "com.google.android.gms.samples.wallet"
-        minSdk 21
-        targetSdk 33
+        applicationId "com.google.android.gms.samples.pay"
+        minSdk 23
+        targetSdk 34
         versionCode 1
         versionName "1.0"
 
@@ -36,9 +36,8 @@ android {
 
 dependencies {
     implementation "androidx.appcompat:appcompat:1.6.1"
-    implementation "androidx.lifecycle:lifecycle-viewmodel:2.5.1"
-    implementation "com.google.android.gms:play-services-pay:16.3.0"
-    implementation "com.google.android.gms:play-services-wallet:19.2.1"
+    implementation "androidx.lifecycle:lifecycle-viewmodel:2.7.0"
+    implementation "com.google.android.gms:play-services-wallet:19.6.0"
 
     androidTestImplementation "androidx.test.espresso:espresso-core:3.5.1"
     androidTestImplementation "androidx.test:runner:1.5.2"

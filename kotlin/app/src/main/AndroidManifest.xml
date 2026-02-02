@@ -8,7 +8,7 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true">
         <activity
-            android:name=".activity.CheckoutActivity"
+            android:name="com.google.android.gms.samples.pay.activity.CheckoutActivity"
             android:label="@string/store_name"
             android:screenOrientation="portrait"
             android:theme="@style/Theme.AppCompat"
@@ -18,6 +18,17 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        
+        <service
+            android:name="com.google.android.gms.samples.pay.service.MerchantPaymentDataCallbacksService"
+            android:permission="com.google.android.gms.permission.BIND_PAYMENTS_CALLBACK_SERVICE"
+            android:enabled="true"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="com.google.android.gms.wallet.callback.PAYMENT_DATA_CALLBACKS"/>
+            </intent-filter>
+        </service>
+
         <!-- Enabling this flag is required in order to use the PaymentsClient -->
         <meta-data
             android:name="com.google.android.gms.wallet.api.enabled"
