@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 Google Inc.
+ * Copyright 2021 Google Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,6 +23,8 @@ import com.google.android.gms.wallet.Wallet
 import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
+import java.math.BigDecimal
+import java.math.RoundingMode
 
 /**
  * Contains helper static methods for dealing with the Payments API.
@@ -135,6 +137,7 @@ object PaymentsUtil {
         } catch (e: JSONException) {
             null
         }
+    }
 
     /**
      * Information about the merchant requesting payment information

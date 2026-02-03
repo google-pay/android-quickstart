@@ -8,7 +8,7 @@ android {
 
     defaultConfig {
         applicationId "com.google.android.gms.samples.pay"
-        minSdk 23
+        minSdk 21
         targetSdk 34
         versionCode 1
         versionName "1.0"
