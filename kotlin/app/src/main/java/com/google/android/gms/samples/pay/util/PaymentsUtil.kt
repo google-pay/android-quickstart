@@ -103,12 +103,12 @@ object PaymentsUtil {
         JSONObject()
             .put("type", "CARD")
             .put("parameters", JSONObject()
-                    .put("allowedAuthMethods", allowedCardAuthMethods)
-                    .put("allowedCardNetworks", allowedCardNetworks)
-                    .put("billingAddressRequired", true)
-                    .put("billingAddressParameters", JSONObject()
-                            .put("format", "FULL")
-                    )
+                .put("allowedAuthMethods", allowedCardAuthMethods)
+                .put("allowedCardNetworks", allowedCardNetworks)
+                .put("billingAddressRequired", true)
+                .put("billingAddressParameters", JSONObject()
+                    .put("format", "FULL")
+                )
             )
 
     /**
@@ -137,7 +137,6 @@ object PaymentsUtil {
         } catch (e: JSONException) {
             null
         }
-    }
 
     /**
      * Information about the merchant requesting payment information
@@ -191,8 +190,8 @@ object PaymentsUtil {
             .put("shippingAddressRequired", true)
             .put("shippingOptionRequired", true)
             .put("shippingAddressParameters", JSONObject()
-                    .put("phoneNumberRequired", false)
-                    .put("allowedCountryCodes", JSONArray(listOf("US", "GB")))
+                .put("phoneNumberRequired", false)
+                .put("allowedCountryCodes", JSONArray(listOf("US", "GB")))
             )
             .put("callbackIntents", JSONArray()
                 .put("PAYMENT_AUTHORIZATION")
