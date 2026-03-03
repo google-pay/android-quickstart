@@ -139,4 +139,12 @@ public class Constants {
         put("protocolVersion", "ECv2");
         put("publicKey", DIRECT_TOKENIZATION_PUBLIC_KEY);
       }};
+
+  /**
+   * A coefficient to calculate tax rates.
+   *
+   * @value #TAX_RATE The rate at which you want to calculate tax.
+   */
+  public static final Double TAX_RATE = 0.35;
 }
+

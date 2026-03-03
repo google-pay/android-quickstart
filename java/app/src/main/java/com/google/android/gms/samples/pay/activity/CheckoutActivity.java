@@ -43,10 +43,9 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.Locale;
+import java.util.Objects;
 
-/**
- * Checkout implementation for the app
- */
+/** Checkout implementation for the app */
 public class CheckoutActivity extends AppCompatActivity {
 
   private CheckoutViewModel model;
@@ -54,22 +53,26 @@ public class CheckoutActivity extends AppCompatActivity {
   private PayButton googlePayButton;
 
   private final ActivityResultLauncher<Task<PaymentData>> paymentDataLauncher =
-      registerForActivityResult(new GetPaymentDataResult(), result -> {
-        int statusCode = result.getStatus().getStatusCode();
-        switch (statusCode) {
-          case CommonStatusCodes.SUCCESS:
-            handlePaymentSuccess(result.getResult());
-            break;
-          //case CommonStatusCodes.CANCELED: The user canceled
-          case CommonStatusCodes.DEVELOPER_ERROR:
-            handleError(statusCode, result.getStatus().getStatusMessage());
-            break;
-          default:
-            handleError(statusCode, "Unexpected non API" +
-                " exception when trying to deliver the task result to an activity!");
-            break;
-        }
-      });
+      registerForActivityResult(
+          new GetPaymentDataResult(),
+          result -> {
+            int statusCode = result.getStatus().getStatusCode();
+            switch (statusCode) {
+              case CommonStatusCodes.SUCCESS:
+                handlePaymentSuccess(Objects.requireNonNull(result.getResult()));
+                break;
+              // case CommonStatusCodes.CANCELED: The user canceled
+              case CommonStatusCodes.DEVELOPER_ERROR:
+                handleError(statusCode, result.getStatus().getStatusMessage());
+                break;
+              default:
+                handleError(
+                    statusCode,
+                    "Unexpected non API"
+                        + " exception when trying to deliver the task result to an activity!");
+                break;
+            }
+          });
 
   /**
    * Initialize the Google Pay API on creation of the activity
@@ -97,19 +100,19 @@ public class CheckoutActivity extends AppCompatActivity {
     try {
       googlePayButton.initialize(
           ButtonOptions.newBuilder()
-              .setAllowedPaymentMethods(PaymentsUtil.getAllowedPaymentMethods().toString()).build()
-      );
+              .setAllowedPaymentMethods(PaymentsUtil.getAllowedPaymentMethods().toString())
+              .build());
       googlePayButton.setOnClickListener(this::requestPayment);
     } catch (JSONException e) {
-      // Keep Google Pay button hidden (consider logging this to your app analytics service)
+      throw new RuntimeException("The Google Pay button can't be initialized.", e);
     }
   }
 
   /**
-   * If isReadyToPay returned {@code true}, show the button and hide the "checking" text.
-   * Otherwise, notify the user that Google Pay is not available. Please adjust to fit in with
-   * your current user flow. You are not required to explicitly let the user know if isReadyToPay
-   * returns {@code false}.
+   * If isReadyToPay returned {@code true}, show the button and hide the "checking" text. Otherwise,
+   * notify the user that Google Pay is not available. Please adjust to fit in with your current
+   * user flow. You are not required to explicitly let the user know if isReadyToPay returns {@code
+   * false}.
    *
    * @param available isReadyToPay API response.
    */
@@ -123,8 +126,12 @@ public class CheckoutActivity extends AppCompatActivity {
 
   public void requestPayment(View view) {
     // The price provided to the API should include taxes and shipping.
-    final Task<PaymentData> task = model.getLoadPaymentDataTask("50.2");
-    task.addOnCompleteListener(paymentDataLauncher::launch);
+    try {
+      final Task<PaymentData> task = model.getLoadPaymentDataTask("50.2");
+      task.addOnCompleteListener(paymentDataLauncher::launch);
+    } catch (JSONException e) {
+      throw new RuntimeException("The payment data task couldn't be created.", e);
+    }
   }
 
   /**
@@ -133,7 +140,7 @@ public class CheckoutActivity extends AppCompatActivity {
    *
    * @param paymentData A response object returned by Google after a payer approves payment.
    * @see <a href="https://developers.google.com/pay/api/android/reference/
-   * object#PaymentData">PaymentData</a>
+   *     object#PaymentData">PaymentData</a>
    */
   private void handlePaymentSuccess(PaymentData paymentData) {
     final String paymentInfo = paymentData.toJson();
@@ -145,14 +152,13 @@ public class CheckoutActivity extends AppCompatActivity {
 
       final JSONObject info = paymentMethodData.getJSONObject("info");
       final String billingName = info.getJSONObject("billingAddress").getString("name");
-      Toast.makeText(
-          this, getString(R.string.payments_show_name, billingName),
-          Toast.LENGTH_LONG).show();
+      Toast.makeText(this, getString(R.string.payments_show_name, billingName), Toast.LENGTH_LONG)
+          .show();
 
       // Logging token string.
-      Log.d("Google Pay token", paymentMethodData
-          .getJSONObject("tokenizationData")
-          .getString("token"));
+      Log.d(
+          "Google Pay token",
+          paymentMethodData.getJSONObject("tokenizationData").getString("token"));
 
       startActivity(new Intent(this, CheckoutSuccessActivity.class));
 
@@ -166,12 +172,13 @@ public class CheckoutActivity extends AppCompatActivity {
    * only logging is required.
    *
    * @param statusCode holds the value of any constant from CommonStatusCode or one of the
-   *                   WalletConstants.ERROR_CODE_* constants.
+   *     WalletConstants.ERROR_CODE_* constants.
    * @see <a href="https://developers.google.com/android/reference/com/google/android/gms/wallet/
-   * WalletConstants#constant-summary">Wallet Constants Library</a>
+   *     WalletConstants#constant-summary">Wallet Constants Library</a>
    */
   private void handleError(int statusCode, @Nullable String message) {
-    Log.e("loadPaymentData failed",
+    Log.e(
+        "loadPaymentData failed",
         String.format(Locale.getDefault(), "Error code: %d, Message: %s", statusCode, message));
   }
 }

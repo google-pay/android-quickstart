@@ -182,10 +182,10 @@ object PaymentsUtil {
      * @return Payment data expected by your app.
      * See [PaymentDataRequest](https://developers.google.com/pay/api/android/reference/object.PaymentDataRequest)
      */
-    fun getPaymentDataRequest(priceLabel: String): JSONObject =
+    fun getPaymentDataRequest(price: String): JSONObject =
         baseRequest
             .put("allowedPaymentMethods", allowedPaymentMethods)
-            .put("transactionInfo", getTransactionInfo(priceLabel))
+            .put("transactionInfo", getTransactionInfo(price))
             .put("merchantInfo", merchantInfo)
             .put("shippingAddressRequired", true)
             .put("shippingOptionRequired", true)

@@ -88,8 +88,8 @@ class CheckoutViewModel(application: Application) : AndroidViewModel(application
      * @return a [Task] with the payment information.
      * @see [PaymentDataRequest](https://developers.google.com/android/reference/com/google/android/gms/wallet/PaymentsClient#loadPaymentData(com.google.android.gms.wallet.PaymentDataRequest)
     ) */
-    fun getLoadPaymentDataTask(priceLabel: String): Task<PaymentData> {
-        val paymentDataRequestJson = PaymentsUtil.getPaymentDataRequest(priceLabel)
+    fun getLoadPaymentDataTask(price: String): Task<PaymentData> {
+        val paymentDataRequestJson = PaymentsUtil.getPaymentDataRequest(price)
         val request = PaymentDataRequest.fromJson(paymentDataRequestJson.toString())
         return paymentsClient.loadPaymentData(request)
     }

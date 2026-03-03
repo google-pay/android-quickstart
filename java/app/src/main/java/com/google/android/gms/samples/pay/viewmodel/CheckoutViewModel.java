@@ -31,6 +31,7 @@ import com.google.android.gms.wallet.PaymentData;
 import com.google.android.gms.wallet.PaymentDataRequest;
 import com.google.android.gms.wallet.PaymentsClient;
 
+import org.json.JSONException;
 import org.json.JSONObject;
 
 public class CheckoutViewModel extends AndroidViewModel {
@@ -41,7 +42,7 @@ public class CheckoutViewModel extends AndroidViewModel {
     // LiveData with the result of whether the user can pay using Google Pay
     private final MutableLiveData<Boolean> _canUseGooglePay = new MutableLiveData<>();
 
-    public CheckoutViewModel(@NonNull Application application) {
+    public CheckoutViewModel(@NonNull Application application) throws JSONException {
         super(application);
         paymentsClient = PaymentsUtil.createPaymentsClient(application);
 
@@ -54,7 +55,7 @@ public class CheckoutViewModel extends AndroidViewModel {
      * Determine the user's ability to pay with a payment method supported by your app and display
      * a Google Pay payment button.
      */
-    private void fetchCanUseGooglePay() {
+    private void fetchCanUseGooglePay() throws JSONException {
         final JSONObject isReadyToPayJson = PaymentsUtil.getIsReadyToPayRequest();
         if (isReadyToPayJson == null) {
             _canUseGooglePay.setValue(false);
@@ -79,16 +80,13 @@ public class CheckoutViewModel extends AndroidViewModel {
     /**
      * Creates a Task that starts the payment process with the transaction details included.
      *
-     * @param priceLabel the price to show on the payment sheet.
+     * @param price the price to show on the payment sheet.
      * @return a Task with the payment information.
      */
-    public Task<PaymentData> getLoadPaymentDataTask(String priceLabel) {
-        JSONObject paymentDataRequestJson = PaymentsUtil.getPaymentDataRequest(priceLabel);
-        if (paymentDataRequestJson == null) {
-            return null;
-        }
+    public Task<PaymentData> getLoadPaymentDataTask(String price) throws JSONException {
+        JSONObject paymentDataRequestJson = PaymentsUtil.getPaymentDataRequest(price);
 
-        PaymentDataRequest request =
+      PaymentDataRequest request =
                 PaymentDataRequest.fromJson(paymentDataRequestJson.toString());
         return paymentsClient.loadPaymentData(request);
     }
