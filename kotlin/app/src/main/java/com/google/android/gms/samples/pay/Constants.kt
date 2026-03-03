@@ -132,4 +132,14 @@ object Constants {
             "protocolVersion" to "ECv1",
             "publicKey" to DIRECT_TOKENIZATION_PUBLIC_KEY
     )
+
+    /**
+     * Item price to be used in the sample app.
+     */
+    const val PAYMENT_SUBTOTAL = "50.20"
+
+    /**
+     * Estimated tax for the item.
+     */
+    const val PAYMENT_TAX = "5.02"
 }

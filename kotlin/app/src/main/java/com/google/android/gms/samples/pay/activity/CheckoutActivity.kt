@@ -25,11 +25,13 @@ import androidx.compose.runtime.getValue
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.google.android.gms.common.api.CommonStatusCodes
 import com.google.android.gms.wallet.contract.TaskResultContracts.GetPaymentDataResult
+import com.google.android.gms.samples.pay.Constants
 import com.google.android.gms.samples.pay.R
 import com.google.android.gms.samples.pay.ui.ProductScreen
 import com.google.android.gms.samples.pay.viewmodel.CheckoutViewModel
 import com.google.android.gms.samples.pay.viewmodel.PaymentUiState
 import kotlinx.coroutines.launch
+import java.util.Locale
 
 class CheckoutActivity : ComponentActivity() {
 
@@ -56,7 +58,7 @@ class CheckoutActivity : ComponentActivity() {
             ProductScreen(
                 title = "Men's Tech Shell Full-Zip",
                 description = "A versatile full-zip that you can wear all day long and even...",
-                price = "$50.20",
+                price = "$${Constants.PAYMENT_SUBTOTAL}",
                 image = R.drawable.ts_10_11019a,
                 payUiState = payState,
                 onGooglePayButtonClick = this::requestPayment,
@@ -65,7 +67,8 @@ class CheckoutActivity : ComponentActivity() {
     }
 
     private fun requestPayment() {
-        val task = model.getLoadPaymentDataTask(price = "50.2")
+        val totalPrice = (Constants.PAYMENT_SUBTOTAL.toDouble() + Constants.PAYMENT_TAX.toDouble())
+        val task = model.getLoadPaymentDataTask(priceLabel = String.format(Locale.getDefault(), "%.2f", totalPrice))
         task.addOnCompleteListener(paymentDataLauncher::launch)
     }
 }

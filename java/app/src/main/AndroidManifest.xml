@@ -12,7 +12,6 @@
         <activity
             android:name=".activity.CheckoutActivity"
             android:label="@string/store_name"
-            android:screenOrientation="portrait"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

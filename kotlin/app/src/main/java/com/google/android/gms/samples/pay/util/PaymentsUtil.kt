@@ -20,11 +20,13 @@ import android.content.Context
 import com.google.android.gms.samples.pay.Constants
 import com.google.android.gms.wallet.PaymentsClient
 import com.google.android.gms.wallet.Wallet
+import com.google.android.gms.wallet.callback.PaymentDataRequestUpdate
 import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
 import java.math.BigDecimal
 import java.math.RoundingMode
+import java.util.Locale
 
 /**
  * Contains helper static methods for dealing with the Payments API.
@@ -173,8 +175,17 @@ object PaymentsUtil {
         JSONObject()
             .put("totalPrice", price)
             .put("totalPriceStatus", "FINAL")
+            .put("totalPriceLabel", "Total")
             .put("countryCode", Constants.COUNTRY_CODE)
             .put("currencyCode", Constants.CURRENCY_CODE)
+
+    /**
+     * shippingAddressParameters - defines the parameters for the shipping address
+     */
+    private val shippingAddressParameters: JSONObject =
+        JSONObject()
+            .put("phoneNumberRequired", false)
+            .put("allowedCountryCodes", JSONArray(Constants.SHIPPING_SUPPORTED_COUNTRIES))
 
     /**
      * An object describing information requested in a Google Pay payment sheet
@@ -189,12 +200,132 @@ object PaymentsUtil {
             .put("merchantInfo", merchantInfo)
             .put("shippingAddressRequired", true)
             .put("shippingOptionRequired", true)
-            .put("shippingAddressParameters", JSONObject()
-                .put("phoneNumberRequired", false)
-                .put("allowedCountryCodes", JSONArray(listOf("US", "GB")))
-            )
+            .put("shippingAddressParameters", shippingAddressParameters)
+            .put("shippingOptionParameters", newShippingOptionParameters(null))
             .put("callbackIntents", JSONArray()
                 .put("PAYMENT_AUTHORIZATION")
                 .put("SHIPPING_ADDRESS")
                 .put("SHIPPING_OPTION"))
+
+    private val shippingOptions: Map<String, JSONObject> = mapOf(
+        "shipping-001" to JSONObject()
+            .put("id", "shipping-001")
+            .put("label", "$0.00: Free shipping label")
+            .put("description", "Free Shipping example text")
+            .put("price", "0.00"),
+        "shipping-002" to JSONObject()
+            .put("id", "shipping-002")
+            .put("label", "$1.99: Standard shipping label")
+            .put("description", "Standard shipping example text.")
+            .put("price", "1.99"),
+        "shipping-003" to JSONObject()
+            .put("id", "shipping-003")
+            .put("label", "$1000: Express shipping label")
+            .put("description", "Express shipping example text.")
+            .put("price", "1000"),
+        "shipping-004" to JSONObject()
+            .put("id", "shipping-004")
+            .put("label", "$2000: Same-day shipping label")
+            .put("description", "Same-day shipping example text.")
+            .put("price", "2000")
+    )
+
+    /**
+     * newShippingOptionParameters - Encapsulated shipping option parameters (set of options)
+     * definition
+     */
+    @Throws(JSONException::class)
+    private fun newShippingOptionParameters(curShippingOptionId: String?): JSONObject {
+        val shippingOptionParameters = JSONObject()
+        val shippingOptionsArray = JSONArray()
+
+        shippingOptions.values.forEach {
+            shippingOptionsArray.put(
+                JSONObject()
+                    .put("id", it.getString("id"))
+                    .put("label", it.getString("label"))
+                    .put("description", it.getString("description"))
+            )
+        }
+
+        shippingOptionParameters.put("shippingOptions", shippingOptionsArray)
+
+        // set a default shipping option
+        if (shippingOptions.containsKey(curShippingOptionId)) {
+            shippingOptionParameters.put("defaultSelectedOptionId", curShippingOptionId)
+        } else {
+            shippingOptionParameters.put("defaultSelectedOptionId", "shipping-001")
+        }
+
+        return shippingOptionParameters
+    }
+
+    /**
+     * createDisplayItem - Encapsulated definition for a display item
+     */
+    @Throws(JSONException::class)
+    private fun createDisplayItem(label: String, type: String, price: String): JSONObject {
+        return JSONObject().put("label", label).put("type", type).put("price", price)
+    }
+
+    /**
+     * getPaymentDataRequestUpdate - Creates a PaymentDataRequestUpdate object
+     */
+    fun getPaymentDataRequestUpdate(
+        intermediatePaymentDataJson: JSONObject,
+        totalPrice: String,
+        subTotal: String,
+        tax: String
+    ): JSONObject {
+        val paymentDataRequestUpdate = JSONObject()
+
+        // define transaction info
+        val newTransactionInfo = getTransactionInfo(totalPrice)
+
+        // process user-provided shipping option data
+        var shippingOptionId: String? = null
+        if (intermediatePaymentDataJson.has("shippingOptionData")
+            && intermediatePaymentDataJson.getJSONObject("shippingOptionData").has("id")
+        ) {
+            shippingOptionId = intermediatePaymentDataJson.getJSONObject("shippingOptionData").getString("id")
+        }
+
+        // define shipping options
+        if (intermediatePaymentDataJson.has("shippingAddress")) {
+            paymentDataRequestUpdate.put(
+                "newShippingOptionParameters",
+                newShippingOptionParameters(shippingOptionId)
+            )
+            if (paymentDataRequestUpdate.has("newShippingOptionParameters")) {
+                shippingOptionId = paymentDataRequestUpdate
+                    .getJSONObject("newShippingOptionParameters")
+                    .getString("defaultSelectedOptionId")
+            }
+        }
+
+        // define displayItems
+        val displayItems = JSONArray()
+        displayItems.put(createDisplayItem("Subtotal", "SUBTOTAL", subTotal))
+        displayItems.put(createDisplayItem("Estimated tax", "TAX", tax))
+
+        // get shipping price from selected option
+        val selectedShippingOption = shippingOptions[shippingOptionId]
+        val shippingPrice = selectedShippingOption?.getString("price") ?: "0.00"
+        if (selectedShippingOption != null) {
+            displayItems.put(createDisplayItem("Shipping", "LINE_ITEM", shippingPrice))
+        }
+
+        // recalculate total price
+        val newTotalPriceValue = totalPrice.toDouble() + shippingPrice.toDouble()
+        newTransactionInfo.put(
+            "totalPrice", String.format(Locale.getDefault(), "%.2f", newTotalPriceValue)
+        )
+        newTransactionInfo.put("totalPriceLabel", "Total")
+        newTransactionInfo.put("displayItems", displayItems)
+
+        // save all of the data we generated above into the appropriate objects
+        paymentDataRequestUpdate.put("newTransactionInfo", newTransactionInfo)
+
+        return paymentDataRequestUpdate
+    }
 }

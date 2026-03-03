@@ -127,7 +127,7 @@ public class CheckoutActivity extends AppCompatActivity {
   public void requestPayment(View view) {
     // The price provided to the API should include taxes and shipping.
     try {
-      final Task<PaymentData> task = model.getLoadPaymentDataTask("50.2");
+      final Task<PaymentData> task = model.getLoadPaymentDataTask("50.2"); // provide the default starting price here.
       task.addOnCompleteListener(paymentDataLauncher::launch);
     } catch (JSONException e) {
       throw new RuntimeException("The payment data task couldn't be created.", e);

@@ -22,6 +22,7 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.android.gms.common.api.ApiException
 import com.google.android.gms.common.api.CommonStatusCodes
+import com.google.android.gms.samples.pay.service.MerchantPaymentDataCallbacksService
 import com.google.android.gms.samples.pay.util.PaymentsUtil
 import com.google.android.gms.tasks.CancellationTokenSource
 import com.google.android.gms.tasks.Task
@@ -59,7 +60,7 @@ class CheckoutViewModel(application: Application) : AndroidViewModel(application
     /**
      * Determine the user's ability to pay with a payment method supported by your app and display
      * a Google Pay payment button.
-    ) */
+     */
     private suspend fun verifyGooglePayReadiness() {
         val newUiState: PaymentUiState = try {
             if (fetchCanUseGooglePay()) {
@@ -76,7 +77,7 @@ class CheckoutViewModel(application: Application) : AndroidViewModel(application
 
     /**
      * Determine the user's ability to pay with a payment method supported by your app.
-    ) */
+     */
     private suspend fun fetchCanUseGooglePay(): Boolean {
         val request = IsReadyToPayRequest.fromJson(PaymentsUtil.isReadyToPayRequest().toString())
         return paymentsClient.isReadyToPay(request).await()
@@ -86,10 +87,10 @@ class CheckoutViewModel(application: Application) : AndroidViewModel(application
      * Creates a [Task] that starts the payment process with the transaction details included.
      *
      * @return a [Task] with the payment information.
-     * @see [PaymentDataRequest](https://developers.google.com/android/reference/com/google/android/gms/wallet/PaymentsClient#loadPaymentData(com.google.android.gms.wallet.PaymentDataRequest)
-    ) */
-    fun getLoadPaymentDataTask(price: String): Task<PaymentData> {
-        val paymentDataRequestJson = PaymentsUtil.getPaymentDataRequest(price)
+     * @see [PaymentDataRequest](https://developers.google.com/android/reference/com/google/android/gms/wallet/PaymentsClient#loadPaymentData(com.google.android.gms.wallet.PaymentDataRequest))
+     */
+    fun getLoadPaymentDataTask(priceLabel: String): Task<PaymentData> {
+        val paymentDataRequestJson = PaymentsUtil.getPaymentDataRequest(priceLabel)
         val request = PaymentDataRequest.fromJson(paymentDataRequestJson.toString())
         return paymentsClient.loadPaymentData(request)
     }
@@ -100,8 +101,7 @@ class CheckoutViewModel(application: Application) : AndroidViewModel(application
      *
      * @param statusCode will hold the value of any constant from CommonStatusCode or one of the
      * WalletConstants.ERROR_CODE_* constants.
-     * @see [
-     * Wallet Constants Library](https://developers.google.com/android/reference/com/google/android/gms/wallet/WalletConstants.constant-summary)
+     * @see [Wallet Constants Library](https://developers.google.com/android/reference/com/google/android/gms/wallet/WalletConstants.constant-summary)
      */
     private fun handleError(statusCode: Int, message: String?) {
         Log.e("Google Pay API error", "Error code: $statusCode, Message: $message")
