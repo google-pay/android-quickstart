@@ -92,7 +92,8 @@ public class PaymentsUtil {
    */
   public static PaymentsClient createPaymentsClient(Context context) {
     Wallet.WalletOptions walletOptions =
-        new Wallet.WalletOptions.Builder().setEnvironment(Constants.PAYMENTS_ENVIRONMENT).build();
+        new Wallet.WalletOptions.Builder().setEnvironment(Constants.PAYMENTS_ENVIRONMENT)
+            .build();
     return Wallet.getPaymentsClient(context, walletOptions);
   }
 

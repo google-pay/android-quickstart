@@ -38,7 +38,7 @@ public class MerchantPaymentDataCallbacks extends BasePaymentDataCallbacks {
    * shipping address and shipping options.
    */
   @Override
-  protected void onPaymentDataChanged(
+  public void onPaymentDataChanged(
       IntermediatePaymentData request,
       @NonNull OnCompleteListener<PaymentDataRequestUpdate> onCompleteListener) {
     // define prices and variables
@@ -63,7 +63,7 @@ public class MerchantPaymentDataCallbacks extends BasePaymentDataCallbacks {
 
   /** onPaymentAuthorized callback - Called when a payment is authorized in the payment sheet. */
   @Override
-  protected void onPaymentAuthorized(
+  public void onPaymentAuthorized(
       PaymentData request, @NonNull OnCompleteListener<PaymentAuthorizationResult> OnCompleteListener) {
     Log.i("Invocation", "onPaymentAuthorized invoked");
     Bundle savedState = new Bundle();
