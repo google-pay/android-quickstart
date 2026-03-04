@@ -20,16 +20,16 @@ import android.content.Context
 import com.google.android.gms.samples.pay.Constants
 import com.google.android.gms.wallet.PaymentsClient
 import com.google.android.gms.wallet.Wallet
+import java.math.BigDecimal
+import java.util.Locale
 import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
-import java.math.BigDecimal
-import java.util.Locale
 
 /**
  * Contains helper static methods for dealing with the Payments API.
  *
- * <p>Many of the parameters used in the code are optional and are set here merely to call out their
+ * Many of the parameters used in the code are optional and are set here merely to call out their
  * existence. Please consult the documentation to learn more and feel free to remove ones not
  * relevant to your implementation.
  */
@@ -38,7 +38,7 @@ object PaymentsUtil {
     /**
      * Encapsulated shipping option parameters (set of options) definition.
      *
-     * @return A {@link JSONObject} containing shipping options and the default selected option.
+     * @return A [JSONObject] containing shipping options and the default selected option.
      * @throws JSONException If the JSON object is malformed.
      */
     @Throws(JSONException::class)
@@ -79,7 +79,7 @@ object PaymentsUtil {
      * @param id The unique identifier for the shipping option.
      * @param label The label to display for the shipping option.
      * @param description A brief description of the shipping option.
-     * @return A {@link JSONObject} representing the shipping option.
+     * @return A [JSONObject] representing the shipping option.
      * @throws JSONException If the JSON object is malformed.
      */
     @Throws(JSONException::class)
@@ -93,7 +93,7 @@ object PaymentsUtil {
      * @param label The label to display for the item.
      * @param type The type of the display item (e.g., LINE_ITEM, SUBTOTAL).
      * @param price The price of the item.
-     * @return A {@link JSONObject} representing the display item.
+     * @return A [JSONObject] representing the display item.
      * @throws JSONException If the JSON object is malformed.
      */
     @Throws(JSONException::class)
@@ -113,11 +113,11 @@ object PaymentsUtil {
     }
 
     /**
-     * Creates an instance of {@link PaymentsClient} for use in an {@link Context} using the
-     * environment and theme set in {@link Constants}.
+     * Creates an instance of [PaymentsClient] for use in an [Context] using the
+     * environment and theme set in [Constants].
      *
      * @param context is the caller's context.
-     * @return An instance of {@link PaymentsClient}.
+     * @return An instance of [PaymentsClient].
      */
     fun createPaymentsClient(context: Context): PaymentsClient {
         val walletOptions = Wallet.WalletOptions.Builder()
@@ -129,15 +129,14 @@ object PaymentsUtil {
     /**
      * Gateway Integration: Identify your gateway and your app's gateway merchant identifier.
      *
-     * <p>The Google Pay API response will return an encrypted payment method capable of being charged
+     * The Google Pay API response will return an encrypted payment method capable of being charged
      * by a supported gateway after payer authorization.
      *
-     * <p>TODO: Check with your gateway on the parameters to pass and modify them in Constants.java.
+     * TODO: Check with your gateway on the parameters to pass and modify them in Constants.java.
      *
      * @return Payment data tokenization for the CARD payment method.
      * @throws JSONException if the object is malformed.
-     * @see <a
-     *     href="https://developers.google.com/pay/api/android/reference/object#PaymentMethodTokenizationSpecification">PaymentMethodTokenizationSpecification</a>
+     * @see [PaymentMethodTokenizationSpecification](https://developers.google.com/pay/api/android/reference/object#PaymentMethodTokenizationSpecification)
      */
     @Throws(JSONException::class)
     private fun getGatewayTokenizationSpecification(): JSONObject {
@@ -152,16 +151,15 @@ object PaymentsUtil {
     }
 
     /**
-     * {@code DIRECT} Integration: Decrypt a response directly on your servers. This configuration has
+     * `DIRECT` Integration: Decrypt a response directly on your servers. This configuration has
      * additional data security requirements from Google and additional PCI DSS compliance complexity.
      *
-     * <p>Please refer to the documentation for more information about {@code DIRECT} integration. The
+     * Please refer to the documentation for more information about `DIRECT` integration. The
      * type of integration you use depends on your payment processor.
      *
      * @return Payment data tokenization for the CARD payment method.
      * @throws JSONException if the object is malformed.
-     * @see <a
-     *     href="https://developers.google.com/pay/api/android/reference/object#PaymentMethodTokenizationSpecification">PaymentMethodTokenizationSpecification</a>
+     * @see [PaymentMethodTokenizationSpecification](https://developers.google.com/pay/api/android/reference/object#PaymentMethodTokenizationSpecification)
      */
     @Throws(JSONException::class, RuntimeException::class)
     private fun getDirectTokenizationSpecification(): JSONObject {
@@ -173,11 +171,10 @@ object PaymentsUtil {
     /**
      * Card networks supported by your app and your gateway.
      *
-     * <p>TODO: Confirm card networks supported by your app and gateway & update in Constants.java.
+     * TODO: Confirm card networks supported by your app and gateway & update in Constants.java.
      *
      * @return Allowed card networks.
-     * @see <a
-     *     href="https://developers.google.com/pay/api/android/reference/object#CardParameters">CardParameters</a>
+     * @see [CardParameters](https://developers.google.com/pay/api/android/reference/object#CardParameters)
      */
     private fun getAllowedCardNetworks(): JSONArray {
         return JSONArray(Constants.SUPPORTED_NETWORKS)
@@ -186,12 +183,11 @@ object PaymentsUtil {
     /**
      * Card authentication methods supported by your app and your gateway.
      *
-     * <p>TODO: Confirm your processor supports Android device tokens on your supported card networks
+     * TODO: Confirm your processor supports Android device tokens on your supported card networks
      * and make updates in Constants.java.
      *
      * @return Allowed card authentication methods.
-     * @see <a
-     *     href="https://developers.google.com/pay/api/android/reference/object#CardParameters">CardParameters</a>
+     * @see [CardParameters](https://developers.google.com/pay/api/android/reference/object#CardParameters)
      */
     private fun getAllowedCardAuthMethods(): JSONArray {
         return JSONArray(Constants.SUPPORTED_METHODS)
@@ -200,13 +196,12 @@ object PaymentsUtil {
     /**
      * Describe your app's support for the CARD payment method.
      *
-     * <p>The provided properties are applicable to both an IsReadyToPayRequest and a
+     * The provided properties are applicable to both an IsReadyToPayRequest and a
      * PaymentDataRequest.
      *
      * @return A CARD PaymentMethod object describing accepted cards.
      * @throws JSONException if the object is malformed.
-     * @see <a
-     *     href="https://developers.google.com/pay/api/android/reference/object#PaymentMethod">PaymentMethod</a>
+     * @see [PaymentMethod](https://developers.google.com/pay/api/android/reference/object#PaymentMethod)
      */
     @Throws(JSONException::class)
     private fun getBaseCardPaymentMethod(): JSONObject {
@@ -227,8 +222,7 @@ object PaymentsUtil {
      *
      * @return A CARD PaymentMethod describing accepted cards and optional fields.
      * @throws JSONException if the object is malformed.
-     * @see <a
-     *     href="https://developers.google.com/pay/api/android/reference/object#PaymentMethod">PaymentMethod</a>
+     * @see [PaymentMethod](https://developers.google.com/pay/api/android/reference/object#PaymentMethod)
      */
     @Throws(JSONException::class)
     private fun getCardPaymentMethod(): JSONObject {
@@ -253,8 +247,7 @@ object PaymentsUtil {
      *
      * @return API version and payment methods supported by the app.
      * @throws JSONException if the object is malformed.
-     * @see <a
-     *     href="https://developers.google.com/pay/api/android/reference/object#IsReadyToPayRequest">IsReadyToPayRequest</a>
+     * @see [IsReadyToPayRequest](https://developers.google.com/pay/api/android/reference/object#IsReadyToPayRequest)
      */
     @Throws(JSONException::class)
     fun getIsReadyToPayRequest(): JSONObject {
@@ -268,8 +261,7 @@ object PaymentsUtil {
      * @param price The price of the product.
      * @return information about the requested payment.
      * @throws JSONException if the object is malformed.
-     * @see <a
-     *     href="https://developers.google.com/pay/api/android/reference/object#TransactionInfo">TransactionInfo</a>
+     * @see [TransactionInfo](https://developers.google.com/pay/api/android/reference/object#TransactionInfo)
      */
     @Throws(JSONException::class)
     fun getTransactionInfo(price: String): JSONObject {
@@ -289,8 +281,7 @@ object PaymentsUtil {
      * @param price The price of the product.
      * @return information about the requested payment.
      * @throws JSONException if the object is malformed.
-     * @see <a
-     *     href="https://developers.google.com/pay/api/android/reference/object#TransactionInfo">TransactionInfo</a>
+     * @see [TransactionInfo](https://developers.google.com/pay/api/android/reference/object#TransactionInfo)
      */
     @Throws(JSONException::class)
     fun getDisplayItems(price: String): JSONArray {
@@ -309,8 +300,7 @@ object PaymentsUtil {
      * @param priceLabel the price of the product
      * @return Payment data expected by your app.
      * @throws JSONException If the object is malformed.
-     * @see <a
-     *     href="https://developers.google.com/pay/api/android/reference/object#PaymentDataRequest">PaymentDataRequest</a>
+     * @see [PaymentDataRequest](https://developers.google.com/pay/api/android/reference/object#PaymentDataRequest)
      */
     @Throws(JSONException::class)
     fun getPaymentDataRequest(priceLabel: String): JSONObject {
@@ -343,8 +333,7 @@ object PaymentsUtil {
      * @param priceLabel the price of the product.
      * @return Payment data expected by your app.
      * @throws JSONException If the object is malformed.
-     * @see <a
-     *     href="https://developers.google.com/pay/api/android/reference/object#PaymentDataRequest">PaymentDataRequest</a>
+     * @see [PaymentDataRequest](https://developers.google.com/pay/api/android/reference/object#PaymentDataRequest)
      */
     @Throws(JSONException::class)
     fun getPaymentDataRequestUpdate(
