@@ -22,12 +22,10 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
-
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModelProvider;
-
 import com.google.android.gms.common.api.CommonStatusCodes;
 import com.google.android.gms.samples.pay.Constants;
 import com.google.android.gms.samples.pay.R;
@@ -39,14 +37,12 @@ import com.google.android.gms.wallet.PaymentData;
 import com.google.android.gms.wallet.button.ButtonOptions;
 import com.google.android.gms.wallet.button.PayButton;
 import com.google.android.gms.wallet.contract.TaskResultContracts.GetPaymentDataResult;
-
+import java.util.Locale;
+import java.util.Objects;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.util.Locale;
-import java.util.Objects;
-
-/** Checkout implementation for the app */
+/** Checkout implementation for the app. */
 public class CheckoutActivity extends AppCompatActivity {
 
   private CheckoutViewModel model;
@@ -76,7 +72,7 @@ public class CheckoutActivity extends AppCompatActivity {
           });
 
   /**
-   * Initialize the Google Pay API on creation of the activity
+   * Initialize the Google Pay API on creation of the activity.
    *
    * @see Activity#onCreate(android.os.Bundle)
    */
@@ -128,10 +124,16 @@ public class CheckoutActivity extends AppCompatActivity {
     }
   }
 
+  /**
+   * Handles the request to start a payment.
+   *
+   * @param view The view that triggered the request.
+   */
   public void requestPayment(View view) {
     // The price provided to the API should include taxes and shipping.
     try {
-      final Task<PaymentData> task = model.getLoadPaymentDataTask(Constants.BASE_PRICE); // provide the default starting price here.
+      // provide the default starting price here.
+      final Task<PaymentData> task = model.getLoadPaymentDataTask(Constants.BASE_PRICE);
       task.addOnCompleteListener(paymentDataLauncher::launch);
     } catch (JSONException e) {
       throw new RuntimeException("The payment data task couldn't be created.", e);
@@ -143,8 +145,8 @@ public class CheckoutActivity extends AppCompatActivity {
    * requested information, such as billing and shipping address.
    *
    * @param paymentData A response object returned by Google after a payer approves payment.
-   * @see <a href="https://developers.google.com/pay/api/android/reference/
-   *     object#PaymentData">PaymentData</a>
+   * @see <a
+   *     href="https://developers.google.com/pay/api/android/reference/object#PaymentData">PaymentData</a>
    */
   private void handlePaymentSuccess(PaymentData paymentData) {
     final String paymentInfo = paymentData.toJson();
@@ -177,8 +179,10 @@ public class CheckoutActivity extends AppCompatActivity {
    *
    * @param statusCode holds the value of any constant from CommonStatusCode or one of the
    *     WalletConstants.ERROR_CODE_* constants.
-   * @see <a href="https://developers.google.com/android/reference/com/google/android/gms/wallet/
-   *     WalletConstants#constant-summary">Wallet Constants Library</a>
+   * @param message An optional error message.
+   * @see <a
+   *     href="https://developers.google.com/android/reference/com/google/android/gms/wallet/WalletConstants#constant-summary">Wallet
+   *     Constants Library</a>
    */
   private void handleError(int statusCode, @Nullable String message) {
     Log.e(

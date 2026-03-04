@@ -17,22 +17,18 @@
 package com.google.android.gms.samples.pay.activity;
 
 import android.os.Bundle;
-
 import androidx.appcompat.app.AppCompatActivity;
-
 import com.google.android.gms.samples.pay.databinding.ActivityCheckoutSuccessBinding;
 
-/**
- * An activity that is displayed when a payment completes successfully.
- */
+/** An activity that is displayed when a payment completes successfully. */
 public class CheckoutSuccessActivity extends AppCompatActivity {
 
   /**
    * Initializes the activity.
    *
-   * @param savedInstanceState If the activity is being re-initialized after
-   *     previously being shut down then this Bundle contains the data it most
-   *     recently supplied in {@link #onSaveInstanceState}.  <b><i>Note: Otherwise it is null.</i></b>
+   * @param savedInstanceState If the activity is being re-initialized after previously being shut
+   *     down then this Bundle contains the data it most recently supplied in {@link
+   *     #onSaveInstanceState}. <b><i>Note: Otherwise it is null.</i></b>
    */
   @Override
   protected void onCreate(Bundle savedInstanceState) {

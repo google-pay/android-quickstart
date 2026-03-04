@@ -37,12 +37,18 @@ import org.json.JSONObject;
  */
 public class PaymentsUtil {
 
+  private PaymentsUtil() {}
+
   /**
-   * newShippingOptionParams - Encapsulated shipping option parameters (set of options) definition
+   * Encapsulated shipping option parameters (set of options) definition.
+   *
+   * @return A {@link JSONObject} containing shipping options and the default selected option.
+   * @throws JSONException If the JSON object is malformed.
    */
   public static JSONObject getShippingOptionParameters() throws JSONException {
     JSONObject shippingOptionParameters = new JSONObject();
     JSONArray shippingOptions = new JSONArray();
+
     shippingOptions.put(
         createShippingOption(
             "shipping-001", "$0.00: Free shipping label", "Free Shipping example text"));
@@ -55,22 +61,36 @@ public class PaymentsUtil {
     shippingOptions.put(
         createShippingOption(
             "shipping-004", "$2000: Same-day shipping label", "Same-day shipping example text."));
+
     shippingOptionParameters.put("shippingOptions", shippingOptions);
-    // set a default shipping option
     shippingOptionParameters.put("defaultSelectedOptionId", "shipping-001");
+
     return shippingOptionParameters;
   }
 
-  /** createShippingOption - Defines an encapsulated shipping option */
+  /**
+   * Defines an encapsulated shipping option.
+   *
+   * @param id The unique identifier for the shipping option.
+   * @param label The label to display for the shipping option.
+   * @param description A brief description of the shipping option.
+   * @return A {@link JSONObject} representing the shipping option.
+   * @throws JSONException If the JSON object is malformed.
+   */
   private static JSONObject createShippingOption(String id, String label, String description)
       throws JSONException {
-    return new JSONObject()
-        .put("id", id)
-        .put("label", label)
-        .put("description", description);
+    return new JSONObject().put("id", id).put("label", label).put("description", description);
   }
 
-  /** createDisplayItem - Encapsulated definition for a display item */
+  /**
+   * Encapsulated definition for a display item.
+   *
+   * @param label The label to display for the item.
+   * @param type The type of the display item (e.g., LINE_ITEM, SUBTOTAL).
+   * @param price The price of the item.
+   * @return A {@link JSONObject} representing the display item.
+   * @throws JSONException If the JSON object is malformed.
+   */
   public static JSONObject createDisplayItem(String label, String type, String price)
       throws JSONException {
     return new JSONObject().put("label", label).put("type", type).put("price", price);
@@ -91,11 +111,11 @@ public class PaymentsUtil {
    * environment and theme set in {@link Constants}.
    *
    * @param context is the caller's context.
+   * @return An instance of {@link PaymentsClient}.
    */
   public static PaymentsClient createPaymentsClient(Context context) {
     Wallet.WalletOptions walletOptions =
-        new Wallet.WalletOptions.Builder().setEnvironment(Constants.PAYMENTS_ENVIRONMENT)
-            .build();
+        new Wallet.WalletOptions.Builder().setEnvironment(Constants.PAYMENTS_ENVIRONMENT).build();
     return Wallet.getPaymentsClient(context, walletOptions);
   }
 
@@ -109,8 +129,8 @@ public class PaymentsUtil {
    *
    * @return Payment data tokenization for the CARD payment method.
    * @throws JSONException if the object is malformed.
-   * @see <a href=
-   *     "https://developers.google.com/pay/api/android/reference/object#PaymentMethodTokenizationSpecification">PaymentMethodTokenizationSpecification</a>
+   * @see <a
+   *     href="https://developers.google.com/pay/api/android/reference/object#PaymentMethodTokenizationSpecification">PaymentMethodTokenizationSpecification</a>
    */
   private static JSONObject getGatewayTokenizationSpecification() throws JSONException {
     return new JSONObject()
@@ -146,7 +166,7 @@ public class PaymentsUtil {
    *
    * <p>TODO: Confirm card networks supported by your app and gateway & update in Constants.java.
    *
-   * @return Allowed card networks
+   * @return Allowed card networks.
    * @see <a
    *     href="https://developers.google.com/pay/api/android/reference/object#CardParameters">CardParameters</a>
    */
@@ -192,7 +212,7 @@ public class PaymentsUtil {
   }
 
   /**
-   * Describe the expected returned payment data for the CARD payment method
+   * Describe the expected returned payment data for the CARD payment method.
    *
    * @return A CARD PaymentMethod describing accepted cards and optional fields.
    * @throws JSONException if the object is malformed.
@@ -219,6 +239,7 @@ public class PaymentsUtil {
    * readiness to pay.
    *
    * @return API version and payment methods supported by the app.
+   * @throws JSONException if the object is malformed.
    * @see <a
    *     href="https://developers.google.com/pay/api/android/reference/object#IsReadyToPayRequest">IsReadyToPayRequest</a>
    */
@@ -230,6 +251,7 @@ public class PaymentsUtil {
   /**
    * Provide Google Pay API with a payment amount, currency, and amount status.
    *
+   * @param price The price of the product.
    * @return information about the requested payment.
    * @throws JSONException if the object is malformed.
    * @see <a
@@ -249,6 +271,7 @@ public class PaymentsUtil {
   /**
    * Provide Google Pay API with a payment amount, currency, and amount status.
    *
+   * @param price The price of the product.
    * @return information about the requested payment.
    * @throws JSONException if the object is malformed.
    * @see <a
@@ -256,24 +279,25 @@ public class PaymentsUtil {
    */
   public static JSONArray getDisplayItems(String price) throws JSONException {
     JSONArray displayItems = new JSONArray();
-    String Tax =
+    String tax =
         String.format(
             Locale.getDefault(), "%.2f", new BigDecimal(price).multiply(new BigDecimal(TAX_RATE)));
-    displayItems.put(PaymentsUtil.createDisplayItem("Total", "SUBTOTAL", price));
-    displayItems.put(PaymentsUtil.createDisplayItem("Tax", "TAX", Tax));
+    displayItems.put(createDisplayItem("Total", "SUBTOTAL", price));
+    displayItems.put(createDisplayItem("Tax", "TAX", tax));
     return displayItems;
   }
 
   /**
-   * An object describing information to be requested via the Google Pay payment sheet
+   * An object describing information to be requested via the Google Pay payment sheet.
    *
    * @param priceLabel the price of the product
    * @return Payment data expected by your app.
+   * @throws JSONException If the object is malformed.
    * @see <a
    *     href="https://developers.google.com/pay/api/android/reference/object#PaymentDataRequest">PaymentDataRequest</a>
    */
   public static JSONObject getPaymentDataRequest(String priceLabel) throws JSONException {
-    return PaymentsUtil.getBaseRequest()
+    return getBaseRequest()
         .put("allowedPaymentMethods", getAllowedPaymentMethods())
         .put("transactionInfo", getTransactionInfo(priceLabel))
         .put("merchantInfo", new JSONObject().put("merchantName", Constants.MERCHANT_NAME))
@@ -294,11 +318,12 @@ public class PaymentsUtil {
   }
 
   /**
-   * An object describing information to be updated via the Google Pay payment sheet
+   * An object describing information to be updated via the Google Pay payment sheet.
    *
    * @param intermediatePaymentData the intermediate payment data containing user selections.
    * @param priceLabel the price of the product.
    * @return Payment data expected by your app.
+   * @throws JSONException If the object is malformed.
    * @see <a
    *     href="https://developers.google.com/pay/api/android/reference/object#PaymentDataRequest">PaymentDataRequest</a>
    */
@@ -326,7 +351,8 @@ public class PaymentsUtil {
     paymentDataRequestUpdate
         .getJSONObject("newTransactionInfo")
         .getJSONArray("displayItems")
-        .put(shippingDisplayItem); // and data display item
+        .put(shippingDisplayItem);
+
     // define shipping price
     if (shippingDisplayItem.has("price")) {
       // Update displayItems with the new price.
@@ -341,27 +367,31 @@ public class PaymentsUtil {
     return paymentDataRequestUpdate;
   }
 
+  /**
+   * Get a display item object for the selected shipping option.
+   *
+   * @param shippingOptionId the ID of the selected shipping option.
+   * @return a JSONObject containing the display item for the shipping option.
+   * @throws JSONException if the shipping option is invalid.
+   */
   private static JSONObject getShippingDisplayItem(String shippingOptionId) throws JSONException {
-
     if (shippingOptionId == null) {
       return new JSONObject();
     }
 
-    // example of how to provide different shipping data depending on user-selected option
     switch (shippingOptionId) {
       case "shipping-001":
-        return PaymentsUtil.createDisplayItem("Shipping", "LINE_ITEM", "0");
+        return createDisplayItem("Shipping", "LINE_ITEM", "0");
       case "shipping-002":
-        return PaymentsUtil.createDisplayItem("Shipping", "LINE_ITEM", "1.99");
+        return createDisplayItem("Shipping", "LINE_ITEM", "1.99");
       case "shipping-003":
-        return PaymentsUtil.createDisplayItem("Shipping", "LINE_ITEM", "1000");
+        return createDisplayItem("Shipping", "LINE_ITEM", "1000");
       case "shipping-004":
-        return PaymentsUtil.createDisplayItem("Shipping", "LINE_ITEM", "2000");
+        return createDisplayItem("Shipping", "LINE_ITEM", "2000");
       case "shipping_option_unselected":
         return new JSONObject();
       default:
         throw new JSONException("This shipping option is invalid for the given address");
-        // example of how to handle an unspecified or invalid shipping option
     }
   }
 }

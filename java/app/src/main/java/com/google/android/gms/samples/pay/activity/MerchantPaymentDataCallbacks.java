@@ -13,30 +13,36 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package com.google.android.gms.samples.pay.activity;
 
 import android.os.Bundle;
 import android.util.Log;
-
 import androidx.annotation.NonNull;
-
 import com.google.android.gms.samples.pay.Constants;
+import com.google.android.gms.samples.pay.util.PaymentsUtil;
 import com.google.android.gms.wallet.PaymentData;
 import com.google.android.gms.wallet.callback.BasePaymentDataCallbacks;
 import com.google.android.gms.wallet.callback.IntermediatePaymentData;
 import com.google.android.gms.wallet.callback.OnCompleteListener;
 import com.google.android.gms.wallet.callback.PaymentAuthorizationResult;
 import com.google.android.gms.wallet.callback.PaymentDataRequestUpdate;
-import com.google.android.gms.samples.pay.util.PaymentsUtil;
+import java.util.Objects;
 import org.json.JSONException;
 import org.json.JSONObject;
-import java.util.Objects;
 
+/**
+ * Implementation of {@link BasePaymentDataCallbacks} that handles callbacks from the Google Pay
+ * payment sheet.
+ */
 public class MerchantPaymentDataCallbacks extends BasePaymentDataCallbacks {
 
   /**
-   * onPaymentDataChanged callback: Handles payment data changes in the payment sheet such as
-   * shipping address and shipping options. Values passed back to it will update the payment sheet.
+   * Handles payment data changes in the payment sheet such as shipping address and shipping
+   * options. Values passed back to it will update the payment sheet.
+   *
+   * @param request The updated payment data from the payment sheet.
+   * @param onCompleteListener The listener to call when the update is complete.
    */
   @Override
   public void onPaymentDataChanged(
@@ -49,7 +55,8 @@ public class MerchantPaymentDataCallbacks extends BasePaymentDataCallbacks {
       assert request != null;
       JSONObject intermediatePaymentData = new JSONObject(request.toJson());
       // define transaction info
-      paymentDataRequestUpdate = PaymentsUtil.getPaymentDataRequestUpdate(intermediatePaymentData, Constants.BASE_PRICE);
+      paymentDataRequestUpdate =
+          PaymentsUtil.getPaymentDataRequestUpdate(intermediatePaymentData, Constants.BASE_PRICE);
       newSavedState.putString("paymentDataRequestUpdate", paymentDataRequestUpdate.toString());
       // return the generated data to the client
       onCompleteListener.complete(
@@ -61,13 +68,18 @@ public class MerchantPaymentDataCallbacks extends BasePaymentDataCallbacks {
     }
   }
 
-  /** onPaymentAuthorized callback: Called when a payment is authorized in the payment sheet.
-   * Use this callback to perform any final validation on the payment data. Throwing an error
-   * will allow the user to make corrections to the payment sheet.
+  /**
+   * Called when a payment is authorized in the payment sheet. Use this callback to perform any
+   * final validation on the payment data. Throwing an error will allow the user to make
+   * corrections to the payment sheet.
+   *
+   * @param request The payment data from the payment sheet.
+   * @param onCompleteListener The listener to call when the authorization is complete.
    */
   @Override
   public void onPaymentAuthorized(
-      PaymentData request, @NonNull OnCompleteListener<PaymentAuthorizationResult> OnCompleteListener) {
+      PaymentData request,
+      @NonNull OnCompleteListener<PaymentAuthorizationResult> onCompleteListener) {
     Log.i("Invocation", "onPaymentAuthorized invoked");
     Bundle savedState = new Bundle();
     JSONObject paymentAuthorizationResultJson = new JSONObject();
@@ -88,7 +100,7 @@ public class MerchantPaymentDataCallbacks extends BasePaymentDataCallbacks {
                 .put("intent", "PAYMENT_AUTHORIZATION");
         paymentAuthorizationResultJson.put("error", error);
       }
-      OnCompleteListener.complete(
+      onCompleteListener.complete(
           PaymentAuthorizationResult.fromJson(paymentAuthorizationResultJson.toString())
               .withUpdatedSavedState(savedState));
     } catch (JSONException e) {
