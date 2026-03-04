@@ -54,11 +54,12 @@ object Constants {
      * @value #SUPPORTED_NETWORKS
      */
     val SUPPORTED_NETWORKS = listOf(
-            "AMEX",
-            "DISCOVER",
-            "JCB",
-            "MASTERCARD",
-            "VISA")
+        "AMEX",
+        "DISCOVER",
+        "JCB",
+        "MASTERCARD",
+        "VISA"
+    )
 
     /**
      * The Google Pay API may return cards on file on Google.com (PAN_ONLY) and/or a device token on
@@ -67,8 +68,9 @@ object Constants {
      * @value #SUPPORTED_METHODS
      */
     val SUPPORTED_METHODS = listOf(
-            "PAN_ONLY",
-            "CRYPTOGRAM_3DS")
+        "PAN_ONLY",
+        "CRYPTOGRAM_3DS"
+    )
 
     /**
      * Required by the API, but not visible to the user.
@@ -98,7 +100,7 @@ object Constants {
      *
      * @value #PAYMENT_GATEWAY_TOKENIZATION_NAME
      */
-    private const val PAYMENT_GATEWAY_TOKENIZATION_NAME = "example"
+    const val PAYMENT_GATEWAY_TOKENIZATION_NAME = "example"
 
     /**
      * Custom parameters required by the processor/gateway.
@@ -109,8 +111,8 @@ object Constants {
      * @value #PAYMENT_GATEWAY_TOKENIZATION_PARAMETERS
      */
     val PAYMENT_GATEWAY_TOKENIZATION_PARAMETERS = mapOf(
-            "gateway" to PAYMENT_GATEWAY_TOKENIZATION_NAME,
-            "gatewayMerchantId" to "exampleGatewayMerchantId"
+        "gateway" to PAYMENT_GATEWAY_TOKENIZATION_NAME,
+        "gatewayMerchantId" to "exampleGatewayMerchantId"
     )
 
     /**
@@ -129,17 +131,28 @@ object Constants {
      * @value #DIRECT_TOKENIZATION_PARAMETERS
      */
     val DIRECT_TOKENIZATION_PARAMETERS = mapOf(
-            "protocolVersion" to "ECv1",
-            "publicKey" to DIRECT_TOKENIZATION_PUBLIC_KEY
+        "protocolVersion" to "ECv2",
+        "publicKey" to DIRECT_TOKENIZATION_PUBLIC_KEY
     )
 
     /**
-     * Item price to be used in the sample app.
+     * A coefficient to calculate tax rates.
+     *
+     * @value #TAX_RATE The rate at which you want to calculate tax.
      */
-    const val PAYMENT_SUBTOTAL = "50.20"
+    const val TAX_RATE = 0.35
 
     /**
-     * Estimated tax for the item.
+     * The default price for the product.
+     *
+     * @value #BASE_PRICE
      */
-    const val PAYMENT_TAX = "5.02"
+    const val BASE_PRICE = "50.20"
+
+    /**
+     * The name of the merchant.
+     *
+     * @value #MERCHANT_NAME
+     */
+    const val MERCHANT_NAME = "Example Merchant"
 }

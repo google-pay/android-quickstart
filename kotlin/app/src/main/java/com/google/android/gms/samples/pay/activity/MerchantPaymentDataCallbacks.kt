@@ -28,8 +28,11 @@ import com.google.android.gms.wallet.callback.PaymentAuthorizationResult
 import com.google.android.gms.wallet.callback.PaymentDataRequestUpdate
 import org.json.JSONException
 import org.json.JSONObject
-import java.util.Locale
 
+/**
+ * Implementation of {@link BasePaymentDataCallbacks} that handles callbacks from the Google Pay
+ * payment sheet.
+ */
 class MerchantPaymentDataCallbacks : BasePaymentDataCallbacks() {
 
     /**
@@ -41,16 +44,13 @@ class MerchantPaymentDataCallbacks : BasePaymentDataCallbacks() {
         onCompleteListener: OnCompleteListener<PaymentDataRequestUpdate>
     ) {
         // define prices and variables
-        val subTotal = Constants.PAYMENT_SUBTOTAL
-        val tax = Constants.PAYMENT_TAX
-        val totalPrice = String.format(Locale.getDefault(), "%.2f", subTotal.toDouble() + tax.toDouble())
         val newSavedState = Bundle()
 
         try {
             val intermediatePaymentDataJson = JSONObject(request?.toJson() ?: "{}")
 
             val paymentDataRequestUpdateJson = PaymentsUtil.getPaymentDataRequestUpdate(
-                intermediatePaymentDataJson, totalPrice, subTotal, tax
+                intermediatePaymentDataJson, Constants.BASE_PRICE
             )
 
             newSavedState.putString("paymentDataRequestUpdate", paymentDataRequestUpdateJson.toString())

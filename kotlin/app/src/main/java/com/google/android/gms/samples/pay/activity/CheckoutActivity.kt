@@ -58,7 +58,7 @@ class CheckoutActivity : ComponentActivity() {
             ProductScreen(
                 title = "Men's Tech Shell Full-Zip",
                 description = "A versatile full-zip that you can wear all day long and even...",
-                price = "$${Constants.PAYMENT_SUBTOTAL}",
+                price = "$${Constants.BASE_PRICE}",
                 image = R.drawable.ts_10_11019a,
                 payUiState = payState,
                 onGooglePayButtonClick = this::requestPayment,
@@ -67,8 +67,7 @@ class CheckoutActivity : ComponentActivity() {
     }
 
     private fun requestPayment() {
-        val totalPrice = (Constants.PAYMENT_SUBTOTAL.toDouble() + Constants.PAYMENT_TAX.toDouble())
-        val task = model.getLoadPaymentDataTask(priceLabel = String.format(Locale.getDefault(), "%.2f", totalPrice))
+        val task = model.getLoadPaymentDataTask(Constants.BASE_PRICE)
         task.addOnCompleteListener(paymentDataLauncher::launch)
     }
 }

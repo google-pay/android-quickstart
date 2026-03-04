@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Google Inc.
+ * Copyright 2024 Google Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,312 +20,395 @@ import android.content.Context
 import com.google.android.gms.samples.pay.Constants
 import com.google.android.gms.wallet.PaymentsClient
 import com.google.android.gms.wallet.Wallet
-import com.google.android.gms.wallet.callback.PaymentDataRequestUpdate
 import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
 import java.math.BigDecimal
-import java.math.RoundingMode
 import java.util.Locale
 
 /**
  * Contains helper static methods for dealing with the Payments API.
  *
- * Many of the parameters used in the code are optional and are set here merely to call out their
+ * <p>Many of the parameters used in the code are optional and are set here merely to call out their
  * existence. Please consult the documentation to learn more and feel free to remove ones not
  * relevant to your implementation.
  */
 object PaymentsUtil {
 
     /**
+     * Encapsulated shipping option parameters (set of options) definition.
+     *
+     * @return A {@link JSONObject} containing shipping options and the default selected option.
+     * @throws JSONException If the JSON object is malformed.
+     */
+    @Throws(JSONException::class)
+    fun getShippingOptionParameters(): JSONObject {
+        val shippingOptionParameters = JSONObject()
+        val shippingOptions = JSONArray()
+
+        shippingOptions.put(
+            createShippingOption(
+                "shipping-001", "$0.00: Free shipping label", "Free Shipping example text"
+            )
+        )
+        shippingOptions.put(
+            createShippingOption(
+                "shipping-002", "$1.99: Standard shipping label", "Standard shipping example text."
+            )
+        )
+        shippingOptions.put(
+            createShippingOption(
+                "shipping-003", "$1000: Express shipping label", "Express shipping example text."
+            )
+        )
+        shippingOptions.put(
+            createShippingOption(
+                "shipping-004", "$2000: Same-day shipping label", "Same-day shipping example text."
+            )
+        )
+
+        shippingOptionParameters.put("shippingOptions", shippingOptions)
+        shippingOptionParameters.put("defaultSelectedOptionId", "shipping-001")
+
+        return shippingOptionParameters
+    }
+
+    /**
+     * Defines an encapsulated shipping option.
+     *
+     * @param id The unique identifier for the shipping option.
+     * @param label The label to display for the shipping option.
+     * @param description A brief description of the shipping option.
+     * @return A {@link JSONObject} representing the shipping option.
+     * @throws JSONException If the JSON object is malformed.
+     */
+    @Throws(JSONException::class)
+    private fun createShippingOption(id: String, label: String, description: String): JSONObject {
+        return JSONObject().put("id", id).put("label", label).put("description", description)
+    }
+
+    /**
+     * Encapsulated definition for a display item.
+     *
+     * @param label The label to display for the item.
+     * @param type The type of the display item (e.g., LINE_ITEM, SUBTOTAL).
+     * @param price The price of the item.
+     * @return A {@link JSONObject} representing the display item.
+     * @throws JSONException If the JSON object is malformed.
+     */
+    @Throws(JSONException::class)
+    fun createDisplayItem(label: String, type: String, price: String): JSONObject {
+        return JSONObject().put("label", label).put("type", type).put("price", price)
+    }
+
+    /**
      * Create a Google Pay API base request object with properties used in all requests.
      *
      * @return Google Pay API base request object.
-     * @throws JSONException
+     * @throws JSONException if the object is malformed.
      */
-    private val baseRequest = JSONObject()
-        .put("apiVersion", 2)
-        .put("apiVersionMinor", 0)
+    @Throws(JSONException::class)
+    private fun getBaseRequest(): JSONObject {
+        return JSONObject().put("apiVersion", 2).put("apiVersionMinor", 0)
+    }
+
+    /**
+     * Creates an instance of {@link PaymentsClient} for use in an {@link Context} using the
+     * environment and theme set in {@link Constants}.
+     *
+     * @param context is the caller's context.
+     * @return An instance of {@link PaymentsClient}.
+     */
+    fun createPaymentsClient(context: Context): PaymentsClient {
+        val walletOptions = Wallet.WalletOptions.Builder()
+            .setEnvironment(Constants.PAYMENTS_ENVIRONMENT)
+            .build()
+        return Wallet.getPaymentsClient(context, walletOptions)
+    }
 
     /**
      * Gateway Integration: Identify your gateway and your app's gateway merchant identifier.
      *
-     *
-     * The Google Pay API response will return an encrypted payment method capable of being charged
+     * <p>The Google Pay API response will return an encrypted payment method capable of being charged
      * by a supported gateway after payer authorization.
      *
-     *
-     * TODO: Check with your gateway on the parameters to pass and modify them in Constants.java.
+     * <p>TODO: Check with your gateway on the parameters to pass and modify them in Constants.java.
      *
      * @return Payment data tokenization for the CARD payment method.
-     * @throws JSONException
-     * See [PaymentMethodTokenizationSpecification](https://developers.google.com/pay/api/android/reference/object.PaymentMethodTokenizationSpecification)
+     * @throws JSONException if the object is malformed.
+     * @see <a
+     *     href="https://developers.google.com/pay/api/android/reference/object#PaymentMethodTokenizationSpecification">PaymentMethodTokenizationSpecification</a>
      */
-    private val gatewayTokenizationSpecification: JSONObject =
-        JSONObject()
+    @Throws(JSONException::class)
+    private fun getGatewayTokenizationSpecification(): JSONObject {
+        return JSONObject()
             .put("type", "PAYMENT_GATEWAY")
-            .put("parameters", JSONObject(Constants.PAYMENT_GATEWAY_TOKENIZATION_PARAMETERS))
+            .put(
+                "parameters",
+                JSONObject()
+                    .put("gateway", "example")
+                    .put("gatewayMerchantId", "exampleGatewayMerchantId")
+            )
+    }
+
+    /**
+     * {@code DIRECT} Integration: Decrypt a response directly on your servers. This configuration has
+     * additional data security requirements from Google and additional PCI DSS compliance complexity.
+     *
+     * <p>Please refer to the documentation for more information about {@code DIRECT} integration. The
+     * type of integration you use depends on your payment processor.
+     *
+     * @return Payment data tokenization for the CARD payment method.
+     * @throws JSONException if the object is malformed.
+     * @see <a
+     *     href="https://developers.google.com/pay/api/android/reference/object#PaymentMethodTokenizationSpecification">PaymentMethodTokenizationSpecification</a>
+     */
+    @Throws(JSONException::class, RuntimeException::class)
+    private fun getDirectTokenizationSpecification(): JSONObject {
+        return JSONObject()
+            .put("type", "DIRECT")
+            .put("parameters", JSONObject(Constants.DIRECT_TOKENIZATION_PARAMETERS))
+    }
 
     /**
      * Card networks supported by your app and your gateway.
      *
+     * <p>TODO: Confirm card networks supported by your app and gateway & update in Constants.java.
      *
-     * TODO: Confirm card networks supported by your app and gateway & update in Constants.java.
-     *
-     * @return Allowed card networks
-     * See [CardParameters](https://developers.google.com/pay/api/android/reference/object.CardParameters)
+     * @return Allowed card networks.
+     * @see <a
+     *     href="https://developers.google.com/pay/api/android/reference/object#CardParameters">CardParameters</a>
      */
-    private val allowedCardNetworks = JSONArray(Constants.SUPPORTED_NETWORKS)
+    private fun getAllowedCardNetworks(): JSONArray {
+        return JSONArray(Constants.SUPPORTED_NETWORKS)
+    }
 
     /**
      * Card authentication methods supported by your app and your gateway.
      *
-     *
-     * TODO: Confirm your processor supports Android device tokens on your supported card networks
+     * <p>TODO: Confirm your processor supports Android device tokens on your supported card networks
      * and make updates in Constants.java.
      *
      * @return Allowed card authentication methods.
-     * See [CardParameters](https://developers.google.com/pay/api/android/reference/object.CardParameters)
+     * @see <a
+     *     href="https://developers.google.com/pay/api/android/reference/object#CardParameters">CardParameters</a>
      */
-    private val allowedCardAuthMethods = JSONArray(Constants.SUPPORTED_METHODS)
+    private fun getAllowedCardAuthMethods(): JSONArray {
+        return JSONArray(Constants.SUPPORTED_METHODS)
+    }
 
     /**
      * Describe your app's support for the CARD payment method.
      *
-     *
-     * The provided properties are applicable to both an IsReadyToPayRequest and a
+     * <p>The provided properties are applicable to both an IsReadyToPayRequest and a
      * PaymentDataRequest.
      *
      * @return A CARD PaymentMethod object describing accepted cards.
-     * @throws JSONException
-     * See [PaymentMethod](https://developers.google.com/pay/api/android/reference/object.PaymentMethod)
+     * @throws JSONException if the object is malformed.
+     * @see <a
+     *     href="https://developers.google.com/pay/api/android/reference/object#PaymentMethod">PaymentMethod</a>
      */
-    // Optionally, you can add billing address/phone number associated with a CARD payment method.
-    private fun baseCardPaymentMethod(): JSONObject =
-        JSONObject()
+    @Throws(JSONException::class)
+    private fun getBaseCardPaymentMethod(): JSONObject {
+        return JSONObject()
             .put("type", "CARD")
-            .put("parameters", JSONObject()
-                .put("allowedAuthMethods", allowedCardAuthMethods)
-                .put("allowedCardNetworks", allowedCardNetworks)
-                .put("billingAddressRequired", true)
-                .put("billingAddressParameters", JSONObject()
-                    .put("format", "FULL")
-                )
+            .put(
+                "parameters",
+                JSONObject()
+                    .put("allowedAuthMethods", getAllowedCardAuthMethods())
+                    .put("allowedCardNetworks", getAllowedCardNetworks())
+                    .put("billingAddressRequired", true)
+                    .put("billingAddressParameters", JSONObject().put("format", "FULL"))
             )
+    }
 
     /**
-     * Describe the expected returned payment data for the CARD payment method
+     * Describe the expected returned payment data for the CARD payment method.
      *
      * @return A CARD PaymentMethod describing accepted cards and optional fields.
-     * @throws JSONException
-     * See [PaymentMethod](https://developers.google.com/pay/api/android/reference/object.PaymentMethod)
+     * @throws JSONException if the object is malformed.
+     * @see <a
+     *     href="https://developers.google.com/pay/api/android/reference/object#PaymentMethod">PaymentMethod</a>
      */
-    private val cardPaymentMethod: JSONObject = baseCardPaymentMethod()
-        .put("tokenizationSpecification", gatewayTokenizationSpecification)
+    @Throws(JSONException::class)
+    private fun getCardPaymentMethod(): JSONObject {
+        return getBaseCardPaymentMethod()
+            .put("tokenizationSpecification", getGatewayTokenizationSpecification())
+    }
 
-    val allowedPaymentMethods: JSONArray = JSONArray().put(cardPaymentMethod)
+    /**
+     * Return a collection of payment methods allowed to complete the operation with Google Pay.
+     *
+     * @return A JSONArray object with the list of payment methods.
+     * @throws JSONException if the JSON object is malformed.
+     */
+    @Throws(JSONException::class)
+    fun getAllowedPaymentMethods(): JSONArray {
+        return JSONArray().put(getCardPaymentMethod())
+    }
 
     /**
      * An object describing accepted forms of payment by your app, used to determine a viewer's
      * readiness to pay.
      *
      * @return API version and payment methods supported by the app.
-     * See [IsReadyToPayRequest](https://developers.google.com/pay/api/android/reference/object.IsReadyToPayRequest)
+     * @throws JSONException if the object is malformed.
+     * @see <a
+     *     href="https://developers.google.com/pay/api/android/reference/object#IsReadyToPayRequest">IsReadyToPayRequest</a>
      */
-    fun isReadyToPayRequest(): JSONObject? =
-        try {
-            baseRequest
-                .put("allowedPaymentMethods", JSONArray().put(baseCardPaymentMethod()))
-        } catch (e: JSONException) {
-            null
-        }
-
-    /**
-     * Information about the merchant requesting payment information
-     *
-     * @return Information about the merchant.
-     * @throws JSONException
-     * See [MerchantInfo](https://developers.google.com/pay/api/android/reference/object.MerchantInfo)
-     */
-    private val merchantInfo: JSONObject =
-        JSONObject().put("merchantName", "Example Merchant")
-
-    /**
-     * Creates an instance of [PaymentsClient] for use in an [Context] using the
-     * environment and theme set in [Constants].
-     *
-     * @param context from the caller activity.
-     */
-    fun createPaymentsClient(context: Context): PaymentsClient {
-        val walletOptions = Wallet.WalletOptions.Builder()
-            .setEnvironment(Constants.PAYMENTS_ENVIRONMENT)
-            .build()
-
-        return Wallet.getPaymentsClient(context, walletOptions)
+    @Throws(JSONException::class)
+    fun getIsReadyToPayRequest(): JSONObject {
+        return getBaseRequest()
+            .put("allowedPaymentMethods", JSONArray().put(getBaseCardPaymentMethod()))
     }
 
     /**
      * Provide Google Pay API with a payment amount, currency, and amount status.
      *
+     * @param price The price of the product.
      * @return information about the requested payment.
-     * @throws JSONException
-     * See [TransactionInfo](https://developers.google.com/pay/api/android/reference/object.TransactionInfo)
+     * @throws JSONException if the object is malformed.
+     * @see <a
+     *     href="https://developers.google.com/pay/api/android/reference/object#TransactionInfo">TransactionInfo</a>
      */
-    private fun getTransactionInfo(price: String): JSONObject =
-        JSONObject()
+    @Throws(JSONException::class)
+    fun getTransactionInfo(price: String): JSONObject {
+        return JSONObject()
             .put("totalPrice", price)
-            .put("totalPriceStatus", "FINAL")
             .put("totalPriceLabel", "Total")
+            .put("totalPriceStatus", "FINAL")
             .put("countryCode", Constants.COUNTRY_CODE)
             .put("currencyCode", Constants.CURRENCY_CODE)
+            .put("checkoutOption", "COMPLETE_IMMEDIATE_PURCHASE")
+            .put("displayItems", getDisplayItems(price))
+    }
 
     /**
-     * shippingAddressParameters - defines the parameters for the shipping address
-     */
-    private val shippingAddressParameters: JSONObject =
-        JSONObject()
-            .put("phoneNumberRequired", false)
-            .put("allowedCountryCodes", JSONArray(Constants.SHIPPING_SUPPORTED_COUNTRIES))
-
-    /**
-     * An object describing information requested in a Google Pay payment sheet
+     * Provide Google Pay API with a payment amount, currency, and amount status.
      *
-     * @return Payment data expected by your app.
-     * See [PaymentDataRequest](https://developers.google.com/pay/api/android/reference/object.PaymentDataRequest)
+     * @param price The price of the product.
+     * @return information about the requested payment.
+     * @throws JSONException if the object is malformed.
+     * @see <a
+     *     href="https://developers.google.com/pay/api/android/reference/object#TransactionInfo">TransactionInfo</a>
      */
-    fun getPaymentDataRequest(price: String): JSONObject =
-        baseRequest
-            .put("allowedPaymentMethods", allowedPaymentMethods)
-            .put("transactionInfo", getTransactionInfo(price))
-            .put("merchantInfo", merchantInfo)
+    @Throws(JSONException::class)
+    fun getDisplayItems(price: String): JSONArray {
+        val displayItems = JSONArray()
+        val tax = String.format(
+            Locale.getDefault(), "%.2f", BigDecimal(price).multiply(BigDecimal(Constants.TAX_RATE.toString()))
+        )
+        displayItems.put(createDisplayItem("Total", "SUBTOTAL", price))
+        displayItems.put(createDisplayItem("Tax", "TAX", tax))
+        return displayItems
+    }
+
+    /**
+     * An object describing information to be requested via the Google Pay payment sheet.
+     *
+     * @param priceLabel the price of the product
+     * @return Payment data expected by your app.
+     * @throws JSONException If the object is malformed.
+     * @see <a
+     *     href="https://developers.google.com/pay/api/android/reference/object#PaymentDataRequest">PaymentDataRequest</a>
+     */
+    @Throws(JSONException::class)
+    fun getPaymentDataRequest(priceLabel: String): JSONObject {
+        return getBaseRequest()
+            .put("allowedPaymentMethods", getAllowedPaymentMethods())
+            .put("transactionInfo", getTransactionInfo(priceLabel))
+            .put("merchantInfo", JSONObject().put("merchantName", Constants.MERCHANT_NAME))
             .put("shippingAddressRequired", true)
             .put("shippingOptionRequired", true)
-            .put("shippingAddressParameters", shippingAddressParameters)
-            .put("shippingOptionParameters", newShippingOptionParameters(null))
-            .put("callbackIntents", JSONArray()
-                .put("PAYMENT_AUTHORIZATION")
-                .put("SHIPPING_ADDRESS")
-                .put("SHIPPING_OPTION"))
-
-    private val shippingOptions: Map<String, JSONObject> = mapOf(
-        "shipping-001" to JSONObject()
-            .put("id", "shipping-001")
-            .put("label", "$0.00: Free shipping label")
-            .put("description", "Free Shipping example text")
-            .put("price", "0.00"),
-        "shipping-002" to JSONObject()
-            .put("id", "shipping-002")
-            .put("label", "$1.99: Standard shipping label")
-            .put("description", "Standard shipping example text.")
-            .put("price", "1.99"),
-        "shipping-003" to JSONObject()
-            .put("id", "shipping-003")
-            .put("label", "$1000: Express shipping label")
-            .put("description", "Express shipping example text.")
-            .put("price", "1000"),
-        "shipping-004" to JSONObject()
-            .put("id", "shipping-004")
-            .put("label", "$2000: Same-day shipping label")
-            .put("description", "Same-day shipping example text.")
-            .put("price", "2000")
-    )
-
-    /**
-     * newShippingOptionParameters - Encapsulated shipping option parameters (set of options)
-     * definition
-     */
-    @Throws(JSONException::class)
-    private fun newShippingOptionParameters(curShippingOptionId: String?): JSONObject {
-        val shippingOptionParameters = JSONObject()
-        val shippingOptionsArray = JSONArray()
-
-        shippingOptions.values.forEach {
-            shippingOptionsArray.put(
+            .put("shippingOptionParameters", getShippingOptionParameters())
+            .put(
+                "shippingAddressParameters",
                 JSONObject()
-                    .put("id", it.getString("id"))
-                    .put("label", it.getString("label"))
-                    .put("description", it.getString("description"))
+                    .put("phoneNumberRequired", false)
+                    .put("allowedCountryCodes", JSONArray(Constants.SHIPPING_SUPPORTED_COUNTRIES))
             )
-        }
-
-        shippingOptionParameters.put("shippingOptions", shippingOptionsArray)
-
-        // set a default shipping option
-        if (shippingOptions.containsKey(curShippingOptionId)) {
-            shippingOptionParameters.put("defaultSelectedOptionId", curShippingOptionId)
-        } else {
-            shippingOptionParameters.put("defaultSelectedOptionId", "shipping-001")
-        }
-
-        return shippingOptionParameters
+            .put(
+                "callbackIntents",
+                JSONArray()
+                    .put("PAYMENT_AUTHORIZATION")
+                    .put("SHIPPING_ADDRESS")
+                    .put("SHIPPING_OPTION")
+            )
     }
 
     /**
-     * createDisplayItem - Encapsulated definition for a display item
+     * An object describing information to be updated via the Google Pay payment sheet.
+     *
+     * @param intermediatePaymentData the intermediate payment data containing user selections.
+     * @param priceLabel the price of the product.
+     * @return Payment data expected by your app.
+     * @throws JSONException If the object is malformed.
+     * @see <a
+     *     href="https://developers.google.com/pay/api/android/reference/object#PaymentDataRequest">PaymentDataRequest</a>
      */
     @Throws(JSONException::class)
-    private fun createDisplayItem(label: String, type: String, price: String): JSONObject {
-        return JSONObject().put("label", label).put("type", type).put("price", price)
+    fun getPaymentDataRequestUpdate(
+        intermediatePaymentData: JSONObject, priceLabel: String
+    ): JSONObject {
+        // Populate the payment request with default data
+        val paymentDataRequestUpdate = JSONObject()
+        paymentDataRequestUpdate.put("newTransactionInfo", getTransactionInfo(priceLabel))
+
+        val shippingOptionParameters = getShippingOptionParameters()
+        paymentDataRequestUpdate.put("newShippingOptionParameters", shippingOptionParameters)
+
+        // Update the selected shippingOption based on the user selection
+        var shippingOptionId = "shipping-001"
+        if (intermediatePaymentData.has("shippingOptionData")
+            && intermediatePaymentData.getJSONObject("shippingOptionData").has("id")
+        ) {
+            shippingOptionId =
+                intermediatePaymentData.getJSONObject("shippingOptionData").getString("id")
+            paymentDataRequestUpdate
+                .getJSONObject("newShippingOptionParameters")
+                .put("defaultSelectedOptionId", shippingOptionId)
+        }
+        // Get display item for the selected shipping method and add it to paymentDataRequestUpdate
+        val shippingDisplayItem = getShippingDisplayItem(shippingOptionId)
+        paymentDataRequestUpdate
+            .getJSONObject("newTransactionInfo")
+            .getJSONArray("displayItems")
+            .put(shippingDisplayItem)
+
+        // define shipping price
+        if (shippingDisplayItem.has("price")) {
+            // Update displayItems with the new price.
+            val totalPrice =
+                paymentDataRequestUpdate.getJSONObject("newTransactionInfo").getString("totalPrice")
+            val shippingPrice = shippingDisplayItem.getString("price")
+            val newTotalPriceValue = BigDecimal(totalPrice).add(BigDecimal(shippingPrice))
+            paymentDataRequestUpdate
+                .getJSONObject("newTransactionInfo")
+                .put("totalPrice", String.format(Locale.getDefault(), "%.2f", newTotalPriceValue))
+        }
+        return paymentDataRequestUpdate
     }
 
     /**
-     * getPaymentDataRequestUpdate - Creates a PaymentDataRequestUpdate object
+     * Get a display item object for the selected shipping option.
+     *
+     * @param shippingOptionId the ID of the selected shipping option.
+     * @return a JSONObject containing the display item for the shipping option.
+     * @throws JSONException if the shipping option is invalid.
      */
-    fun getPaymentDataRequestUpdate(
-        intermediatePaymentDataJson: JSONObject,
-        totalPrice: String,
-        subTotal: String,
-        tax: String
-    ): JSONObject {
-        val paymentDataRequestUpdate = JSONObject()
-
-        // define transaction info
-        val newTransactionInfo = getTransactionInfo(totalPrice)
-
-        // process user-provided shipping option data
-        var shippingOptionId: String? = null
-        if (intermediatePaymentDataJson.has("shippingOptionData")
-            && intermediatePaymentDataJson.getJSONObject("shippingOptionData").has("id")
-        ) {
-            shippingOptionId = intermediatePaymentDataJson.getJSONObject("shippingOptionData").getString("id")
+    @Throws(JSONException::class)
+    private fun getShippingDisplayItem(shippingOptionId: String?): JSONObject {
+        if (shippingOptionId == null) {
+            return JSONObject()
         }
 
-        // define shipping options
-        if (intermediatePaymentDataJson.has("shippingAddress")) {
-            paymentDataRequestUpdate.put(
-                "newShippingOptionParameters",
-                newShippingOptionParameters(shippingOptionId)
-            )
-            if (paymentDataRequestUpdate.has("newShippingOptionParameters")) {
-                shippingOptionId = paymentDataRequestUpdate
-                    .getJSONObject("newShippingOptionParameters")
-                    .getString("defaultSelectedOptionId")
-            }
+        return when (shippingOptionId) {
+            "shipping-001" -> createDisplayItem("Shipping", "LINE_ITEM", "0")
+            "shipping-002" -> createDisplayItem("Shipping", "LINE_ITEM", "1.99")
+            "shipping-003" -> createDisplayItem("Shipping", "LINE_ITEM", "1000")
+            "shipping-004" -> createDisplayItem("Shipping", "LINE_ITEM", "2000")
+            "shipping_option_unselected" -> JSONObject()
+            else -> throw JSONException("This shipping option is invalid for the given address")
         }
-
-        // define displayItems
-        val displayItems = JSONArray()
-        displayItems.put(createDisplayItem("Subtotal", "SUBTOTAL", subTotal))
-        displayItems.put(createDisplayItem("Estimated tax", "TAX", tax))
-
-        // get shipping price from selected option
-        val selectedShippingOption = shippingOptions[shippingOptionId]
-        val shippingPrice = selectedShippingOption?.getString("price") ?: "0.00"
-        if (selectedShippingOption != null) {
-            displayItems.put(createDisplayItem("Shipping", "LINE_ITEM", shippingPrice))
-        }
-
-        // recalculate total price
-        val newTotalPriceValue = totalPrice.toDouble() + shippingPrice.toDouble()
-        newTransactionInfo.put(
-            "totalPrice", String.format(Locale.getDefault(), "%.2f", newTotalPriceValue)
-        )
-        newTransactionInfo.put("totalPriceLabel", "Total")
-        newTransactionInfo.put("displayItems", displayItems)
-
-        // save all of the data we generated above into the appropriate objects
-        paymentDataRequestUpdate.put("newTransactionInfo", newTransactionInfo)
-
-        return paymentDataRequestUpdate
     }
 }

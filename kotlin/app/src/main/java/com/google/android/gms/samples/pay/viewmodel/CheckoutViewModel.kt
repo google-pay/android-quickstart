@@ -22,7 +22,6 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.android.gms.common.api.ApiException
 import com.google.android.gms.common.api.CommonStatusCodes
-import com.google.android.gms.samples.pay.service.MerchantPaymentDataCallbacksService
 import com.google.android.gms.samples.pay.util.PaymentsUtil
 import com.google.android.gms.tasks.CancellationTokenSource
 import com.google.android.gms.tasks.Task
@@ -79,7 +78,7 @@ class CheckoutViewModel(application: Application) : AndroidViewModel(application
      * Determine the user's ability to pay with a payment method supported by your app.
      */
     private suspend fun fetchCanUseGooglePay(): Boolean {
-        val request = IsReadyToPayRequest.fromJson(PaymentsUtil.isReadyToPayRequest().toString())
+        val request = IsReadyToPayRequest.fromJson(PaymentsUtil.getIsReadyToPayRequest().toString())
         return paymentsClient.isReadyToPay(request).await()
     }
 
@@ -145,7 +144,7 @@ class CheckoutViewModel(application: Application) : AndroidViewModel(application
 abstract class PaymentUiState internal constructor() {
     object NotStarted : PaymentUiState()
     object Available : PaymentUiState()
-    class PaymentCompleted(val payerName: String) : PaymentUiState()
+    class PaymentCompleted(val payerName: String?) : PaymentUiState()
     class Error(val code: Int, val message: String? = null) : PaymentUiState()
 }
 

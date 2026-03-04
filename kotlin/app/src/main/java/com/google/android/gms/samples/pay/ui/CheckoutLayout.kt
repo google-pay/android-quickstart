@@ -120,7 +120,7 @@ fun ProductScreen(
                         .testTag("payButton")
                         .fillMaxWidth(),
                     onClick = onGooglePayButtonClick,
-                    allowedPaymentMethods = PaymentsUtil.allowedPaymentMethods.toString()
+                    allowedPaymentMethods = PaymentsUtil.getAllowedPaymentMethods().toString()
                 )
             }
         }
