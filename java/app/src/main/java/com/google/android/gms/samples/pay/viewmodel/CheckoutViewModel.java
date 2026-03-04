@@ -85,8 +85,7 @@ public class CheckoutViewModel extends AndroidViewModel {
      */
     public Task<PaymentData> getLoadPaymentDataTask(String price) throws JSONException {
         JSONObject paymentDataRequestJson = PaymentsUtil.getPaymentDataRequest(price);
-
-      PaymentDataRequest request =
+        PaymentDataRequest request =
                 PaymentDataRequest.fromJson(paymentDataRequestJson.toString());
         return paymentsClient.loadPaymentData(request);
     }

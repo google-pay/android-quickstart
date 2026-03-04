@@ -20,6 +20,7 @@ import android.util.Log;
 
 import androidx.annotation.NonNull;
 
+import com.google.android.gms.samples.pay.Constants;
 import com.google.android.gms.wallet.PaymentData;
 import com.google.android.gms.wallet.callback.BasePaymentDataCallbacks;
 import com.google.android.gms.wallet.callback.IntermediatePaymentData;
@@ -34,8 +35,8 @@ import java.util.Objects;
 public class MerchantPaymentDataCallbacks extends BasePaymentDataCallbacks {
 
   /**
-   * onPaymentDataChanged callback - Handles payment data changes in the payment sheet such as
-   * shipping address and shipping options.
+   * onPaymentDataChanged callback: Handles payment data changes in the payment sheet such as
+   * shipping address and shipping options. Values passed back to it will update the payment sheet.
    */
   @Override
   public void onPaymentDataChanged(
@@ -44,12 +45,11 @@ public class MerchantPaymentDataCallbacks extends BasePaymentDataCallbacks {
     // define prices and variables
     JSONObject paymentDataRequestUpdate;
     Bundle newSavedState = new Bundle();
-    String price = "2.9";
     try {
       assert request != null;
       JSONObject intermediatePaymentData = new JSONObject(request.toJson());
       // define transaction info
-      paymentDataRequestUpdate = PaymentsUtil.getPaymentDataRequestUpdate(intermediatePaymentData, price);
+      paymentDataRequestUpdate = PaymentsUtil.getPaymentDataRequestUpdate(intermediatePaymentData, Constants.BASE_PRICE);
       newSavedState.putString("paymentDataRequestUpdate", paymentDataRequestUpdate.toString());
       // return the generated data to the client
       onCompleteListener.complete(
@@ -61,7 +61,10 @@ public class MerchantPaymentDataCallbacks extends BasePaymentDataCallbacks {
     }
   }
 
-  /** onPaymentAuthorized callback - Called when a payment is authorized in the payment sheet. */
+  /** onPaymentAuthorized callback: Called when a payment is authorized in the payment sheet.
+   * Use this callback to perform any final validation on the payment data. Throwing an error
+   * will allow the user to make corrections to the payment sheet.
+   */
   @Override
   public void onPaymentAuthorized(
       PaymentData request, @NonNull OnCompleteListener<PaymentAuthorizationResult> OnCompleteListener) {

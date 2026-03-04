@@ -146,5 +146,18 @@ public class Constants {
    * @value #TAX_RATE The rate at which you want to calculate tax.
    */
   public static final Double TAX_RATE = 0.35;
-}
 
+  /**
+   * The default price for the product.
+   *
+   * @value #BASE_PRICE
+   */
+  public static final String BASE_PRICE = "50.20";
+
+  /**
+   * The name of the merchant.
+   *
+   * @value #MERCHANT_NAME
+   */
+  public static final String MERCHANT_NAME = "Example Merchant";
+}

@@ -29,6 +29,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.google.android.gms.common.api.CommonStatusCodes;
+import com.google.android.gms.samples.pay.Constants;
 import com.google.android.gms.samples.pay.R;
 import com.google.android.gms.samples.pay.databinding.ActivityCheckoutBinding;
 import com.google.android.gms.samples.pay.util.PaymentsUtil;
@@ -95,6 +96,9 @@ public class CheckoutActivity extends AppCompatActivity {
     ActivityCheckoutBinding layoutBinding = ActivityCheckoutBinding.inflate(getLayoutInflater());
     setContentView(layoutBinding.getRoot());
 
+    // Set the price label from the constant
+    layoutBinding.detailPrice.setText(getString(R.string.price_format, Constants.BASE_PRICE));
+
     // The Google Pay button is a layout file – take the root view
     googlePayButton = layoutBinding.googlePayButton;
     try {
@@ -127,7 +131,7 @@ public class CheckoutActivity extends AppCompatActivity {
   public void requestPayment(View view) {
     // The price provided to the API should include taxes and shipping.
     try {
-      final Task<PaymentData> task = model.getLoadPaymentDataTask("50.2"); // provide the default starting price here.
+      final Task<PaymentData> task = model.getLoadPaymentDataTask(Constants.BASE_PRICE); // provide the default starting price here.
       task.addOnCompleteListener(paymentDataLauncher::launch);
     } catch (JSONException e) {
       throw new RuntimeException("The payment data task couldn't be created.", e);

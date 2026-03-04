@@ -56,7 +56,6 @@ public class PaymentsUtil {
         createShippingOption(
             "shipping-004", "$2000: Same-day shipping label", "Same-day shipping example text."));
     shippingOptionParameters.put("shippingOptions", shippingOptions);
-    String[] shippingOptionIds = {"shipping-001", "shipping-002", "shipping-003", "shipping-004"};
     // set a default shipping option
     shippingOptionParameters.put("defaultSelectedOptionId", "shipping-001");
     return shippingOptionParameters;
@@ -65,7 +64,10 @@ public class PaymentsUtil {
   /** createShippingOption - Defines an encapsulated shipping option */
   private static JSONObject createShippingOption(String id, String label, String description)
       throws JSONException {
-    return new JSONObject().put("id", id).put("label", label).put("description", description);
+    return new JSONObject()
+        .put("id", id)
+        .put("label", label)
+        .put("description", description);
   }
 
   /** createDisplayItem - Encapsulated definition for a display item */
@@ -263,21 +265,9 @@ public class PaymentsUtil {
   }
 
   /**
-   * Information about the merchant requesting payment information
-   *
-   * @return Information about the merchant.
-   * @throws JSONException if the object is malformed.
-   * @see <a
-   *     href="https://developers.google.com/pay/api/android/reference/object#MerchantInfo">MerchantInfo</a>
-   */
-  private static JSONObject getMerchantInfo() throws JSONException {
-    return new JSONObject().put("merchantName", "Example Merchant");
-  }
-
-  /**
    * An object describing information to be requested via the Google Pay payment sheet
    *
-   * @param product a product object, in this case containing a price.
+   * @param priceLabel the price of the product
    * @return Payment data expected by your app.
    * @see <a
    *     href="https://developers.google.com/pay/api/android/reference/object#PaymentDataRequest">PaymentDataRequest</a>
@@ -286,7 +276,7 @@ public class PaymentsUtil {
     return PaymentsUtil.getBaseRequest()
         .put("allowedPaymentMethods", getAllowedPaymentMethods())
         .put("transactionInfo", getTransactionInfo(priceLabel))
-        .put("merchantInfo", getMerchantInfo())
+        .put("merchantInfo", new JSONObject().put("merchantName", Constants.MERCHANT_NAME))
         .put("shippingAddressRequired", true)
         .put("shippingOptionRequired", true)
         .put("shippingOptionParameters", getShippingOptionParameters())
@@ -306,7 +296,8 @@ public class PaymentsUtil {
   /**
    * An object describing information to be updated via the Google Pay payment sheet
    *
-   * @param price the price of the product
+   * @param intermediatePaymentData the intermediate payment data containing user selections.
+   * @param priceLabel the price of the product.
    * @return Payment data expected by your app.
    * @see <a
    *     href="https://developers.google.com/pay/api/android/reference/object#PaymentDataRequest">PaymentDataRequest</a>
@@ -316,7 +307,10 @@ public class PaymentsUtil {
     // Populate the payment request with default data
     JSONObject paymentDataRequestUpdate = new JSONObject();
     paymentDataRequestUpdate.put("newTransactionInfo", getTransactionInfo(priceLabel));
-    paymentDataRequestUpdate.put("newShippingOptionParameters", getShippingOptionParameters());
+
+    JSONObject shippingOptionParameters = getShippingOptionParameters();
+    paymentDataRequestUpdate.put("newShippingOptionParameters", shippingOptionParameters);
+
     // Update the selected shippingOption based on the user selection
     String shippingOptionId = "shipping-001";
     if (intermediatePaymentData.has("shippingOptionData")
@@ -327,19 +321,18 @@ public class PaymentsUtil {
           .getJSONObject("newShippingOptionParameters")
           .put("defaultSelectedOptionId", shippingOptionId);
     }
-    // Get data about the selected shipping method
-    JSONObject shippingData = getShippingData(shippingOptionId);
-    // Add a line item for shipping
+    // Get display item for the selected shipping method and add it to paymentDataRequestUpdate
+    JSONObject shippingDisplayItem = getShippingDisplayItem(shippingOptionId);
     paymentDataRequestUpdate
         .getJSONObject("newTransactionInfo")
         .getJSONArray("displayItems")
-        .put(shippingData); // and data display item
+        .put(shippingDisplayItem); // and data display item
     // define shipping price
-    if (shippingData.has("price")) {
+    if (shippingDisplayItem.has("price")) {
       // Update displayItems with the new price.
       String totalPrice =
           paymentDataRequestUpdate.getJSONObject("newTransactionInfo").getString("totalPrice");
-      String shippingPrice = shippingData.getString("price");
+      String shippingPrice = shippingDisplayItem.getString("price");
       BigDecimal newTotalPriceValue = new BigDecimal(totalPrice).add(new BigDecimal(shippingPrice));
       paymentDataRequestUpdate
           .getJSONObject("newTransactionInfo")
@@ -348,7 +341,7 @@ public class PaymentsUtil {
     return paymentDataRequestUpdate;
   }
 
-  private static JSONObject getShippingData(String shippingOptionId) throws JSONException {
+  private static JSONObject getShippingDisplayItem(String shippingOptionId) throws JSONException {
 
     if (shippingOptionId == null) {
       return new JSONObject();
