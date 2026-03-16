@@ -38,7 +38,6 @@ import com.google.android.gms.wallet.button.ButtonOptions;
 import com.google.android.gms.wallet.button.PayButton;
 import com.google.android.gms.wallet.contract.TaskResultContracts.GetPaymentDataResult;
 import java.util.Locale;
-import java.util.Objects;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -56,7 +55,7 @@ public class CheckoutActivity extends AppCompatActivity {
             int statusCode = result.getStatus().getStatusCode();
             switch (statusCode) {
               case CommonStatusCodes.SUCCESS:
-                handlePaymentSuccess(Objects.requireNonNull(result.getResult()));
+                handlePaymentSuccess(result.getResult());
                 break;
               // case CommonStatusCodes.CANCELED: The user canceled
               case CommonStatusCodes.DEVELOPER_ERROR:
@@ -148,7 +147,11 @@ public class CheckoutActivity extends AppCompatActivity {
    * @see <a
    *     href="https://developers.google.com/pay/api/android/reference/object#PaymentData">PaymentData</a>
    */
-  private void handlePaymentSuccess(PaymentData paymentData) {
+  private void handlePaymentSuccess(@Nullable PaymentData paymentData) {
+    if (paymentData == null) {
+      return;
+    }
+
     final String paymentInfo = paymentData.toJson();
 
     try {

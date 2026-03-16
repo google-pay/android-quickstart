@@ -85,11 +85,12 @@ class CheckoutViewModel(application: Application) : AndroidViewModel(application
     /**
      * Creates a [Task] that starts the payment process with the transaction details included.
      *
+     * @param price the price of the product
      * @return a [Task] with the payment information.
      * @see [PaymentDataRequest](https://developers.google.com/android/reference/com/google/android/gms/wallet/PaymentsClient#loadPaymentData(com.google.android.gms.wallet.PaymentDataRequest))
      */
-    fun getLoadPaymentDataTask(priceLabel: String): Task<PaymentData> {
-        val paymentDataRequestJson = PaymentsUtil.getPaymentDataRequest(priceLabel)
+    fun getLoadPaymentDataTask(price: String): Task<PaymentData> {
+        val paymentDataRequestJson = PaymentsUtil.getPaymentDataRequest(price)
         val request = PaymentDataRequest.fromJson(paymentDataRequestJson.toString())
         return paymentsClient.loadPaymentData(request)
     }
@@ -139,13 +140,6 @@ class CheckoutViewModel(application: Application) : AndroidViewModel(application
 
         return null
     }
-}
-
-abstract class PaymentUiState internal constructor() {
-    object NotStarted : PaymentUiState()
-    object Available : PaymentUiState()
-    class PaymentCompleted(val payerName: String?) : PaymentUiState()
-    class Error(val code: Int, val message: String? = null) : PaymentUiState()
 }
 
 suspend fun <T> Task<T>.awaitTask(cancellationTokenSource: CancellationTokenSource? = null): Task<T> {

@@ -28,7 +28,8 @@
     <activity
         android:name=".activity.CheckoutActivity"
         android:exported="true"
-        android:label="@string/store_name">
+        android:label="@string/store_name"
+        android:screenOrientation="portrait">
       <intent-filter>
         <action android:name="android.intent.action.MAIN" />
         <category android:name="android.intent.category.LAUNCHER" />
@@ -39,6 +40,7 @@
         android:name=".activity.CheckoutSuccessActivity"
         android:exported="false"
         android:label="@string/store_name"
+        android:screenOrientation="portrait"
         android:theme="@style/AppTheme.NoActionBar" />
 
     <service

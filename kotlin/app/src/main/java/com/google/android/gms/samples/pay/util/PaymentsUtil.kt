@@ -297,16 +297,16 @@ object PaymentsUtil {
     /**
      * An object describing information to be requested via the Google Pay payment sheet.
      *
-     * @param priceLabel the price of the product
+     * @param price the price of the product
      * @return Payment data expected by your app.
      * @throws JSONException If the object is malformed.
      * @see [PaymentDataRequest](https://developers.google.com/pay/api/android/reference/object#PaymentDataRequest)
      */
     @Throws(JSONException::class)
-    fun getPaymentDataRequest(priceLabel: String): JSONObject {
+    fun getPaymentDataRequest(price: String): JSONObject {
         return getBaseRequest()
             .put("allowedPaymentMethods", getAllowedPaymentMethods())
-            .put("transactionInfo", getTransactionInfo(priceLabel))
+            .put("transactionInfo", getTransactionInfo(price))
             .put("merchantInfo", JSONObject().put("merchantName", Constants.MERCHANT_NAME))
             .put("shippingAddressRequired", true)
             .put("shippingOptionRequired", true)
@@ -330,18 +330,18 @@ object PaymentsUtil {
      * An object describing information to be updated via the Google Pay payment sheet.
      *
      * @param intermediatePaymentData the intermediate payment data containing user selections.
-     * @param priceLabel the price of the product.
+     * @param price the price of the product.
      * @return Payment data expected by your app.
      * @throws JSONException If the object is malformed.
      * @see [PaymentDataRequest](https://developers.google.com/pay/api/android/reference/object#PaymentDataRequest)
      */
     @Throws(JSONException::class)
     fun getPaymentDataRequestUpdate(
-        intermediatePaymentData: JSONObject, priceLabel: String
+        intermediatePaymentData: JSONObject, price: String
     ): JSONObject {
         // Populate the payment request with default data
         val paymentDataRequestUpdate = JSONObject()
-        paymentDataRequestUpdate.put("newTransactionInfo", getTransactionInfo(priceLabel))
+        paymentDataRequestUpdate.put("newTransactionInfo", getTransactionInfo(price))
 
         val shippingOptionParameters = getShippingOptionParameters()
         paymentDataRequestUpdate.put("newShippingOptionParameters", shippingOptionParameters)
