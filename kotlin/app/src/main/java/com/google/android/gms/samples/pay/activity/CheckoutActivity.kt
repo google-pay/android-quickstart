@@ -29,6 +29,8 @@ import com.google.android.gms.samples.pay.R
 import com.google.android.gms.samples.pay.ui.ProductScreen
 import com.google.android.gms.samples.pay.viewmodel.CheckoutViewModel
 import com.google.android.gms.samples.pay.viewmodel.PaymentUiState
+import com.google.android.gms.tasks.Task
+import com.google.android.gms.wallet.PaymentData
 import com.google.android.gms.wallet.contract.TaskResultContracts.GetPaymentDataResult
 
 class CheckoutActivity : ComponentActivity() {
@@ -72,12 +74,6 @@ class CheckoutActivity : ComponentActivity() {
 
     private fun requestPayment() {
         val task = model.getLoadPaymentDataTask(Constants.BASE_PRICE)
-        task.addOnCompleteListener { completedTask ->
-            if (completedTask.isSuccessful) {
-                paymentDataLauncher.launch(completedTask.result)
-            } else {
-                Log.w("loadPaymentData failed", completedTask.exception)
-            }
-        }
+        task.addOnCompleteListener(paymentDataLauncher::launch)
     }
 }

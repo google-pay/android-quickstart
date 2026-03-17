@@ -142,6 +142,13 @@ class CheckoutViewModel(application: Application) : AndroidViewModel(application
     }
 }
 
+abstract class PaymentUiState internal constructor() {
+    object NotStarted : PaymentUiState()
+    object Available : PaymentUiState()
+    class PaymentCompleted(val payerName: String) : PaymentUiState()
+    class Error(val code: Int, val message: String? = null) : PaymentUiState()
+}
+
 suspend fun <T> Task<T>.awaitTask(cancellationTokenSource: CancellationTokenSource? = null): Task<T> {
     return if (isComplete) this else suspendCancellableCoroutine { cont ->
         // Run the callback directly to avoid unnecessarily scheduling on the main thread.
