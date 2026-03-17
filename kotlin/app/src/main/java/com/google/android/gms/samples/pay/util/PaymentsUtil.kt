@@ -161,7 +161,7 @@ object PaymentsUtil {
      * @throws JSONException if the object is malformed.
      * @see [PaymentMethodTokenizationSpecification](https://developers.google.com/pay/api/android/reference/object#PaymentMethodTokenizationSpecification)
      */
-    @Throws(JSONException::class, RuntimeException::class)
+    @Throws(JSONException::class)
     private fun getDirectTokenizationSpecification(): JSONObject {
         return JSONObject()
             .put("type", "DIRECT")

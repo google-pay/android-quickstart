@@ -30,7 +30,7 @@ import org.json.JSONException
 import org.json.JSONObject
 
 /**
- * Implementation of {@link BasePaymentDataCallbacks} that handles callbacks from the Google Pay
+ * Implementation of [BasePaymentDataCallbacks] that handles callbacks from the Google Pay
  * payment sheet.
  */
 class MerchantPaymentDataCallbacks : BasePaymentDataCallbacks() {
@@ -41,16 +41,16 @@ class MerchantPaymentDataCallbacks : BasePaymentDataCallbacks() {
      */
     override fun onPaymentDataChanged(
         request: IntermediatePaymentData?,
-        onCompleteListener: OnCompleteListener<PaymentDataRequestUpdate>
+        onCompleteListener: OnCompleteListener<PaymentDataRequestUpdate>,
     ) {
-        // define prices and variables
         val newSavedState = Bundle()
 
         try {
             val intermediatePaymentDataJson = JSONObject(request?.toJson() ?: "{}")
 
             val paymentDataRequestUpdateJson = PaymentsUtil.getPaymentDataRequestUpdate(
-                intermediatePaymentDataJson, Constants.BASE_PRICE
+                intermediatePaymentDataJson,
+                Constants.BASE_PRICE,
             )
 
             newSavedState.putString("paymentDataRequestUpdate", paymentDataRequestUpdateJson.toString())
@@ -58,12 +58,10 @@ class MerchantPaymentDataCallbacks : BasePaymentDataCallbacks() {
             // return the generated data to the client
             onCompleteListener.complete(
                 PaymentDataRequestUpdate.fromJson(paymentDataRequestUpdateJson.toString())
-                    .withUpdatedSavedState(newSavedState)
+                    .withUpdatedSavedState(newSavedState),
             )
-
-        } catch (e: JSONException) {
-            Log.e("MerchantPaymentDataCallbacks", e.message, e)
-            throw RuntimeException(e)
+        } catch (e: Exception) {
+            Log.e("MerchantPaymentDataCallbacks", "onPaymentDataChanged failed", e)
         }
     }
 
@@ -72,7 +70,7 @@ class MerchantPaymentDataCallbacks : BasePaymentDataCallbacks() {
      */
     override fun onPaymentAuthorized(
         request: PaymentData?,
-        onCompleteListener: OnCompleteListener<PaymentAuthorizationResult>
+        onCompleteListener: OnCompleteListener<PaymentAuthorizationResult>,
     ) {
         Log.i("Invocation", "onPaymentAuthorized invoked")
         val savedState = Bundle()
@@ -98,12 +96,10 @@ class MerchantPaymentDataCallbacks : BasePaymentDataCallbacks() {
 
             onCompleteListener.complete(
                 PaymentAuthorizationResult.fromJson(paymentAuthorizationResultJson.toString())
-                    .withUpdatedSavedState(savedState)
+                    .withUpdatedSavedState(savedState),
             )
-
-        } catch (e: JSONException) {
-            Log.e("MerchantPaymentDataCallbacks", e.message, e)
-            throw RuntimeException(e)
+        } catch (e: Exception) {
+            Log.e("MerchantPaymentDataCallbacks", "onPaymentAuthorized failed", e)
         }
     }
 }

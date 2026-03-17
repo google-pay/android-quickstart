@@ -30,7 +30,6 @@ import com.google.android.gms.samples.pay.ui.ProductScreen
 import com.google.android.gms.samples.pay.viewmodel.CheckoutViewModel
 import com.google.android.gms.samples.pay.viewmodel.PaymentUiState
 import com.google.android.gms.wallet.contract.TaskResultContracts.GetPaymentDataResult
-import java.util.Locale
 
 class CheckoutActivity : ComponentActivity() {
 
@@ -44,9 +43,14 @@ class CheckoutActivity : ComponentActivity() {
                     model.setPaymentData(it)
                 }
             }
-            // CommonStatusCodes.CANCELED -> The user canceled
-            // CommonStatusCodes.DEVELOPER_ERROR -> The API returned an error (it.status: Status)
-            // else -> Handle internal and other unexpected errors
+            CommonStatusCodes.CANCELED -> {
+                // The user canceled the payment attempt
+                Log.i("Google Pay result:", "Payment canceled by user")
+            }
+            else -> {
+                // Handle internal and other unexpected errors
+                Log.w("Google Pay result:", "Payment failed. Status: ${taskResult.status}")
+            }
         }
     }
 
@@ -68,6 +72,12 @@ class CheckoutActivity : ComponentActivity() {
 
     private fun requestPayment() {
         val task = model.getLoadPaymentDataTask(Constants.BASE_PRICE)
-        task.addOnCompleteListener(paymentDataLauncher::launch)
+        task.addOnCompleteListener { completedTask ->
+            if (completedTask.isSuccessful) {
+                paymentDataLauncher.launch(completedTask.result)
+            } else {
+                Log.w("loadPaymentData failed", completedTask.exception)
+            }
+        }
     }
 }
