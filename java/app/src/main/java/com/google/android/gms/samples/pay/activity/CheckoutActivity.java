@@ -133,14 +133,7 @@ public class CheckoutActivity extends AppCompatActivity {
     try {
       // provide the default starting price here.
       final Task<PaymentData> task = model.getLoadPaymentDataTask(Constants.BASE_PRICE);
-      task.addOnCompleteListener(
-          completedTask -> {
-            if (completedTask.isSuccessful()) {
-              paymentDataLauncher.launch(completedTask);
-            } else {
-              handleError(CommonStatusCodes.INTERNAL_ERROR, "The payment data task failed.");
-            }
-          });
+      task.addOnCompleteListener(paymentDataLauncher::launch);
     } catch (JSONException e) {
       handleError(CommonStatusCodes.INTERNAL_ERROR, "The payment data task couldn't be created.");
     }
