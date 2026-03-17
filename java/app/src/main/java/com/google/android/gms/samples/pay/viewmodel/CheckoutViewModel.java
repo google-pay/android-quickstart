@@ -31,9 +31,7 @@ import com.google.android.gms.wallet.PaymentsClient;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-/**
- * ViewModel for the {@link com.google.android.gms.samples.pay.activity.CheckoutActivity}.
- */
+/** ViewModel for the {@link com.google.android.gms.samples.pay.activity.CheckoutActivity}. */
 public class CheckoutViewModel extends AndroidViewModel {
 
   // A client for interacting with the Google Pay API.
@@ -48,9 +46,8 @@ public class CheckoutViewModel extends AndroidViewModel {
    * Initializes the ViewModel.
    *
    * @param application The application context.
-   * @throws JSONException If the JSON request is malformed.
    */
-  public CheckoutViewModel(@NonNull Application application) throws JSONException {
+  public CheckoutViewModel(@NonNull Application application) {
     super(application);
     paymentsClient = PaymentsUtil.createPaymentsClient(application);
 
@@ -60,25 +57,32 @@ public class CheckoutViewModel extends AndroidViewModel {
   /**
    * Determine the user's ability to pay with a payment method supported by your app and display a
    * Google Pay payment button.
-   *
-   * @throws JSONException If the JSON request is malformed.
    */
-  private void fetchCanUseGooglePay() throws JSONException {
-    final JSONObject isReadyToPayJson = PaymentsUtil.getIsReadyToPayRequest();
+  private void fetchCanUseGooglePay() {
+    try {
+      final JSONObject isReadyToPayJson = PaymentsUtil.getIsReadyToPayRequest();
+      if (isReadyToPayJson == null) {
+        canUseGooglePayInternal.setValue(false);
+        return;
+      }
 
-    // The call to isReadyToPay is asynchronous and returns a Task. We need to provide an
-    // OnCompleteListener to be triggered when the result of the call is known.
-    IsReadyToPayRequest request = IsReadyToPayRequest.fromJson(isReadyToPayJson.toString());
-    Task<Boolean> task = paymentsClient.isReadyToPay(request);
-    task.addOnCompleteListener(
-        completedTask -> {
-          if (completedTask.isSuccessful()) {
-            canUseGooglePayInternal.setValue(completedTask.getResult());
-          } else {
-            Log.w("isReadyToPay failed", completedTask.getException());
-            canUseGooglePayInternal.setValue(false);
-          }
-        });
+      // The call to isReadyToPay is asynchronous and returns a Task. We need to provide an
+      // OnCompleteListener to be triggered when the result of the call is known.
+      IsReadyToPayRequest request = IsReadyToPayRequest.fromJson(isReadyToPayJson.toString());
+      Task<Boolean> task = paymentsClient.isReadyToPay(request);
+      task.addOnCompleteListener(
+          completedTask -> {
+            if (completedTask.isSuccessful()) {
+              canUseGooglePayInternal.setValue(completedTask.getResult());
+            } else {
+              Log.w("isReadyToPay failed", completedTask.getException());
+              canUseGooglePayInternal.setValue(false);
+            }
+          });
+    } catch (JSONException e) {
+      Log.w("isReadyToPay failed", e);
+      canUseGooglePayInternal.setValue(false);
+    }
   }
 
   /**
