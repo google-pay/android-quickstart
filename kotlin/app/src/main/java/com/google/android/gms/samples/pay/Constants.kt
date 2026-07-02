@@ -129,7 +129,7 @@ object Constants {
      * @value #DIRECT_TOKENIZATION_PARAMETERS
      */
     val DIRECT_TOKENIZATION_PARAMETERS = mapOf(
-            "protocolVersion" to "ECv1",
+            "protocolVersion" to "ECv2",
             "publicKey" to DIRECT_TOKENIZATION_PUBLIC_KEY
     )
 }
