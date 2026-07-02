@@ -35,6 +35,7 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.google.android.gms.samples.pay.R
@@ -133,7 +134,7 @@ fun ProductScreen(
 @Composable
 private fun ProductScreenPreviewWithDescription(
     payUiState: PaymentUiState,
-    @PreviewParameter(LoremIpsum::class) description: String
+    description: String = "This is a product description."
 ) {
     ProductScreen(
         title = "Men's Tech Shell Full-Zip",
@@ -150,12 +151,10 @@ private fun ProductScreenPreviewWithDescription(
  */
 @Preview
 @Composable
-private fun ProductScreenPreviewNotStarted(
-    @PreviewParameter(LoremIpsum::class) description: String
-) {
+private fun ProductScreenPreviewNotStarted() {
     ProductScreenPreviewWithDescription(
         payUiState = PaymentUiState.NotStarted,
-        description = description
+        description = "This is a product description."
     )
 }
 
@@ -164,12 +163,10 @@ private fun ProductScreenPreviewNotStarted(
  */
 @Preview
 @Composable
-private fun ProductScreenPreviewAvailable(
-    @PreviewParameter(LoremIpsum::class) description: String
-) {
+private fun ProductScreenPreviewAvailable() {
     ProductScreenPreviewWithDescription(
         payUiState = PaymentUiState.Available,
-        description = description
+        description = "This is a product description."
     )
 }
 
@@ -178,11 +175,9 @@ private fun ProductScreenPreviewAvailable(
  */
 @Preview
 @Composable
-private fun ProductScreenPreviewPaymentCompleted(
-    @PreviewParameter(LoremIpsum::class) description: String
-) {
+private fun ProductScreenPreviewPaymentCompleted() {
     ProductScreenPreviewWithDescription(
         payUiState = PaymentUiState.PaymentCompleted(payerName = "John"),
-        description = description
+        description = "This is a product description."
     )
 }
