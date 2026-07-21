@@ -23,15 +23,18 @@ import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.compose.runtime.getValue
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.lifecycleScope
+import androidx.navigation.NavType
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import com.google.android.gms.common.api.CommonStatusCodes
-import com.google.android.gms.wallet.contract.TaskResultContracts.GetPaymentDataResult
 import com.google.android.gms.samples.pay.R
+import com.google.android.gms.samples.pay.ui.PaymentSuccessScreen
 import com.google.android.gms.samples.pay.ui.ProductScreen
 import com.google.android.gms.samples.pay.viewmodel.CheckoutViewModel
 import com.google.android.gms.samples.pay.viewmodel.PaymentUiState
-import com.google.android.gms.samples.pay.viewmodel.awaitTask
-import kotlinx.coroutines.launch
+import com.google.android.gms.wallet.contract.TaskResultContracts.GetPaymentDataResult
 
 class CheckoutActivity : ComponentActivity() {
 
@@ -54,15 +57,41 @@ class CheckoutActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
 
         setContent {
+
+            val navController = rememberNavController()
             val payState: PaymentUiState by model.paymentUiState.collectAsStateWithLifecycle()
-            ProductScreen(
-                title = "Men's Tech Shell Full-Zip",
-                description = "A versatile full-zip that you can wear all day long and even...",
-                price = "$50.20",
-                image = R.drawable.ts_10_11019a,
-                payUiState = payState,
-                onGooglePayButtonClick = this::requestPayment,
-            )
+
+            NavHost(navController = navController, startDestination = "product_screen" ){
+
+                composable("product_screen"){
+                    ProductScreen(
+                        title = "Men's Tech Shell Full-Zip",
+                        description = "A versatile full-zip that you can wear all day long and even...",
+                        price = "$50.20",
+                        image = R.drawable.ts_10_11019a,
+                        payUiState = payState,
+                        onGooglePayButtonClick = {
+                                requestPayment()
+                        },
+                        onPaymentComplete = { payerName ->
+                            // Navigate to the success screen with the payer's name as an argument
+                            navController.navigate("success_screen/$payerName") {
+                                // Pop up to the start destination to prevent going back to the product screen
+                                popUpTo("product_screen") { inclusive = true }
+                            }
+                        },
+                    )
+
+
+                }
+
+                composable("success_screen/{payerName}",
+                    arguments = listOf(navArgument("payerName") { type = NavType.StringType })
+                ) { backStackEntry ->
+                    PaymentSuccessScreen(payerName = backStackEntry.arguments?.getString("payerName") ?: "")
+                }
+
+            }
         }
     }
 

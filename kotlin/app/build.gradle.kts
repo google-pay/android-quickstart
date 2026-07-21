@@ -5,12 +5,12 @@ plugins {
 
 android {
     namespace = "com.google.android.gms.samples.pay"
-    compileSdk = 34
+    compileSdk = 35
 
     defaultConfig {
         applicationId = "com.google.android.gms.samples.pay"
         minSdk = 21
-        targetSdk = 34
+        targetSdk = 35
         versionCode = 1
         versionName = "1.0"
 
@@ -58,6 +58,7 @@ android {
 dependencies {
     val lifecycleVersion = "2.7.0"
 
+    implementation("androidx.navigation:navigation-compose:2.5.0")
     implementation("com.google.android.gms:play-services-wallet:19.4.0")
     implementation("com.google.pay.button:compose-pay-button:0.1.3")
 

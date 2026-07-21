@@ -25,16 +25,14 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -51,45 +49,18 @@ fun ProductScreen(
     image: Int,
     onGooglePayButtonClick: () -> Unit,
     payUiState: PaymentUiState = PaymentUiState.NotStarted,
+    onPaymentComplete: (String) -> Unit,
 ) {
     val padding = 20.dp
     val black = Color(0xff000000.toInt())
     val grey = Color(0xffeeeeee.toInt())
 
-    if (payUiState is PaymentUiState.PaymentCompleted) {
-        Column(
-            modifier = Modifier
-                .testTag("successScreen")
-                .background(grey)
-                .padding(padding)
-                .fillMaxWidth()
-                .fillMaxHeight(),
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally,
-        ) {
-            Image(
-                contentDescription = null,
-                painter = painterResource(R.drawable.check_circle),
-                modifier = Modifier
-                    .width(200.dp)
-                    .height(200.dp)
-            )
-            Spacer(modifier = Modifier.height(10.dp))
-            Text(
-                text = "${payUiState.payerName} completed a payment.\nWe are preparing your order.",
-                fontSize = 17.sp,
-                color = Color.DarkGray,
-                textAlign = TextAlign.Center
-            )
-        }
-
-    } else {
-        Column(
-            modifier = Modifier
-                .background(grey)
-                .padding(padding)
-                .fillMaxHeight(),
-            verticalArrangement = Arrangement.spacedBy(space = padding / 2),
+    Column(
+        modifier = Modifier
+            .background(grey)
+            .padding(padding)
+            .fillMaxHeight(),
+        verticalArrangement = Arrangement.spacedBy(space = padding / 2),
         ) {
             Image(
                 contentDescription = null,
@@ -125,8 +96,15 @@ fun ProductScreen(
                 )
             }
         }
+
+    LaunchedEffect(key1 = payUiState) {
+        if (payUiState is PaymentUiState.PaymentCompleted) {
+            onPaymentComplete(payUiState.payerName)
+        }
     }
-}
+
+    }
+
 
 /**
  * Wrapper to simplify previews with a provided description.
@@ -143,6 +121,7 @@ private fun ProductScreenPreviewWithDescription(
         image = R.drawable.ts_10_11019a,
         onGooglePayButtonClick = {}, // No-op for previews
         payUiState = payUiState,
+        onPaymentComplete = {} // No Navigation for preview
     )
 }
 
